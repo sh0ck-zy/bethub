@@ -28,19 +28,25 @@ export default function MatchPage() {
   const fetchMatch = async () => {
     try {
       const response = await fetch(`/api/v1/match/${matchId}`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
-      setMatch(data.match);
+      setMatch(data.match || data);
     } catch (error) {
       console.error('Error fetching match:', error);
-      // Set dummy data for development
-      setMatch({
+      // Set fallback data for development
+      const fallbackMatch = {
         id: matchId,
-        league: 'Premier League',
-        home_team: 'Manchester United',
-        away_team: 'Liverpool',
+        league: matchId === '1' ? 'Premier League' : matchId === '2' ? 'La Liga' : 'Serie A',
+        home_team: matchId === '1' ? 'Manchester United' : matchId === '2' ? 'Real Madrid' : 'Juventus',
+        away_team: matchId === '1' ? 'Liverpool' : matchId === '2' ? 'Barcelona' : 'AC Milan',
         kickoff_utc: new Date().toISOString(),
-        status: 'LIVE'
-      });
+        status: matchId === '2' ? 'LIVE' : 'PRE'
+      };
+      setMatch(fallbackMatch);
     }
   };
 

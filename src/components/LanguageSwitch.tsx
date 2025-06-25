@@ -7,6 +7,16 @@ import { Languages } from 'lucide-react';
 export function LanguageSwitch() {
   const { i18n } = useTranslation();
 
+  // Don't render if i18n is not ready
+  if (!i18n || !i18n.isInitialized) {
+    return (
+      <div className="flex items-center space-x-2">
+        <Languages className="h-4 w-4" />
+        <div className="w-[140px] h-9 bg-muted rounded animate-pulse" />
+      </div>
+    );
+  }
+
   const languages = [
     { code: 'en', name: 'English' },
     { code: 'pt', name: 'Português' },
