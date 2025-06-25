@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SPORTSBET INSIGHT v1.0",
-  description: "Worldwide sports-betting insights platform",
+  title: "BetHub - Premium Sports Analysis & Insights",
+  description: "Professional sports analysis and betting insights platform with AI-powered match predictions",
 };
 
 export default function RootLayout({
