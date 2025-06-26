@@ -5,7 +5,8 @@ import { MatchCard } from '@/components/MatchCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { LogIn, TrendingUp, Zap, Shield, Star, Filter, Search, Bell } from 'lucide-react';
+import { LogIn, TrendingUp, Filter, Mail, Github } from 'lucide-react';
+import Link from 'next/link';
 
 interface Match {
   id: string;
@@ -36,7 +37,31 @@ export default function HomePage() {
       const data = await response.json();
       
       if (Array.isArray(data)) {
-        setMatches(data);
+        // Sort matches by temporal order
+        const sortedMatches = data.sort((a, b) => {
+          // Helper function to get sorting weight (future matches first, finished last)
+          const getWeight = (match: Match) => {
+            const kickoff = new Date(match.kickoff_utc);
+            const now = new Date();
+            
+            if (match.status === 'FT') return 3; // Finished matches last
+            if (match.status === 'LIVE') return 2; // Live matches in the middle
+            return 1; // Future matches first
+          };
+
+          const weightA = getWeight(a);
+          const weightB = getWeight(b);
+
+          // If weights are different, sort by weight
+          if (weightA !== weightB) {
+            return weightA - weightB;
+          }
+
+          // If weights are the same, sort by kickoff time
+          return new Date(a.kickoff_utc).getTime() - new Date(b.kickoff_utc).getTime();
+        });
+
+        setMatches(sortedMatches);
       } else {
         console.warn('API returned non-array data:', data);
         setMatches([]);
@@ -66,30 +91,15 @@ export default function HomePage() {
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-400 via-green-500 to-blue-500 flex items-center justify-center shadow-lg shadow-green-500/25">
                   <span className="text-white font-bold text-lg">B</span>
                 </div>
-                <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
-                  <Star className="w-2 h-2 text-white fill-current" />
-                </div>
               </div>
               <div>
                 <h1 className="text-2xl font-bold gradient-text">
                   BetHub
                 </h1>
-                <div className="flex items-center space-x-2">
-                  <Badge className="bg-green-500/20 text-green-400 text-xs border border-green-500/30">
-                    PREMIUM
-                  </Badge>
-                  <Badge className="bg-blue-500/20 text-blue-400 text-xs border border-blue-500/30">
-                    AI-POWERED
-                  </Badge>
-                </div>
               </div>
             </div>
             
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="sm" className="text-gray-300 hover:text-white">
-                <Bell className="w-4 h-4 mr-2" />
-                Alerts
-              </Button>
               {!isAuthenticated && (
                 <Button 
                   onClick={() => alert('Premium membership coming soon!')}
@@ -107,61 +117,15 @@ export default function HomePage() {
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-green-500/10 via-transparent to-blue-500/10"></div>
-        <div className="container mx-auto px-4 py-12 relative">
-          <div className="text-center space-y-6 max-w-4xl mx-auto">
-            <div className="space-y-4">
-              <h2 className="text-4xl md:text-5xl font-bold text-white leading-tight">
-                Professional Sports Analysis
-                <span className="block gradient-text">Powered by AI</span>
-              </h2>
-              <p className="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
-                Get real-time insights, advanced statistics, and AI-powered predictions 
-                for today's biggest football matches.
-              </p>
-            </div>
-            
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-8">
-              <Card className="premium-card">
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center mx-auto mb-3">
-                    <Zap className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="text-2xl font-bold text-red-400">{liveMatches}</div>
-                  <div className="text-sm text-gray-400 uppercase tracking-wide">Live Now</div>
-                </CardContent>
-              </Card>
-              
-              <Card className="premium-card">
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mx-auto mb-3">
-                    <TrendingUp className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="text-2xl font-bold text-blue-400">{upcomingMatches}</div>
-                  <div className="text-sm text-gray-400 uppercase tracking-wide">Upcoming</div>
-                </CardContent>
-              </Card>
-              
-              <Card className="premium-card">
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center mx-auto mb-3">
-                    <Shield className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="text-2xl font-bold text-green-400">AI</div>
-                  <div className="text-sm text-gray-400 uppercase tracking-wide">Powered</div>
-                </CardContent>
-              </Card>
-              
-              <Card className="premium-card">
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-3">
-                    <Star className="w-6 h-6 text-white fill-current" />
-                  </div>
-                  <div className="text-2xl font-bold text-purple-400">24/7</div>
-                  <div className="text-sm text-gray-400 uppercase tracking-wide">Analysis</div>
-                </CardContent>
-              </Card>
-            </div>
+        <div className="container mx-auto px-4 py-6 relative">
+          <div className="text-center space-y-3 max-w-3xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold text-white leading-tight">
+              <span className="gradient-text">FREE</span> Professional Sports Analysis
+              <span className="block gradient-text">Powered by AI</span>
+            </h2>
+            <p className="text-lg text-gray-300 max-w-2xl mx-auto">
+              Get advanced stats, deep insights, and AI-powered pre-match analysis for today's biggest games <span className="text-green-400 font-medium">100% free</span>.
+            </p>
           </div>
         </div>
       </div>
@@ -192,11 +156,6 @@ export default function HomePage() {
                 ))}
               </select>
             </div>
-            
-            <Button variant="outline" size="sm" className="border-white/20 text-gray-300 hover:text-white hover:border-green-500">
-              <Search className="w-4 h-4 mr-2" />
-              Search
-            </Button>
           </div>
         </div>
 
@@ -231,71 +190,57 @@ export default function HomePage() {
 
       {/* Enhanced Footer */}
       <footer className="border-t border-white/10 bg-gray-900/80 backdrop-blur-xl mt-16">
-        <div className="container mx-auto px-4 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="space-y-4">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex flex-col md:flex-row justify-between items-start gap-8">
+            <div className="space-y-3">
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center">
                   <span className="text-white font-bold text-sm">B</span>
                 </div>
                 <span className="font-bold text-white text-xl">BetHub</span>
               </div>
-              <p className="text-gray-400 text-sm leading-relaxed">
-                Professional sports analysis and AI-powered insights for smart betting decisions. 
-                Join thousands of successful bettors.
+              <p className="text-gray-400 text-sm leading-relaxed max-w-sm">
+                Professional sports analysis and AI-powered insights for smart betting decisions.
               </p>
-              <div className="flex space-x-2">
-                <Badge className="bg-green-500/20 text-green-400 text-xs border border-green-500/30">
-                  Trusted Platform
+              <div className="flex items-center space-x-3 pt-1">
+                <div className="flex space-x-2">
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                  <span className="text-xs text-green-400 font-medium">Live Platform</span>
+                </div>
+                <div className="w-px h-4 bg-white/20"></div>
+                <Badge className="bg-blue-500/20 text-blue-400 text-xs border border-blue-500/30">
+                  AI-Powered
                 </Badge>
               </div>
             </div>
             
-            <div>
-              <h3 className="font-semibold text-white mb-4 text-lg">Platform</h3>
-              <ul className="space-y-3 text-sm text-gray-400">
-                <li className="hover:text-green-400 cursor-pointer transition-colors">Live Analysis</li>
-                <li className="hover:text-green-400 cursor-pointer transition-colors">AI Insights</li>
-                <li className="hover:text-green-400 cursor-pointer transition-colors">Match Predictions</li>
-                <li className="hover:text-green-400 cursor-pointer transition-colors">Premium Features</li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold text-white mb-4 text-lg">Sports</h3>
-              <ul className="space-y-3 text-sm text-gray-400">
-                <li className="hover:text-blue-400 cursor-pointer transition-colors">Football</li>
-                <li className="hover:text-blue-400 cursor-pointer transition-colors">Basketball</li>
-                <li className="hover:text-blue-400 cursor-pointer transition-colors">Tennis</li>
-                <li className="hover:text-blue-400 cursor-pointer transition-colors">More Sports</li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold text-white mb-4 text-lg">Support</h3>
-              <ul className="space-y-3 text-sm text-gray-400">
-                <li className="hover:text-purple-400 cursor-pointer transition-colors">Help Center</li>
-                <li className="hover:text-purple-400 cursor-pointer transition-colors">Contact Us</li>
-                <li className="hover:text-purple-400 cursor-pointer transition-colors">Terms of Service</li>
-                <li className="hover:text-purple-400 cursor-pointer transition-colors">Privacy Policy</li>
-              </ul>
+            <div className="space-y-2">
+              <h3 className="font-semibold text-white text-sm">Contact</h3>
+              <div className="space-y-2 text-sm">
+                <a 
+                  href="mailto:sh0ck.zy.25@gmail.com" 
+                  className="text-gray-400 hover:text-green-400 transition-colors flex items-center gap-2"
+                >
+                  <Mail className="w-4 h-4" />
+                  sh0ck.zy.25@gmail.com
+                </a>
+                <a 
+                  href="https://github.com/sh0ck-zy/bethub" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-gray-400 hover:text-green-400 transition-colors flex items-center gap-2"
+                >
+                  <Github className="w-4 h-4" />
+                  GitHub Repository
+                </a>
+              </div>
             </div>
           </div>
           
-          <div className="border-t border-white/10 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <p className="text-gray-400 text-sm">
-              © 2024 BetHub. All rights reserved. Professional sports analysis platform.
+          <div className="border-t border-white/10 mt-6 pt-6 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+            <p className="text-gray-400 text-xs">
+              © 2025 BetHub. All rights reserved.
             </p>
-            <div className="flex items-center space-x-3">
-              <div className="flex space-x-2">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                <span className="text-xs text-green-400 font-medium">Live Platform</span>
-              </div>
-              <div className="w-px h-4 bg-white/20"></div>
-              <Badge className="bg-blue-500/20 text-blue-400 text-xs border border-blue-500/30">
-                AI-Powered
-              </Badge>
-            </div>
           </div>
         </div>
       </footer>
