@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter as GeistSans } from "next/font/google";
+import { JetBrains_Mono as GeistMono } from "next/font/google";
 import "./globals.css";
 // import '@/i18n'; // Initialize i18n
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const geistSans = GeistSans({
   subsets: ["latin"],
+  variable: "--font-geist-sans",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const geistMono = GeistMono({
   subsets: ["latin"],
+  variable: "--font-geist-mono",
 });
 
 export const metadata: Metadata = {

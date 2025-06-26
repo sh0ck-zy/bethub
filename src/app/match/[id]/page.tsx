@@ -9,34 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, LogIn, Clock, MapPin, TrendingUp, Users, Target, Star, Zap } from 'lucide-react';
 import Link from 'next/link';
-
-// Enhanced team logo component
-const TeamLogo = ({ team, size = 'w-16 h-16' }: { team: string; size?: string }) => {
-  const getTeamColor = (teamName: string) => {
-    const colors: { [key: string]: string } = {
-      'Manchester United': 'from-red-600 via-red-700 to-red-800',
-      'Liverpool': 'from-red-700 via-red-800 to-red-900',
-      'Arsenal': 'from-red-600 via-red-700 to-yellow-500',
-      'Chelsea': 'from-blue-600 via-blue-700 to-blue-800',
-      'Real Madrid': 'from-purple-600 via-white to-yellow-400',
-      'Barcelona': 'from-blue-700 via-blue-800 to-red-600',
-      'Bayern Munich': 'from-red-600 via-red-700 to-blue-800',
-      'Borussia Dortmund': 'from-yellow-400 via-yellow-500 to-black',
-      'Juventus': 'from-black via-gray-800 to-white',
-      'AC Milan': 'from-red-600 via-red-700 to-black',
-    };
-    return colors[teamName] || 'from-slate-600 via-slate-700 to-slate-800';
-  };
-
-  const initials = team.split(' ').map(word => word[0]).join('').substring(0, 2);
-  
-  return (
-    <div className={`${size} rounded-2xl bg-gradient-to-br ${getTeamColor(team)} flex items-center justify-center text-white font-bold shadow-2xl border-2 border-white/20 team-logo relative overflow-hidden`}>
-      <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent"></div>
-      <span className="relative z-10 text-xl">{initials}</span>
-    </div>
-  );
-};
+import { TeamLogo, getTeamColor } from '@/components/TeamLogo';
 
 export default function MatchPage() {
   const params = useParams();
@@ -206,9 +179,12 @@ export default function MatchPage() {
             {/* Teams Display */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
               {/* Home Team */}
-              <Card className="premium-card">
+              <Card 
+                className="premium-card border"
+                style={{ borderColor: `${getTeamColor(match.home_team)}20` }}
+              >
                 <CardContent className="p-6 text-center space-y-4">
-                  <TeamLogo team={match.home_team} size="w-20 h-20" />
+                  <TeamLogo team={match.home_team} size={96} />
                   <div>
                     <h2 className="text-2xl font-bold text-white mb-2">{match.home_team}</h2>
                     <Badge className="bg-green-500/20 text-green-400 border border-green-500/30">
@@ -243,9 +219,12 @@ export default function MatchPage() {
               </div>
 
               {/* Away Team */}
-              <Card className="premium-card">
+              <Card 
+                className="premium-card border"
+                style={{ borderColor: `${getTeamColor(match.away_team)}20` }}
+              >
                 <CardContent className="p-6 text-center space-y-4">
-                  <TeamLogo team={match.away_team} size="w-20 h-20" />
+                  <TeamLogo team={match.away_team} size={96} />
                   <div>
                     <h2 className="text-2xl font-bold text-white mb-2">{match.away_team}</h2>
                     <Badge className="bg-blue-500/20 text-blue-400 border border-blue-500/30">
