@@ -190,8 +190,8 @@ export default function HomePage() {
 
       {/* Enhanced Footer */}
       <footer className="border-t border-white/10 bg-gray-900/80 backdrop-blur-xl mt-16">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex flex-col md:flex-row justify-between items-start gap-8">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex flex-col md:flex-row justify-between items-start">
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center">
@@ -202,7 +202,7 @@ export default function HomePage() {
               <p className="text-gray-400 text-sm leading-relaxed max-w-sm">
                 Professional sports analysis and AI-powered insights for smart betting decisions.
               </p>
-              <div className="flex items-center space-x-3 pt-1">
+              <div className="flex items-center space-x-3">
                 <div className="flex space-x-2">
                   <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                   <span className="text-xs text-green-400 font-medium">Live Platform</span>
@@ -214,7 +214,7 @@ export default function HomePage() {
               </div>
             </div>
             
-            <div className="space-y-2">
+            <div className="mt-6 md:mt-0 space-y-2">
               <h3 className="font-semibold text-white text-sm">Contact</h3>
               <div className="space-y-2 text-sm">
                 <a 
@@ -237,7 +237,7 @@ export default function HomePage() {
             </div>
           </div>
           
-          <div className="border-t border-white/10 mt-6 pt-6 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+          <div className="border-t border-white/10 mt-6 pt-6 text-center md:text-left">
             <p className="text-gray-400 text-xs">
               © 2025 BetHub. All rights reserved.
             </p>
