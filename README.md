@@ -1,3 +1,174 @@
+# BetHub - AI Football Analysis Platform
+
+## 🎯 **Value Proposition**
+
+BetHub provides **professional-grade football match analysis** powered by AI, delivering three core values to users:
+
+### **What We Provide:**
+
+1. **🧠 AI Tactical Analysis**
+   - Team formation analysis and playing styles
+   - Strengths & weaknesses breakdown
+   - Key player impact assessments
+   - Head-to-head historical patterns
+   - Match dynamics predictions (non-betting focused)
+
+2. **📊 Historical Statistical Profiles**
+   - Team performance averages (last 10 games)
+   - Possession, shots, discipline metrics
+   - Goals scored/conceded patterns
+   - Recent form visualization with detailed match data
+   - Pass accuracy and attacking statistics
+
+3. **💰 Betting Odds Information** *(Informational Only)*
+   - Real-time odds from licensed bookmakers
+   - Responsible gambling disclaimers
+   - Multiple betting houses comparison
+   - No betting encouragement - pure data transparency
+
+### **Target User Experience:**
+Users get a **sophisticated analysis laboratory** that helps them understand match dynamics through AI insights and historical data, without being pushed toward betting decisions.
+
+---
+
+## 🏗️ **Data Architecture & AI Agent Framework**
+
+### **What We Need for Each Match:**
+
+#### **Minimal Required Input:**
+```json
+{
+  "match_id": "string",
+  "home_team": "string", 
+  "away_team": "string",
+  "league": "string",
+  "kickoff_utc": "ISO 8601 datetime",
+  "status": "PRE | LIVE | FT | POSTPONED | CANCELLED"
+}
+```
+
+#### **Assets We Manage:**
+- **Team Logos**: Static SVG files in `/public/logos/` (manually curated)
+- **UI Components**: All frontend rendering handled internally
+- **Fallback Data**: Default/skeleton content for failed AI responses
+
+### **AI Agent Responsibilities:**
+
+Our AI agent is responsible for **fetching and generating ALL analytical content**:
+
+#### **✅ Agent Fetches:**
+- Team tactical analysis (formations, styles, strengths/weaknesses)
+- Historical statistics from sports databases
+- Recent match results and form data
+- Key player information and injury status
+- Head-to-head historical data
+- Betting odds from bookmaker APIs
+- Match prediction summaries
+
+#### **✅ Agent Generates:**
+- Tactical insights and playing style descriptions
+- Statistical pattern analysis
+- Key factor identification for match dynamics
+- Confidence scores for all generated content
+
+#### **❌ We Don't Provide to Agent:**
+- Team logos (handled locally)
+- UI rendering logic
+- User authentication data
+- Betting recommendations
+
+---
+
+## 🔄 **API Integration Flow**
+
+### **1. Match Request**
+```
+GET /api/v1/match/{match_id}
+```
+
+### **2. AI Agent Processing**
+- Agent receives minimal match info
+- Fetches tactical & statistical data from sports APIs
+- Generates AI analysis using LLM
+- Validates and structures response
+
+### **3. Response Format**
+Returns structured JSON following our [TypeScript schema](src/types/match-analysis.ts):
+
+```json
+{
+  "success": true,
+  "version": "1.0",
+  "generated_at": "2024-06-17T16:00:00Z",
+  "match_id": "match_123",
+  "data": {
+    "match_info": {...},
+    "tactical_analysis": {...},
+    "team_statistics": {...},
+    "head_to_head": {...},
+    "betting_odds": {...},
+    "confidence_score": 0.87,
+    "data_completeness": 0.93
+  }
+}
+```
+
+### **4. Error Handling**
+- **Graceful Degradation**: Show available data, hide failed sections
+- **Fallback Content**: Default messages for missing AI analysis  
+- **User Communication**: Clear error states with retry options
+
+---
+
+## 🛡️ **Quality Assurance**
+
+### **Data Validation:**
+- Confidence scores for all AI-generated content
+- Data completeness metrics
+- Automatic fallbacks for low-confidence data
+
+### **User Experience:**
+- Loading states for all AI-generated sections
+- Clear distinction between AI analysis and factual data
+- Professional error handling without technical jargon
+
+### **Responsible Features:**
+- No direct betting encouragement
+- Transparent AI confidence indicators
+- Educational focus on tactical understanding
+
+---
+
+## 🚀 **MVP Scope (v1.0)**
+
+**What's Included:**
+- ✅ Basic match layout with team confrontation
+- ✅ Three analysis tabs (AI Analysis, Statistics, Betting Odds)  
+- ✅ Mobile-optimized responsive design
+- ✅ Error handling framework
+- ✅ AI agent integration schema
+
+**Next Versions:**
+- 🔄 Real AI agent integration
+- 🔄 Live match updates
+- 🔄 User authentication & premium features
+- 🔄 Multi-language support based on user location
+
+---
+
+## 📁 **Project Structure**
+
+```
+src/
+├── types/match-analysis.ts          # AI Agent response schema
+├── components/AnalysisTabs.tsx      # Main analysis interface
+├── app/match/[id]/page.tsx          # Match page layout
+├── lib/teams.ts                     # Team data utilities
+└── public/logos/                    # Team logo assets (manual)
+```
+
+This architecture ensures **clear separation of concerns**: we handle the user experience and visual presentation, while the AI agent focuses purely on data fetching and analysis generation.
+
 # SPORTSBET INSIGHT v1.0
 
 A worldwide sports-betting insights platform built with Next.js 14, TypeScript, Tailwind CSS, and Supabase. This platform provides a foundation for displaying AI-generated sports analysis and insights with a professional sportsbook aesthetic.
