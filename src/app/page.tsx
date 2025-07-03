@@ -88,7 +88,17 @@ export default function HomePage() {
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-4">
               <div className="relative">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-400 via-green-500 to-blue-500 flex items-center justify-center shadow-lg shadow-green-500/25">
+                <img 
+                  src="/bethub-logo.png" 
+                  alt="BetHub Logo" 
+                  className="w-10 h-10"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                    if (fallback) fallback.style.display = 'flex';
+                  }}
+                />
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-400 via-green-500 to-blue-500 items-center justify-center shadow-lg shadow-green-500/25 hidden">
                   <span className="text-white font-bold text-lg">B</span>
                 </div>
               </div>
@@ -160,7 +170,7 @@ export default function HomePage() {
         </div>
 
         {/* Matches Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
           {filteredMatches.map((match) => (
             <MatchCard key={match.id} match={match} />
           ))}
@@ -194,7 +204,17 @@ export default function HomePage() {
           <div className="flex flex-col md:flex-row justify-between items-start">
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center">
+                <img 
+                  src="/bethub-logo.png" 
+                  alt="BetHub Logo" 
+                  className="w-8 h-8"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                    if (fallback) fallback.style.display = 'flex';
+                  }}
+                />
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-400 to-blue-500 items-center justify-center hidden">
                   <span className="text-white font-bold text-sm">B</span>
                 </div>
                 <span className="font-bold text-white text-xl">BetHub</span>

@@ -16,6 +16,14 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "BetHub - Premium Sports Analysis & Insights",
   description: "Professional sports analysis and betting insights platform with AI-powered match predictions",
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon.svg', type: 'image/svg+xml' }
+    ],
+    shortcut: '/favicon.ico',
+    apple: '/bethub-logo.png',
+  },
 };
 
 export default function RootLayout({
