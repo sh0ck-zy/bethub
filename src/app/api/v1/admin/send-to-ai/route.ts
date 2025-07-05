@@ -12,11 +12,31 @@ export async function POST(request: Request) {
       );
     }
 
-    // TODO: Add admin authentication check
-    // const adminAuth = request.headers.get('x-admin-auth');
-    // if (!adminAuth) {
-    //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    // }
+    // Check admin authentication
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Authorization required' }, { status: 401 });
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    
+    // Verify the auth token and check admin role
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
+
+    // Check if user is admin
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    if (profileError || profile?.role !== 'admin') {
+      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
+    }
 
     // Check if Supabase is configured
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
@@ -49,46 +69,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: updateError.message }, { status: 500 });
     }
 
-    // TODO: Send match data to AI agent
-    // This would be where you trigger your AI agent to analyze the match
-    // For now, we'll just simulate it
-    
-    /*
-    Example AI agent trigger:
-    
-    const aiAgentPayload = {
-      matchId: matchData.id,
-      homeTeam: matchData.home_team,
-      awayTeam: matchData.away_team,
-      league: matchData.league,
-      kickoffTime: matchData.kickoff_utc,
-      status: matchData.status
-    };
-
-    const aiResponse = await fetch(process.env.AI_AGENT_WEBHOOK_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.AI_AGENT_API_KEY}`
-      },
-      body: JSON.stringify(aiAgentPayload)
-    });
-
-    if (!aiResponse.ok) {
-      // Revert status on failure
-      await supabase
+    // TODO: Send to actual AI service
+    // For now, simulate AI processing
+    setTimeout(async () => {
+      const { error: completeError } = await supabase
         .from('matches')
-        .update({ analysis_status: 'failed' })
+        .update({ analysis_status: 'completed' })
         .eq('id', matchId);
       
-      return NextResponse.json({ error: 'Failed to trigger AI analysis' }, { status: 500 });
-    }
-    */
+      if (completeError) {
+        console.error('Error completing analysis:', completeError);
+      }
+    }, 5000); // Simulate 5 second processing
 
     return NextResponse.json({ 
       success: true, 
-      message: `Match ${matchId} sent to AI for analysis`,
-      match: matchData
+      message: `Match ${matchId} sent to AI for analysis` 
     });
 
   } catch (error) {
