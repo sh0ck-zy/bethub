@@ -4,9 +4,10 @@ import { useState, useEffect } from 'react';
 import { MatchCard } from '@/components/MatchCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Crown, User, LogOut } from 'lucide-react';
+import { Crown, User, LogOut, RefreshCw, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { AuthModal } from '@/components/AuthModal';
+import { Loading, LoadingCard } from '@/components/ui/loading';
 
 interface Match {
   id: string;
@@ -21,14 +22,24 @@ export default function HomePage() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [selectedLeague, setSelectedLeague] = useState('all');
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const { user, isAdmin, signOut } = useAuth();
 
   useEffect(() => {
     fetchMatches();
   }, []);
 
-  const fetchMatches = async () => {
+  const fetchMatches = async (isRefresh = false) => {
     try {
+      if (isRefresh) {
+        setIsRefreshing(true);
+      } else {
+        setIsLoading(true);
+      }
+      setError(null);
+      
       const response = await fetch(`/api/v1/today`);
       
       if (!response.ok) {
@@ -69,7 +80,11 @@ export default function HomePage() {
       }
     } catch (error) {
       console.error('Error fetching matches:', error);
+      setError('Failed to load matches. Please try again.');
       setMatches([]);
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
     }
   };
 
@@ -163,27 +178,74 @@ export default function HomePage() {
             <Badge className="bg-green-500/20 text-green-400 border border-green-500/30 text-xs">
               {filteredMatches.length}
             </Badge>
+            {isRefreshing && (
+              <div className="flex items-center gap-2 text-gray-400">
+                <RefreshCw className="w-4 h-4 animate-spin" />
+                <span className="text-xs">Refreshing...</span>
+              </div>
+            )}
           </div>
           
-          <select 
-            value={selectedLeague}
-            onChange={(e) => setSelectedLeague(e.target.value)}
-            className="bg-gray-800/50 border border-white/10 rounded-lg px-3 py-1.5 text-white text-sm focus:border-green-500 focus:outline-none"
-          >
-            {leagues.map(league => (
-              <option key={league} value={league}>
-                {league === 'all' ? 'All Leagues' : league}
-              </option>
-            ))}
-          </select>
+          <div className="flex items-center gap-3">
+            <Button
+              onClick={() => fetchMatches(true)}
+              disabled={isRefreshing}
+              className="bg-gray-700 hover:bg-gray-600 text-white border-0 text-sm px-3 py-1.5"
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+            
+            <select 
+              value={selectedLeague}
+              onChange={(e) => setSelectedLeague(e.target.value)}
+              className="bg-gray-800/50 border border-white/10 rounded-lg px-3 py-1.5 text-white text-sm focus:border-green-500 focus:outline-none"
+            >
+              {leagues.map(league => (
+                <option key={league} value={league}>
+                  {league === 'all' ? 'All Leagues' : league}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
+        {/* Error State */}
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-6">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 text-red-400" />
+              <div className="flex-1">
+                <p className="text-red-400 font-medium">Error loading matches</p>
+                <p className="text-red-300 text-sm">{error}</p>
+              </div>
+              <Button
+                onClick={() => fetchMatches(true)}
+                className="bg-red-600 hover:bg-red-700 text-white border-0 text-sm px-3 py-1"
+              >
+                Retry
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Loading State */}
+        {isLoading && !isRefreshing && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[...Array(6)].map((_, i) => (
+              <LoadingCard key={i} showSkeleton={true} />
+            ))}
+          </div>
+        )}
+
         {/* Matches Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredMatches.map((match) => (
-            <MatchCard key={match.id} match={match} />
-          ))}
-        </div>
+        {!isLoading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredMatches.map((match) => (
+              <MatchCard key={match.id} match={match} />
+            ))}
+          </div>
+        )}
 
         {/* Free vs Premium Info */}
         <div className="mt-8 p-4 rounded-lg bg-gray-800/50 border border-white/10">
@@ -202,10 +264,18 @@ export default function HomePage() {
           </div>
         </div>
 
-        {filteredMatches.length === 0 && (
+        {!isLoading && filteredMatches.length === 0 && !error && (
           <div className="text-center py-12">
-            <div className="text-gray-400">
-              <p>No matches available for selected league.</p>
+            <div className="text-gray-400 space-y-2">
+              <p className="text-lg">No matches available</p>
+              <p className="text-sm">Try selecting a different league or check back later.</p>
+              <Button
+                onClick={() => fetchMatches(true)}
+                className="bg-gray-700 hover:bg-gray-600 text-white border-0 text-sm px-4 py-2 mt-3"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Refresh
+              </Button>
             </div>
           </div>
         )}
