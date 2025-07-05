@@ -4,9 +4,10 @@ import { useState, useEffect } from 'react';
 import { MatchCard } from '@/components/MatchCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { RefreshCw, Plus } from 'lucide-react';
+import { RefreshCw, Plus, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { authService } from '@/lib/auth';
+import { Loading, LoadingCard } from '@/components/ui/loading';
 
 interface Match {
   id: string;
@@ -24,6 +25,8 @@ export default function AdminPage() {
   const [selectedLeague, setSelectedLeague] = useState('all');
   const [showFilter, setShowFilter] = useState('all'); // all, published, unpublished
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const { user, isAdmin } = useAuth();
 
   useEffect(() => {
@@ -32,8 +35,14 @@ export default function AdminPage() {
     }
   }, [user, isAdmin]);
 
-  const fetchMatches = async () => {
-    setIsLoading(true);
+  const fetchMatches = async (isRefresh = false) => {
+    if (isRefresh) {
+      setIsRefreshing(true);
+    } else {
+      setIsLoading(true);
+    }
+    setError(null);
+    
     try {
       const token = await authService.getAuthToken();
       
@@ -55,9 +64,11 @@ export default function AdminPage() {
       setMatches(data);
     } catch (error) {
       console.error('Error fetching matches:', error);
+      setError('Failed to load matches. Please try again.');
       setMatches([]);
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);
     }
   };
 
@@ -189,11 +200,11 @@ export default function AdminPage() {
         
         <div className="flex gap-2">
           <Button
-            onClick={fetchMatches}
-            disabled={isLoading}
+            onClick={() => fetchMatches(true)}
+            disabled={isRefreshing}
             className="bg-gray-700 hover:bg-gray-600 text-white border-0 text-sm"
           >
-            <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
           
@@ -232,11 +243,31 @@ export default function AdminPage() {
         </select>
       </div>
 
+      {/* Error State */}
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-6">
+          <div className="flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 text-red-400" />
+            <div className="flex-1">
+              <p className="text-red-400 font-medium">Error loading matches</p>
+              <p className="text-red-300 text-sm">{error}</p>
+            </div>
+            <Button
+              onClick={() => fetchMatches(true)}
+              className="bg-red-600 hover:bg-red-700 text-white border-0 text-sm px-3 py-1"
+            >
+              Retry
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Loading State */}
-      {isLoading && (
-        <div className="text-center py-12">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
-          <p className="text-gray-400 mt-4">Loading matches...</p>
+      {isLoading && !isRefreshing && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[...Array(6)].map((_, i) => (
+            <LoadingCard key={i} showSkeleton={true} />
+          ))}
         </div>
       )}
 
@@ -260,10 +291,18 @@ export default function AdminPage() {
       )}
 
       {/* Empty State */}
-      {!isLoading && filteredMatches.length === 0 && (
+      {!isLoading && filteredMatches.length === 0 && !error && (
         <div className="text-center py-12">
-          <div className="text-gray-400">
-            <p>No matches found for the selected filters.</p>
+          <div className="text-gray-400 space-y-2">
+            <p className="text-lg">No matches found</p>
+            <p className="text-sm">Try adjusting your filters or add some matches.</p>
+            <Button
+              onClick={() => fetchMatches(true)}
+              className="bg-gray-700 hover:bg-gray-600 text-white border-0 text-sm px-4 py-2 mt-3"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Refresh
+            </Button>
           </div>
         </div>
       )}
