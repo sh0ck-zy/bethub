@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 
-export async function POST(request: Request) {
+export async function GET() {
   try {
     // This endpoint helps create the profiles table structure
     // In a real app, you'd run this SQL in your Supabase dashboard
