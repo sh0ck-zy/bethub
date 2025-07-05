@@ -23,19 +23,7 @@ export const authService = {
     
     if (error) throw error;
     
-    // Create user profile
-    if (data.user) {
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          id: data.user.id,
-          email: data.user.email,
-          role: 'user'
-        });
-      
-      if (profileError) console.error('Profile creation error:', profileError);
-    }
-    
+    // Profile will be created automatically by the database trigger
     return data;
   },
 
@@ -58,28 +46,54 @@ export const authService = {
 
   // Get current user profile
   async getCurrentUser(): Promise<UserProfile | null> {
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) return null;
-    
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single();
-    
-    if (error) {
-      console.error('Error fetching profile:', error);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) return null;
+      
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+      
+      if (error) {
+        console.error('Error fetching profile:', error);
+        return null;
+      }
+      
+      return profile;
+    } catch (error) {
+      console.error('Error getting current user:', error);
       return null;
     }
-    
-    return profile;
   },
 
   // Check if user is admin
   async isAdmin(): Promise<boolean> {
-    const profile = await this.getCurrentUser();
-    return profile?.role === 'admin';
+    try {
+      const profile = await this.getCurrentUser();
+      return profile?.role === 'admin';
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+      return false;
+    }
+  },
+
+  // Promote user to admin (for development/testing)
+  async promoteToAdmin(userId: string): Promise<void> {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ role: 'admin' })
+      .eq('id', userId);
+    
+    if (error) throw error;
+  },
+
+  // Get auth token for API calls
+  async getAuthToken(): Promise<string | null> {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.access_token || null;
   },
 
   // Listen to auth changes

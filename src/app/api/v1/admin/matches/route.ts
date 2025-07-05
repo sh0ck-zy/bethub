@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { authService } from '@/lib/auth';
 
-// Extended fallback data for admin with additional fields
+// Fallback data for development when Supabase is not configured
 const fallbackMatches = [
   {
     id: '1',
@@ -20,7 +21,7 @@ const fallbackMatches = [
     away_team: 'Barcelona',
     kickoff_utc: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(),
     status: 'LIVE',
-    is_published: true,
+    is_published: false,
     analysis_status: 'pending'
   },
   {
@@ -30,28 +31,8 @@ const fallbackMatches = [
     away_team: 'AC Milan',
     kickoff_utc: new Date(Date.now() + 6 * 60 * 60 * 1000).toISOString(),
     status: 'PRE',
-    is_published: false,
-    analysis_status: 'none'
-  },
-  {
-    id: '4',
-    league: 'Bundesliga',
-    home_team: 'Bayern Munich',
-    away_team: 'Borussia Dortmund',
-    kickoff_utc: new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString(),
-    status: 'PRE',
-    is_published: false,
-    analysis_status: 'failed'
-  },
-  {
-    id: '5',
-    league: 'Ligue 1',
-    home_team: 'PSG',
-    away_team: 'Monaco',
-    kickoff_utc: new Date(Date.now() + 10 * 60 * 60 * 1000).toISOString(),
-    status: 'PRE',
     is_published: true,
-    analysis_status: 'completed'
+    analysis_status: 'none'
   }
 ];
 
@@ -59,12 +40,29 @@ export async function GET(request: Request) {
   try {
     // Check admin authentication
     const authHeader = request.headers.get('authorization');
-    if (!authHeader) {
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Authorization required' }, { status: 401 });
     }
 
-    // TODO: Verify the auth token and check admin role
-    // For now, we'll rely on client-side auth checks
+    const token = authHeader.replace('Bearer ', '');
+    
+    // Verify the auth token and check admin role
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
+
+    // Check if user is admin
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    if (profileError || profile?.role !== 'admin') {
+      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
+    }
     
     // Check if Supabase is configured
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
@@ -90,6 +88,6 @@ export async function GET(request: Request) {
     return NextResponse.json(data || fallbackMatches);
   } catch (error) {
     console.error('API error:', error);
-    return NextResponse.json(fallbackMatches);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

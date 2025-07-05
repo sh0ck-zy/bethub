@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { MatchCard } from '@/components/MatchCard';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { RefreshCw, Plus } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { authService } from '@/lib/auth';
 
 interface Match {
   id: string;
@@ -22,35 +24,31 @@ export default function AdminPage() {
   const [selectedLeague, setSelectedLeague] = useState('all');
   const [showFilter, setShowFilter] = useState('all'); // all, published, unpublished
   const [isLoading, setIsLoading] = useState(true);
+  const { user, isAdmin } = useAuth();
 
   useEffect(() => {
-    fetchMatches();
-  }, []);
+    if (user && isAdmin) {
+      fetchMatches();
+    }
+  }, [user, isAdmin]);
 
   const fetchMatches = async () => {
     setIsLoading(true);
     try {
-      // Try admin API first with auth
+      const token = await authService.getAuthToken();
+      
+      if (!token) {
+        throw new Error('No auth token available');
+      }
+
       const response = await fetch('/api/v1/admin/matches', {
         headers: {
-          'Authorization': 'Bearer admin-token' // TODO: Use real auth token
+          'Authorization': `Bearer ${token}`
         }
       });
       
       if (!response.ok) {
-        // Fallback to public API with dummy admin data
-        const publicResponse = await fetch('/api/v1/today');
-        const publicData = await publicResponse.json();
-        
-        // Add admin-specific fields to public data
-        const adminData = publicData.map((match: Match) => ({
-          ...match,
-          is_published: Math.random() > 0.5, // Random for demo
-          analysis_status: ['none', 'pending', 'completed', 'failed'][Math.floor(Math.random() * 4)]
-        }));
-        
-        setMatches(adminData);
-        return;
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       const data = await response.json();
@@ -65,17 +63,25 @@ export default function AdminPage() {
 
   const handleSendToAI = async (matchId: string) => {
     try {
+      const token = await authService.getAuthToken();
+      
+      if (!token) {
+        throw new Error('No auth token available');
+      }
+
       // Update UI immediately
       setMatches(prev => prev.map(match => 
         match.id === matchId 
-          ? { ...match, analysis_status: 'pending' as const }
+          ? { ...match, analysis_status: 'pending' }
           : match
       ));
 
-      // TODO: Implement actual API call
       const response = await fetch('/api/v1/admin/send-to-ai', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ matchId })
       });
 
@@ -83,21 +89,12 @@ export default function AdminPage() {
         throw new Error('Failed to send to AI');
       }
 
-      // Simulate AI processing time
-      setTimeout(() => {
-        setMatches(prev => prev.map(match => 
-          match.id === matchId 
-            ? { ...match, analysis_status: 'completed' as const }
-            : match
-        ));
-      }, 3000);
-
     } catch (error) {
       console.error('Error sending to AI:', error);
       // Revert on error
       setMatches(prev => prev.map(match => 
         match.id === matchId 
-          ? { ...match, analysis_status: 'failed' as const }
+          ? { ...match, analysis_status: 'none' }
           : match
       ));
     }
@@ -105,6 +102,12 @@ export default function AdminPage() {
 
   const handleTogglePublish = async (matchId: string, shouldPublish: boolean) => {
     try {
+      const token = await authService.getAuthToken();
+      
+      if (!token) {
+        throw new Error('No auth token available');
+      }
+
       // Update UI immediately
       setMatches(prev => prev.map(match => 
         match.id === matchId 
@@ -112,10 +115,12 @@ export default function AdminPage() {
           : match
       ));
 
-      // TODO: Implement actual API call
       const response = await fetch('/api/v1/admin/toggle-publish', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ matchId, isPublished: shouldPublish })
       });
 
@@ -258,47 +263,10 @@ export default function AdminPage() {
       {!isLoading && filteredMatches.length === 0 && (
         <div className="text-center py-12">
           <div className="text-gray-400">
-            <p className="text-lg mb-2">No matches found</p>
-            <p className="text-sm">Try adjusting your filters or add some matches</p>
+            <p>No matches found for the selected filters.</p>
           </div>
         </div>
       )}
-
-      {/* Quick Actions */}
-      <div className="mt-8 p-4 rounded-lg bg-gray-800/50 border border-white/10">
-        <h3 className="text-lg font-semibold text-white mb-4">Quick Actions</h3>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            onClick={() => {
-              const unpublished = matches.filter(m => !m.is_published);
-              unpublished.forEach(match => handleTogglePublish(match.id, true));
-            }}
-            className="bg-green-600 hover:bg-green-700 text-white border-0 text-sm"
-          >
-            Publish All
-          </Button>
-          
-          <Button
-            onClick={() => {
-              const published = matches.filter(m => m.is_published);
-              published.forEach(match => handleTogglePublish(match.id, false));
-            }}
-            className="bg-red-600 hover:bg-red-700 text-white border-0 text-sm"
-          >
-            Hide All
-          </Button>
-          
-          <Button
-            onClick={() => {
-              const unanalyzed = matches.filter(m => m.analysis_status === 'none');
-              unanalyzed.forEach(match => handleSendToAI(match.id));
-            }}
-            className="bg-blue-600 hover:bg-blue-700 text-white border-0 text-sm"
-          >
-            Analyze All
-          </Button>
-        </div>
-      </div>
     </div>
   );
 }
