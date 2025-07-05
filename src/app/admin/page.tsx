@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { MatchCard } from '@/components/MatchCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { RefreshCw, Plus, AlertCircle } from 'lucide-react';
+import { RefreshCw, Plus, AlertCircle, Database, Cloud, Activity } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { authService } from '@/lib/auth';
 import { Loading, LoadingCard } from '@/components/ui/loading';
@@ -27,11 +27,14 @@ export default function AdminPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<any>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
   const { user, isAdmin } = useAuth();
 
   useEffect(() => {
     if (user && isAdmin) {
       fetchMatches();
+      fetchSyncStatus();
     }
   }, [user, isAdmin]);
 
@@ -69,6 +72,72 @@ export default function AdminPage() {
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
+    }
+  };
+
+  const fetchSyncStatus = async () => {
+    try {
+      const token = await authService.getAuthToken();
+      
+      if (!token) {
+        return;
+      }
+
+      const response = await fetch('/api/v1/admin/sync', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setSyncStatus(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching sync status:', error);
+    }
+  };
+
+  const handleSync = async (type: string, options: any = {}) => {
+    setIsSyncing(true);
+    try {
+      const token = await authService.getAuthToken();
+      
+      if (!token) {
+        throw new Error('No auth token available');
+      }
+
+      const response = await fetch('/api/v1/admin/sync', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          type,
+          ...options
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Sync failed');
+      }
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        // Refresh matches and sync status
+        await fetchMatches(true);
+        await fetchSyncStatus();
+        
+        // Show success message
+        alert(`Sync completed successfully!\nAdded: ${data.data.matchesAdded}\nUpdated: ${data.data.matchesUpdated}\nDeleted: ${data.data.matchesDeleted || 0}`);
+      }
+    } catch (error) {
+      console.error('Error during sync:', error);
+      alert('Sync failed. Please try again.');
+    } finally {
+      setIsSyncing(false);
     }
   };
 
@@ -186,6 +255,92 @@ export default function AdminPage() {
         <div className="bg-gray-800/50 border border-white/10 rounded-lg p-4">
           <div className="text-2xl font-bold text-blue-400">{stats.completed}</div>
           <div className="text-sm text-gray-400">Completed</div>
+        </div>
+      </div>
+
+      {/* Sync Panel */}
+      <div className="bg-gray-800/50 border border-white/10 rounded-lg p-6 mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <Database className="w-6 h-6 text-blue-400" />
+            <h3 className="text-lg font-semibold text-white">Data Synchronization</h3>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className={`w-3 h-3 rounded-full ${syncStatus?.health ? 'bg-green-500' : 'bg-red-500'}`}></div>
+            <span className="text-sm text-gray-400">
+              {syncStatus?.health ? 'API Connected' : 'API Disconnected'}
+            </span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div className="bg-gray-700/50 rounded-lg p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Cloud className="w-4 h-4 text-green-400" />
+              <span className="text-sm font-medium text-white">Last Sync</span>
+            </div>
+            <div className="text-xs text-gray-400">
+              {syncStatus?.lastSync ? new Date(syncStatus.lastSync).toLocaleString() : 'Never'}
+            </div>
+          </div>
+          
+          <div className="bg-gray-700/50 rounded-lg p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Activity className="w-4 h-4 text-yellow-400" />
+              <span className="text-sm font-medium text-white">Status</span>
+            </div>
+            <div className="text-xs text-gray-400">
+              {syncStatus?.isRunning ? 'Syncing...' : 'Idle'}
+            </div>
+          </div>
+          
+          <div className="bg-gray-700/50 rounded-lg p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Database className="w-4 h-4 text-blue-400" />
+              <span className="text-sm font-medium text-white">Provider</span>
+            </div>
+            <div className="text-xs text-gray-400">
+              {process.env.NEXT_PUBLIC_FOOTBALL_API_PROVIDER || 'API-Football'}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-3">
+          <Button
+            onClick={() => handleSync('today', { logProgress: true })}
+            disabled={isSyncing}
+            className="bg-green-600 hover:bg-green-700 text-white border-0 text-sm"
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
+            Sync Today's Matches
+          </Button>
+          
+          <Button
+            onClick={() => handleSync('today', { force: true, logProgress: true })}
+            disabled={isSyncing}
+            className="bg-blue-600 hover:bg-blue-700 text-white border-0 text-sm"
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
+            Force Sync
+          </Button>
+          
+          <Button
+            onClick={() => handleSync('cleanup')}
+            disabled={isSyncing}
+            className="bg-red-600 hover:bg-red-700 text-white border-0 text-sm"
+          >
+            <Database className="w-4 h-4 mr-2" />
+            Cleanup Old Matches
+          </Button>
+          
+          <Button
+            onClick={() => handleSync('health')}
+            disabled={isSyncing}
+            className="bg-gray-600 hover:bg-gray-700 text-white border-0 text-sm"
+          >
+            <Activity className="w-4 h-4 mr-2" />
+            Health Check
+          </Button>
         </div>
       </div>
 

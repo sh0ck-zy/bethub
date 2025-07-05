@@ -96,6 +96,33 @@ export const authService = {
     return session?.access_token || null;
   },
 
+  // Verify JWT token and get user profile
+  async verifyToken(token: string): Promise<UserProfile | null> {
+    try {
+      const { data: { user }, error } = await supabase.auth.getUser(token);
+      
+      if (error || !user) {
+        return null;
+      }
+      
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+      
+      if (profileError) {
+        console.error('Error fetching profile:', profileError);
+        return null;
+      }
+      
+      return profile;
+    } catch (error) {
+      console.error('Error verifying token:', error);
+      return null;
+    }
+  },
+
   // Listen to auth changes
   onAuthStateChange(callback: (user: UserProfile | null) => void) {
     return supabase.auth.onAuthStateChange(async (event, session) => {
