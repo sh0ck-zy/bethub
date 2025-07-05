@@ -42,7 +42,10 @@ export async function GET(request: Request) {
       return NextResponse.json(fallbackMatches);
     }
 
-    let query = supabase.from('matches').select('*');
+    let query = supabase
+      .from('matches')
+      .select('*')
+      .eq('is_published', true); // Only show published matches on public homepage
 
     if (sport) {
       query = query.eq('sport', sport);

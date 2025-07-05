@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react';
 import { MatchCard } from '@/components/MatchCard';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { LogIn, TrendingUp, Filter, Mail, Github } from 'lucide-react';
-import Link from 'next/link';
+import { Crown, User, LogOut } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { AuthModal } from '@/components/AuthModal';
 
 interface Match {
   id: string;
@@ -19,8 +19,9 @@ interface Match {
 
 export default function HomePage() {
   const [matches, setMatches] = useState<Match[]>([]);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [selectedLeague, setSelectedLeague] = useState('all');
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const { user, isAdmin, signOut } = useAuth();
 
   useEffect(() => {
     fetchMatches();
@@ -77,189 +78,151 @@ export default function HomePage() {
     ? matches 
     : matches.filter(match => match.league === selectedLeague);
 
-  const liveMatches = matches.filter(match => match.status === 'LIVE').length;
-  const upcomingMatches = matches.filter(match => match.status === 'PRE').length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
-      {/* Enhanced Header */}
-      <header className="border-b border-white/10 bg-gray-900/80 backdrop-blur-xl sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
+      {/* Header */}
+      <header className="border-b border-white/10 bg-gray-900/90 backdrop-blur-xl sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-3">
           <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-4">
-              <div className="relative">
-                <img 
-                  src="/bethub-logo.png" 
-                  alt="BetHub Logo" 
-                  className="w-10 h-10"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                    const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                    if (fallback) fallback.style.display = 'flex';
-                  }}
-                />
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-400 via-green-500 to-blue-500 items-center justify-center shadow-lg shadow-green-500/25 hidden">
-                  <span className="text-white font-bold text-lg">B</span>
-                </div>
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center">
+                <span className="text-white font-bold text-sm">B</span>
               </div>
-              <div>
-                <h1 className="text-2xl font-bold gradient-text">
-                  BetHub
-                </h1>
-              </div>
+              <h1 className="text-xl font-bold text-white">BetHub</h1>
             </div>
             
-            <div className="flex items-center space-x-4">
-              {!isAuthenticated && (
-                <Button 
-                  onClick={() => alert('Premium membership coming soon!')}
-                  className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white shadow-lg shadow-green-500/25 border-0 font-semibold"
+            <div className="flex items-center space-x-2">
+              {user ? (
+                <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 text-gray-300">
+                    <User className="w-4 h-4" />
+                    <span className="text-sm">{user.email}</span>
+                    {isAdmin && (
+                      <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30 text-xs">
+                        Admin
+                      </Badge>
+                    )}
+                  </div>
+                  
+                  {isAdmin && (
+                    <Button
+                      onClick={() => window.location.href = '/admin'}
+                      className="bg-purple-600 hover:bg-purple-700 text-white border-0 font-medium text-sm px-3 py-1"
+                    >
+                      Admin Panel
+                    </Button>
+                  )}
+                  
+                  <Button
+                    onClick={() => signOut()}
+                    className="bg-gray-600 hover:bg-gray-700 text-white border-0 font-medium text-sm px-3 py-1"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  onClick={() => setShowAuthModal(true)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white border-0 font-medium text-sm px-4 py-2"
                 >
-                  <LogIn className="mr-2 h-4 w-4" />
-                  Join Premium
+                  <User className="mr-1 h-3 w-3" />
+                  Login
                 </Button>
               )}
+              
+              <Button 
+                onClick={() => alert('Premium coming soon!')}
+                className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white border-0 font-medium text-sm px-4 py-2"
+              >
+                <Crown className="mr-1 h-3 w-3" />
+                Premium
+              </Button>
             </div>
           </div>
         </div>
       </header>
 
       {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-green-500/10 via-transparent to-blue-500/10"></div>
-        <div className="container mx-auto px-4 py-6 relative">
-          <div className="text-center space-y-3 max-w-3xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-white leading-tight">
-              <span className="gradient-text">FREE</span> Professional Sports Analysis
-              <span className="block gradient-text">Powered by AI</span>
-            </h2>
-            <p className="text-lg text-gray-300 max-w-2xl mx-auto">
-              Get advanced stats, deep insights, and AI-powered pre-match analysis for today's biggest games <span className="text-green-400 font-medium">100% free</span>.
-            </p>
-          </div>
+      <div className="container mx-auto px-4 py-6">
+        <div className="text-center space-y-2">
+          <h2 className="text-2xl font-bold text-white">
+            AI-Powered Match Analysis
+          </h2>
+          <p className="text-sm text-gray-400">
+            Deep insights for today's biggest games
+          </p>
         </div>
       </div>
 
-      {/* Filters Section */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0 mb-8">
+      {/* Matches Section */}
+      <div className="container mx-auto px-4 pb-8">
+        <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-3">
-            <div className="w-1 h-8 bg-gradient-to-b from-green-400 to-blue-500 rounded-full"></div>
-            <h2 className="text-2xl font-bold text-white">Featured Matches</h2>
-            <Badge className="bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
-              {filteredMatches.length} Available
+            <h3 className="text-lg font-semibold text-white">Today's Matches</h3>
+            <Badge className="bg-green-500/20 text-green-400 border border-green-500/30 text-xs">
+              {filteredMatches.length}
             </Badge>
           </div>
           
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <Filter className="w-4 h-4 text-gray-400" />
-              <select 
-                value={selectedLeague}
-                onChange={(e) => setSelectedLeague(e.target.value)}
-                className="bg-gray-800 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:border-green-500 focus:outline-none"
-              >
-                {leagues.map(league => (
-                  <option key={league} value={league}>
-                    {league === 'all' ? 'All Leagues' : league}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+          <select 
+            value={selectedLeague}
+            onChange={(e) => setSelectedLeague(e.target.value)}
+            className="bg-gray-800/50 border border-white/10 rounded-lg px-3 py-1.5 text-white text-sm focus:border-green-500 focus:outline-none"
+          >
+            {leagues.map(league => (
+              <option key={league} value={league}>
+                {league === 'all' ? 'All Leagues' : league}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Matches Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredMatches.map((match) => (
             <MatchCard key={match.id} match={match} />
           ))}
         </div>
 
+        {/* Free vs Premium Info */}
+        <div className="mt-8 p-4 rounded-lg bg-gray-800/50 border border-white/10">
+          <div className="text-center space-y-2">
+            <p className="text-sm text-gray-400">
+              <span className="text-green-400 font-medium">Free:</span> 1 analysis per day 
+              <span className="text-gray-500 mx-2">•</span>
+              <span className="text-blue-400 font-medium">Premium:</span> Unlimited access + advanced insights
+            </p>
+            <Button 
+              onClick={() => alert('Premium coming soon!')}
+              className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white border-0 font-medium text-sm px-6 py-2"
+            >
+              Upgrade to Premium • €9.99/month
+            </Button>
+          </div>
+        </div>
+
         {filteredMatches.length === 0 && (
-          <div className="text-center py-16">
-            <Card className="premium-card max-w-md mx-auto">
-              <CardContent className="p-8 text-center space-y-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-blue-500 rounded-full mx-auto flex items-center justify-center animate-pulse">
-                  <TrendingUp className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-white">Loading Premium Analysis</h3>
-                <p className="text-gray-400">
-                  Our AI is preparing the latest match insights and predictions...
-                </p>
-                <div className="flex justify-center space-x-1">
-                  <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                  <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-                </div>
-              </CardContent>
-            </Card>
+          <div className="text-center py-12">
+            <div className="text-gray-400">
+              <p>No matches available for selected league.</p>
+            </div>
           </div>
         )}
       </div>
 
-      {/* Enhanced Footer */}
-      <footer className="border-t border-white/10 bg-gray-900/80 backdrop-blur-xl mt-16">
+      {/* Auth Modal */}
+      <AuthModal 
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+      />
+
+      {/* Footer */}
+      <footer className="border-t border-white/10 bg-gray-900/50 backdrop-blur-xl mt-12">
         <div className="container mx-auto px-4 py-6">
-          <div className="flex flex-col md:flex-row justify-between items-start">
-            <div className="space-y-3">
-              <div className="flex items-center space-x-3">
-                <img 
-                  src="/bethub-logo.png" 
-                  alt="BetHub Logo" 
-                  className="w-8 h-8"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                    const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                    if (fallback) fallback.style.display = 'flex';
-                  }}
-                />
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-400 to-blue-500 items-center justify-center hidden">
-                  <span className="text-white font-bold text-sm">B</span>
-                </div>
-                <span className="font-bold text-white text-xl">BetHub</span>
-              </div>
-              <p className="text-gray-400 text-sm leading-relaxed max-w-sm">
-                Professional sports analysis and AI-powered insights for smart betting decisions.
-              </p>
-              <div className="flex items-center space-x-3">
-                <div className="flex space-x-2">
-                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                  <span className="text-xs text-green-400 font-medium">Live Platform</span>
-                </div>
-                <div className="w-px h-4 bg-white/20"></div>
-                <Badge className="bg-blue-500/20 text-blue-400 text-xs border border-blue-500/30">
-                  AI-Powered
-                </Badge>
-              </div>
-            </div>
-            
-            <div className="mt-6 md:mt-0 space-y-2">
-              <h3 className="font-semibold text-white text-sm">Contact</h3>
-              <div className="space-y-2 text-sm">
-                <a 
-                  href="mailto:sh0ck.zy.25@gmail.com" 
-                  className="text-gray-400 hover:text-green-400 transition-colors flex items-center gap-2"
-                >
-                  <Mail className="w-4 h-4" />
-                  sh0ck.zy.25@gmail.com
-                </a>
-                <a 
-                  href="https://github.com/sh0ck-zy/bethub" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="text-gray-400 hover:text-green-400 transition-colors flex items-center gap-2"
-                >
-                  <Github className="w-4 h-4" />
-                  GitHub Repository
-                </a>
-              </div>
-            </div>
-          </div>
-          
-          <div className="border-t border-white/10 mt-6 pt-6 text-center md:text-left">
-            <p className="text-gray-400 text-xs">
-              © 2025 BetHub. All rights reserved.
+          <div className="text-center">
+            <p className="text-xs text-gray-500">
+              © 2025 BetHub. AI-powered sports analysis.
             </p>
           </div>
         </div>
