@@ -2,12 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import { MatchCard } from '@/components/MatchCard';
+import LiveMatchCard from '@/components/LiveMatchCard';
+import NotificationCenter from '@/components/NotificationCenter';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Crown, User, LogOut, RefreshCw, AlertCircle } from 'lucide-react';
+import { Crown, User, LogOut, RefreshCw, AlertCircle, Wifi, WifiOff } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { AuthModal } from '@/components/AuthModal';
 import { Loading, LoadingCard } from '@/components/ui/loading';
+import { realtimeService } from '@/lib/realtime';
 
 interface Match {
   id: string;
@@ -16,6 +19,14 @@ interface Match {
   away_team: string;
   kickoff_utc: string;
   status: string;
+  home_score?: number;
+  away_score?: number;
+  current_minute?: number;
+  odds?: {
+    home: number;
+    draw: number;
+    away: number;
+  };
 }
 
 export default function HomePage() {
@@ -25,10 +36,21 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isRealtimeConnected, setIsRealtimeConnected] = useState(false);
   const { user, isAdmin, signOut } = useAuth();
 
   useEffect(() => {
     fetchMatches();
+    
+    // Check realtime connection status
+    const checkConnection = () => {
+      setIsRealtimeConnected(realtimeService.getConnectionStatus());
+    };
+    
+    checkConnection();
+    const interval = setInterval(checkConnection, 5000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   const fetchMatches = async (isRefresh = false) => {
@@ -108,6 +130,19 @@ export default function HomePage() {
             </div>
             
             <div className="flex items-center space-x-2">
+              {/* Realtime Status */}
+              <div className="flex items-center gap-1 text-xs">
+                {isRealtimeConnected ? (
+                  <Wifi className="h-3 w-3 text-green-400" />
+                ) : (
+                  <WifiOff className="h-3 w-3 text-red-400" />
+                )}
+                <span className="text-gray-400">Live</span>
+              </div>
+              
+              {/* Notification Center */}
+              <NotificationCenter />
+              
               {user ? (
                 <div className="flex items-center space-x-2">
                   <div className="flex items-center space-x-2 text-gray-300">
@@ -242,7 +277,23 @@ export default function HomePage() {
         {!isLoading && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredMatches.map((match) => (
-              <MatchCard key={match.id} match={match} />
+              match.status === 'LIVE' ? (
+                <LiveMatchCard
+                  key={match.id}
+                  matchId={match.id}
+                  homeTeam={match.home_team}
+                  awayTeam={match.away_team}
+                  homeScore={match.home_score || 0}
+                  awayScore={match.away_score || 0}
+                  currentMinute={match.current_minute || 0}
+                  status={match.status}
+                  league={match.league}
+                  date={match.kickoff_utc}
+                  odds={match.odds}
+                />
+              ) : (
+                <MatchCard key={match.id} match={match} />
+              )
             ))}
           </div>
         )}
