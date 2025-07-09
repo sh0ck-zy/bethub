@@ -21,10 +21,10 @@ CREATE TABLE IF NOT EXISTS match_updates (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Add current_minute column to matches table for live matches
+-- Add missing columns to matches table for live functionality
+ALTER TABLE matches ADD COLUMN IF NOT EXISTS home_score INTEGER DEFAULT 0;
+ALTER TABLE matches ADD COLUMN IF NOT EXISTS away_score INTEGER DEFAULT 0;
 ALTER TABLE matches ADD COLUMN IF NOT EXISTS current_minute INTEGER;
-
--- Add live_stats column to matches table for real-time statistics
 ALTER TABLE matches ADD COLUMN IF NOT EXISTS live_stats JSONB;
 
 -- Create indexes for better performance
@@ -35,6 +35,7 @@ CREATE INDEX IF NOT EXISTS idx_match_updates_match_id ON match_updates(match_id)
 CREATE INDEX IF NOT EXISTS idx_match_updates_timestamp ON match_updates(timestamp);
 CREATE INDEX IF NOT EXISTS idx_matches_status ON matches(status);
 CREATE INDEX IF NOT EXISTS idx_matches_current_minute ON matches(current_minute);
+CREATE INDEX IF NOT EXISTS idx_matches_kickoff_utc ON matches(kickoff_utc);
 
 -- Add RLS policies
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
@@ -57,25 +58,30 @@ CREATE POLICY "Users can view match updates" ON match_updates
 CREATE POLICY "Service role can manage match updates" ON match_updates
   FOR ALL USING (auth.role() = 'service_role');
 
--- Add triggers to update updated_at
-CREATE TRIGGER update_notifications_updated_at
-  BEFORE UPDATE ON notifications
-  FOR EACH ROW
-  EXECUTE FUNCTION update_updated_at_column();
+-- Add triggers to update updated_at (only if function exists)
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'update_updated_at_column') THEN
+        CREATE TRIGGER update_notifications_updated_at
+          BEFORE UPDATE ON notifications
+          FOR EACH ROW
+          EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TRIGGER update_match_updates_updated_at
-  BEFORE UPDATE ON match_updates
-  FOR EACH ROW
-  EXECUTE FUNCTION update_updated_at_column();
+        CREATE TRIGGER update_match_updates_updated_at
+          BEFORE UPDATE ON match_updates
+          FOR EACH ROW
+          EXECUTE FUNCTION update_updated_at_column();
+    END IF;
+END $$;
 
 -- Create function to handle match status updates
 CREATE OR REPLACE FUNCTION update_match_status()
 RETURNS TRIGGER AS $$
 BEGIN
   -- Update status based on current time and match time
-  IF NEW.date <= NOW() AND NEW.date + INTERVAL '2 hours' >= NOW() THEN
+  IF NEW.kickoff_utc <= NOW() AND NEW.kickoff_utc + INTERVAL '2 hours' >= NOW() THEN
     NEW.status = 'LIVE';
-  ELSIF NEW.date + INTERVAL '2 hours' < NOW() THEN
+  ELSIF NEW.kickoff_utc + INTERVAL '2 hours' < NOW() THEN
     NEW.status = 'FT';
   ELSE
     NEW.status = 'PRE';
@@ -86,6 +92,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Create trigger for automatic status updates
+DROP TRIGGER IF EXISTS trigger_update_match_status ON matches;
 CREATE TRIGGER trigger_update_match_status
   BEFORE INSERT OR UPDATE ON matches
   FOR EACH ROW
@@ -98,9 +105,12 @@ BEGIN
   -- Insert into match_updates table
   INSERT INTO match_updates (match_id, type, data)
   VALUES (NEW.id, 'score_update', jsonb_build_object(
-    'home_score', NEW.home_score,
-    'away_score', NEW.away_score,
-    'minute', NEW.current_minute
+    'home_team', NEW.home_team,
+    'away_team', NEW.away_team,
+    'home_score', COALESCE(NEW.home_score, 0),
+    'away_score', COALESCE(NEW.away_score, 0),
+    'minute', NEW.current_minute,
+    'status', NEW.status
   ));
   
   RETURN NEW;
@@ -108,6 +118,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Create trigger for match updates
+DROP TRIGGER IF EXISTS trigger_match_update_notification ON matches;
 CREATE TRIGGER trigger_match_update_notification
   AFTER UPDATE ON matches
   FOR EACH ROW
@@ -118,28 +129,30 @@ CREATE TRIGGER trigger_match_update_notification
 CREATE OR REPLACE FUNCTION get_live_matches()
 RETURNS TABLE (
   id UUID,
-  home_team_id UUID,
-  away_team_id UUID,
+  league TEXT,
+  home_team TEXT,
+  away_team TEXT,
   home_score INTEGER,
   away_score INTEGER,
   current_minute INTEGER,
-  status VARCHAR(10),
-  date TIMESTAMP WITH TIME ZONE
+  status TEXT,
+  kickoff_utc TIMESTAMP WITH TIME ZONE
 ) AS $$
 BEGIN
   RETURN QUERY
   SELECT 
     m.id,
-    m.home_team_id,
-    m.away_team_id,
+    m.league,
+    m.home_team,
+    m.away_team,
     m.home_score,
     m.away_score,
     m.current_minute,
     m.status,
-    m.date
+    m.kickoff_utc
   FROM matches m
   WHERE m.status = 'LIVE'
-  ORDER BY m.date DESC;
+  ORDER BY m.kickoff_utc DESC;
 END;
 $$ LANGUAGE plpgsql;
 

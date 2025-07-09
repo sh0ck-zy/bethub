@@ -8,7 +8,7 @@ export function middleware(request: NextRequest) {
   
   if (!regionCookie) {
     // Get client IP
-    const ip = request.ip || 
+    const ip = request.headers.get('x-forwarded-for') || 
                request.headers.get('x-forwarded-for')?.split(',')[0] || 
                request.headers.get('x-real-ip') || 
                '127.0.0.1';

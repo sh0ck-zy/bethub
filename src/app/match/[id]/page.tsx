@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { AnalysisTabs } from '@/components/AnalysisTabs';
-import { AuthModal } from '@/components/AuthModal';
+import { AnalysisTabs } from '@/components/features/AnalysisTabs';
+import { AuthModal } from '@/components/features/AuthModal';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';

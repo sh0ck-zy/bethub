@@ -1,10 +1,16 @@
 # Dependencies
 node_modules/
-.pnpm-store/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-debug.log*
 
 # Next.js
 .next/
 out/
+build/
+dist/
 
 # Environment variables
 .env
@@ -25,19 +31,20 @@ next-env.d.ts
 .idea/
 *.swp
 *.swo
+*~
 
 # OS
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
 # Logs
 logs
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
 
 # Runtime data
 pids
@@ -58,15 +65,6 @@ jspm_packages/
 # Optional npm cache directory
 .npm
 
-# Optional eslint cache
-.eslintcache
-
-# Microbundle cache
-.rpt2_cache/
-.rts2_cache_cjs/
-.rts2_cache_es/
-.rts2_cache_umd/
-
 # Optional REPL history
 .node_repl_history
 
@@ -80,13 +78,196 @@ jspm_packages/
 .cache
 .parcel-cache
 
-# Stores VSCode versions used for testing VSCode extensions
-.vscode-test
+# PROPRIETARY BUSINESS LOGIC (NEVER COMMIT)
+# ============================================
 
-# yarn v2
-.yarn/cache
-.yarn/unplugged
-.yarn/build-state.yml
-.yarn/install-state.gz
-.pnp.*
+# AI Analysis Engine (Proprietary)
+src/lib/ai/
+src/app/api/v1/ai/
+src/app/api/v1/analysis/
+src/components/ai/
+bethub-core/
+
+# Payment & Subscription Logic (Proprietary)
+src/lib/payments/
+src/lib/subscriptions/
+src/app/api/v1/payments/
+src/app/api/v1/subscriptions/
+src/app/api/v1/billing/
+src/components/payments/
+
+# Business Logic & Analytics (Proprietary)
+src/lib/analytics/
+src/lib/business/
+src/lib/fraud/
+src/app/api/v1/analytics/
+src/app/api/v1/admin/
+src/components/admin/
+
+# Data Processing & APIs (Proprietary)
+src/lib/data/
+src/lib/integrations/
+src/app/api/v1/ingest/
+src/app/api/v1/sync/
+src/lib/api/
+
+# Real-time & WebSocket Logic (Proprietary)
+src/lib/realtime/
+src/lib/websocket/
+src/app/api/v1/realtime/
+src/components/realtime/
+
+# Database Migrations (Business Logic)
+supabase/migrations/0003_*.sql
+supabase/migrations/0004_*.sql
+supabase/migrations/0005_*.sql
+supabase/migrations/*business*.sql
+supabase/migrations/*payment*.sql
+supabase/migrations/*analytics*.sql
+
+# Configuration Files (Proprietary)
+config/ai-config.json
+config/business-rules.json
+config/feature-flags.json
+config/pricing.json
+config/providers.json
+
+# API Keys & Secrets
+.env.ai
+.env.payments
+.env.analytics
+keys/
+secrets/
+*.key
+*.pem
+*.p12
+
+# Proprietary Documentation
+docs/BUSINESS_LOGIC.md
+docs/AI_PROMPTS.md
+docs/PAYMENT_FLOWS.md
+docs/ANALYTICS.md
+docs/PROPRIETARY_*.md
+
+# Test Files (Proprietary)
+scripts/test-ai-*.js
+scripts/test-payment-*.js
+scripts/test-business-*.js
+scripts/seed-business-*.js
+
+# Build Artifacts (Proprietary)
+build-proprietary/
+dist-proprietary/
+.proprietary/
+
+# Temporary Files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Database Files
+*.db
+*.sqlite
+*.sqlite3
+
+# Backup Files
+*.backup
+*.bak
+*.old
+
+# Archive Files
+*.zip
+*.tar.gz
+*.rar
+
+# Local Development
+.local/
+local/
+dev-only/
+
+# Performance & Monitoring
+.lighthouse/
+performance-reports/
+monitoring-data/
+
+# User Data & PII (Never commit)
+user-data/
+pii/
+customer-data/
+*.csv
+*.xlsx
+*.json.bak
+
+# AI Model Files
+*.model
+*.weights
+*.checkpoint
+models/
+training-data/
+
+# Third-party Integrations
+integrations/stripe/
+integrations/openai/
+integrations/anthropic/
+integrations/football-apis/
+
+# Custom Scripts (Proprietary)
+scripts/deploy-production.js
+scripts/migrate-users.js
+scripts/analyze-performance.js
+scripts/generate-reports.js
+
+# Docker (if used for proprietary services)
+docker-compose.override.yml
+docker-compose.production.yml
+Dockerfile.proprietary
+
+# Kubernetes (if used)
+k8s/secrets/
+k8s/production/
+*.secret.yaml
+
+# Terraform (if used)
+*.tfstate
+*.tfstate.*
+*.tfvars
+.terraform/
+
+# AWS/GCP/Azure (if used)
+.aws/
+.gcp/
+.azure/
+
+# Monitoring & Observability
+.sentry/
+datadog/
+newrelic/
+
+# Legal & Compliance
+legal/
+compliance/
+gdpr/
+ccpa/
+
+# Financial Data
+financial/
+revenue/
+pricing-strategy/
+cost-analysis/
+
+# Marketing & Sales
+marketing-campaigns/
+sales-data/
+conversion-tracking/
+
+# Internal Tools
+internal-tools/
+admin-scripts/
+maintenance/
+
+# Backup Strategies
+backups/
+snapshots/
+disaster-recovery/
 
