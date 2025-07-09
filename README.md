@@ -1,438 +1,294 @@
-# BetHub - AI Football Analysis Platform
+# BetHub - AI-Powered Football Analysis Platform
 
-## 🎯 **Value Proposition**
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-14.0-black.svg)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-18.0-blue.svg)](https://reactjs.org/)
 
-BetHub provides **professional-grade football match analysis** powered by AI, delivering three core values to users:
+BetHub is an open-source football analysis platform that combines real-time match data with AI-powered insights. This repository contains the open-source frontend and core infrastructure, while proprietary business logic is kept separate.
 
-### **What We Provide:**
+## 🏗️ Architecture Overview
 
-1. **🧠 AI Tactical Analysis**
-   - Team formation analysis and playing styles
-   - Strengths & weaknesses breakdown
-   - Key player impact assessments
-   - Head-to-head historical patterns
-   - Match dynamics predictions (non-betting focused)
+BetHub follows a **clean architecture** with clear separation between open-source and proprietary components:
 
-2. **📊 Historical Statistical Profiles**
-   - Team performance averages (last 10 games)
-   - Possession, shots, discipline metrics
-   - Goals scored/conceded patterns
-   - Recent form visualization with detailed match data
-   - Pass accuracy and attacking statistics
+### Open Source Components (This Repository)
+- 🎨 **UI Components** - Reusable React components with modern design
+- 🔧 **Core Infrastructure** - Provider system, type definitions, utilities
+- 📱 **Public API** - Health checks and public data endpoints
+- 🗄️ **Basic Database Schema** - Teams, leagues, matches, authentication
+- 📚 **Documentation** - Setup guides, API docs, contribution guidelines
 
-3. **💰 Betting Odds Information** *(Informational Only)*
-   - Real-time odds from licensed bookmakers
-   - Responsible gambling disclaimers
-   - Multiple betting houses comparison
-   - No betting encouragement - pure data transparency
+### Proprietary Components (Separate Repository)
+- 🤖 **AI Analysis Engine** - Advanced match analysis and predictions
+- 💳 **Payment Processing** - Subscription management and billing
+- 📊 **Advanced Analytics** - User behavior tracking and business metrics
+- 🔄 **Data Collection** - Real-time sports data integration
+- 🛡️ **Security & Fraud Detection** - Advanced security measures
 
-### **Target User Experience:**
-Users get a **sophisticated analysis laboratory** that helps them understand match dynamics through AI insights and historical data, without being pushed toward betting decisions.
-
----
-
-## 🏗️ **Data Architecture & AI Agent Framework**
-
-### **What We Need for Each Match:**
-
-#### **Minimal Required Input:**
-```json
-{
-  "match_id": "string",
-  "home_team": "string", 
-  "away_team": "string",
-  "league": "string",
-  "kickoff_utc": "ISO 8601 datetime",
-  "status": "PRE | LIVE | FT | POSTPONED | CANCELLED"
-}
-```
-
-#### **Assets We Manage:**
-- **Team Logos**: Static SVG files in `/public/logos/` (manually curated)
-- **UI Components**: All frontend rendering handled internally
-- **Fallback Data**: Default/skeleton content for failed AI responses
-
-### **AI Agent Responsibilities:**
-
-Our AI agent is responsible for **fetching and generating ALL analytical content**:
-
-#### **✅ Agent Fetches:**
-- Team tactical analysis (formations, styles, strengths/weaknesses)
-- Historical statistics from sports databases
-- Recent match results and form data
-- Key player information and injury status
-- Head-to-head historical data
-- Betting odds from bookmaker APIs
-- Match prediction summaries
-
-#### **✅ Agent Generates:**
-- Tactical insights and playing style descriptions
-- Statistical pattern analysis
-- Key factor identification for match dynamics
-- Confidence scores for all generated content
-
-#### **❌ We Don't Provide to Agent:**
-- Team logos (handled locally)
-- UI rendering logic
-- User authentication data
-- Betting recommendations
-
----
-
-## 🔄 **API Integration Flow**
-
-### **1. Match Request**
-```
-GET /api/v1/match/{match_id}
-```
-
-### **2. AI Agent Processing**
-- Agent receives minimal match info
-- Fetches tactical & statistical data from sports APIs
-- Generates AI analysis using LLM
-- Validates and structures response
-
-### **3. Response Format**
-Returns structured JSON following our [TypeScript schema](src/types/match-analysis.ts):
-
-```json
-{
-  "success": true,
-  "version": "1.0",
-  "generated_at": "2024-06-17T16:00:00Z",
-  "match_id": "match_123",
-  "data": {
-    "match_info": {...},
-    "tactical_analysis": {...},
-    "team_statistics": {...},
-    "head_to_head": {...},
-    "betting_odds": {...},
-    "confidence_score": 0.87,
-    "data_completeness": 0.93
-  }
-}
-```
-
-### **4. Error Handling**
-- **Graceful Degradation**: Show available data, hide failed sections
-- **Fallback Content**: Default messages for missing AI analysis  
-- **User Communication**: Clear error states with retry options
-
----
-
-## 🛡️ **Quality Assurance**
-
-### **Data Validation:**
-- Confidence scores for all AI-generated content
-- Data completeness metrics
-- Automatic fallbacks for low-confidence data
-
-### **User Experience:**
-- Loading states for all AI-generated sections
-- Clear distinction between AI analysis and factual data
-- Professional error handling without technical jargon
-
-### **Responsible Features:**
-- No direct betting encouragement
-- Transparent AI confidence indicators
-- Educational focus on tactical understanding
-
----
-
-## 🚀 **MVP Scope (v1.0)**
-
-**What's Included:**
-- ✅ Basic match layout with team confrontation
-- ✅ Three analysis tabs (AI Analysis, Statistics, Betting Odds)  
-- ✅ Mobile-optimized responsive design
-- ✅ Error handling framework
-- ✅ AI agent integration schema
-
-**Next Versions:**
-- 🔄 Real AI agent integration
-- 🔄 Live match updates
-- 🔄 User authentication & premium features
-- 🔄 Multi-language support based on user location
-
----
-
-## 📁 **Project Structure**
-
-```
-src/
-├── types/match-analysis.ts          # AI Agent response schema
-├── components/AnalysisTabs.tsx      # Main analysis interface
-├── app/match/[id]/page.tsx          # Match page layout
-├── lib/teams.ts                     # Team data utilities
-└── public/logos/                    # Team logo assets (manual)
-```
-
-This architecture ensures **clear separation of concerns**: we handle the user experience and visual presentation, while the AI agent focuses purely on data fetching and analysis generation.
-
-# SPORTSBET INSIGHT v1.0
-
-A worldwide sports-betting insights platform built with Next.js 14, TypeScript, Tailwind CSS, and Supabase. This platform provides a foundation for displaying AI-generated sports analysis and insights with a professional sportsbook aesthetic.
-
-## 🚀 Features
-
-- **Global Localization**: Auto-detects browser language and stores region preferences
-- **Dark Sportsbook Theme**: Professional dark theme with neon accents
-- **Authentication**: Email magic-link and social login support via Supabase Auth
-- **Real-time Updates**: Server-Sent Events (SSE) for live match analysis
-- **AI Insights**: Dedicated section for AI-generated match analysis (authentication required)
-- **Responsive Design**: Mobile-first design with Tailwind CSS
-- **Ad-Ready**: Placeholder ad slots with GDPR compliance preparation
-
-## 🏗️ Architecture
-
-### Tech Stack
-- **Frontend**: Next.js 14 (App Router) + TypeScript
-- **Styling**: Tailwind CSS + shadcn/ui components
-- **Icons**: Lucide React
-- **Internationalization**: i18next with browser language detection
-- **Database**: Supabase (PostgreSQL)
-- **Authentication**: Supabase Auth
-- **Real-time**: Supabase Realtime (SSE implementation)
-- **Deployment**: Vercel (frontend) + Supabase (backend)
-
-### Project Structure
-```
-sportsbet-insight/
-├── src/
-│   ├── app/                    # Next.js App Router pages
-│   │   ├── api/v1/            # API routes
-│   │   ├── match/[id]/        # Match detail pages
-│   │   └── globals.css        # Global styles with sportsbook theme
-│   ├── components/            # React components
-│   │   ├── ui/               # shadcn/ui components
-│   │   ├── AuthModal.tsx     # Authentication modal
-│   │   ├── MatchCard.tsx     # Match display component
-│   │   └── AnalysisTabs.tsx  # Match analysis tabs
-│   ├── lib/                  # Utility libraries
-│   │   ├── supabase.ts       # Supabase client
-│   │   ├── ads.ts            # Ad serving utilities
-│   │   └── cmp.ts            # GDPR consent management
-│   └── types/                # TypeScript type definitions
-├── schemas/                  # JSON schemas for data contracts
-├── supabase/                # Database migrations
-├── scripts/                 # Utility scripts
-└── public/locales/          # Translation files
-```
-
-## 🛠️ Setup & Installation
+## 🚀 Quick Start
 
 ### Prerequisites
 - Node.js 18+ and pnpm
-- Supabase account and project
+- Supabase account (for database)
 - Git
 
-### 1. Clone and Install
-```bash
-git clone <repository-url>
-cd sportsbet-insight
-pnpm install
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/bethub.git
+   cd bethub
+   ```
+
+2. **Install dependencies**
+   ```bash
+   pnpm install
+   ```
+
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env.local
+   ```
+   Edit `.env.local` with your configuration:
+   ```env
+   # Database
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   
+   # Feature Flags (for development)
+   AI_ANALYSIS_ENABLED=true
+   REALTIME_ENABLED=true
+   PAYMENTS_ENABLED=true
+   ANALYTICS_ENABLED=true
+   
+   # Development Limits
+   FREE_ANALYSES_LIMIT=10
+   MAX_REALTIME_CONNECTIONS=50
+   API_RATE_LIMIT=1000
+   ```
+
+4. **Set up the database**
+   ```bash
+   npx supabase start
+   npx supabase db push
+   ```
+
+5. **Start the development server**
+   ```bash
+   pnpm dev
+   ```
+
+Visit `http://localhost:3000` to see the application running with mock data.
+
+## 🏛️ Project Structure
+
+```
+bethub/
+├── src/
+│   ├── app/                    # Next.js App Router
+│   │   ├── api/v1/            # Public API endpoints
+│   │   ├── match/[id]/        # Match detail pages
+│   │   └── page.tsx           # Homepage
+│   │
+│   ├── components/            # React Components
+│   │   ├── ui/               # Base UI components (shadcn/ui)
+│   │   ├── features/         # Feature-specific components
+│   │   └── layout/           # Layout components
+│   │
+│   ├── lib/                  # Core Libraries
+│   │   ├── providers/        # Provider system (DI container)
+│   │   ├── types/           # TypeScript definitions
+│   │   └── utils.ts         # Utility functions
+│   │
+│   └── hooks/               # Custom React hooks
+│       └── useProviders.ts  # Provider access hooks
+│
+├── supabase/
+│   └── migrations/          # Database migrations (public schema)
+│
+├── docs/                    # Documentation
+├── scripts/                 # Build and utility scripts
+└── public/                  # Static assets
 ```
 
-### 2. Environment Configuration
-Copy the example environment file and configure your variables:
-```bash
-cp .env.local.example .env.local
-```
+## 🔧 Provider System
 
-Edit `.env.local` with your Supabase credentials:
-```env
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-INTERNAL_API_KEY=your_secret_api_key_for_agent_ingestion
-```
+BetHub uses a **Provider Registry** pattern to manage dependencies and enable clean separation between open-source and proprietary code.
 
-### 3. Database Setup
-Run the database migrations in your Supabase project:
-```sql
--- Copy and execute the contents of supabase/migrations/0001_initial_schema.sql
--- in your Supabase SQL editor
-```
+### Using Providers in Components
 
-### 4. Seed Development Data
-Populate your database with sample data:
-```sql
--- Copy and execute the contents of scripts/seed.sql
--- in your Supabase SQL editor
-```
+```typescript
+import { useAIProvider, useDataProvider } from '@/hooks/useProviders';
 
-### 5. Generate TypeScript Types
-```bash
-pnpm run generate:schema
-```
-
-## 🚀 Development
-
-### Start Development Server
-```bash
-pnpm dev
-```
-
-The application will be available at `http://localhost:3000`.
-
-### Available Scripts
-- `pnpm dev` - Start development server
-- `pnpm build` - Build for production
-- `pnpm start` - Start production server
-- `pnpm lint` - Run ESLint
-- `pnpm generate:schema` - Generate TypeScript types from JSON schemas
-
-## 📡 API Endpoints
-
-### Public Endpoints
-- `GET /api/v1/today` - Get today's matches with optional filters
-  - Query params: `sport`, `league`, `status`, `sb_region`
-- `GET /api/v1/match/[id]` - Get match details and latest analysis
-
-### Protected Endpoints
-- `GET /api/v1/match/[id]/stream` - SSE stream for real-time analysis updates
-- `POST /api/v1/ingest/analysis` - Ingest analysis data from AI agent
-  - Requires `x-api-key` header
-
-### Data Contract
-AI agents should send analysis data matching the schema in `schemas/matchAnalysis.v1.json`:
-```json
-{
-  "matchId": "uuid",
-  "snapshotTs": "2025-06-17T14:30:00Z",
-  "status": "PRE|LIVE|HT|FT",
-  "aiInsights": [
-    {
-      "id": "string",
-      "content": "markdown content",
-      "confidence": 0.85
-    }
-  ],
-  "stats": {}
+function MatchAnalysis({ matchId }: { matchId: string }) {
+  const { analyzeMatch, isLoading, isEnabled } = useAIProvider();
+  const { getMatches } = useDataProvider();
+  
+  if (!isEnabled) {
+    return <div>AI Analysis not available</div>;
+  }
+  
+  // Use the providers...
 }
 ```
 
-## 🎨 UI Components
+### Available Providers
 
-### Key Components
-- **MatchCard**: Displays match information with live status indicators
-- **AnalysisTabs**: Tabbed interface for Live Feed, Stats, Odds, and AI Insights
-- **AuthModal**: Authentication modal with magic-link support
-- **InsightBlock**: Displays AI insights with confidence indicators
-- **AdSlot**: Placeholder ad slots that collapse when empty
-- **RegionProvider**: Manages user region detection and preferences
+- **`useAIProvider()`** - AI analysis and predictions
+- **`useDataProvider()`** - Match data and statistics
+- **`usePaymentProvider()`** - Subscription management
+- **`useRealtimeProvider()`** - Live updates and notifications
+- **`useAnalyticsProvider()`** - User analytics and tracking
+- **`useFeatureFlags()`** - Feature flag management
 
-### Design System
-- **Dark Theme**: Professional sportsbook aesthetic
-- **Neon Accents**: Green and purple highlights for interactive elements
-- **Live Indicators**: Pulsing animations for live matches
-- **Responsive**: Mobile-first design with touch-friendly interactions
+## 🎯 Development Workflow
 
-## 🌍 Internationalization
+### Mock Data Development
+The application includes comprehensive mock providers for development:
 
-The platform supports multiple languages with automatic detection:
-- English (default)
-- Portuguese
-- Spanish
-- French
-- German
+```bash
+# All providers are automatically mocked in development
+pnpm dev
 
-Add new languages by:
-1. Creating translation files in `public/locales/[lang]/common.json`
-2. Adding language options to `LanguageSwitch.tsx`
+# Mock data includes:
+# - Realistic match data and statistics
+# - AI analysis responses with delays
+# - Payment processing simulation
+# - Real-time updates every 30 seconds
+```
 
-## 🔐 Authentication
+### Adding New Features
 
-Authentication is handled by Supabase Auth with support for:
-- Email magic-link authentication
-- Social providers (Google, Apple) - TODO: Configure in Supabase
-- Persistent sessions across browser refreshes
+1. **Define interfaces** in `src/lib/types/index.ts`
+2. **Create mock implementation** in `src/lib/providers/mock.ts`
+3. **Add to provider registry** in `src/lib/providers/registry.ts`
+4. **Create React hooks** in `src/hooks/useProviders.ts`
+5. **Build UI components** using the hooks
 
-Unauthenticated users can browse matches but cannot access AI insights.
+### Testing
 
-## 📊 Analytics & Ads
+```bash
+# Run type checking
+pnpm type-check
 
-### Ad Integration
-- Ad slots are implemented but return `null` by default (collapsed)
-- Ready for integration with Google AdSense, Amazon Publisher Services, etc.
-- GDPR consent management placeholder included
+# Run linting
+pnpm lint
 
-### Analytics
-- TODO: Integrate with Google Analytics 4
-- TODO: Track user interactions and match views
-- TODO: Monitor AI insight engagement
+# Run tests (when added)
+pnpm test
+```
 
-## 🚀 Deployment
+## 🔐 Security & Privacy
 
-### Vercel Deployment
-1. Connect your GitHub repository to Vercel
-2. Configure environment variables in Vercel dashboard
-3. Deploy automatically on push to main branch
+### What's Open Source ✅
+- UI components and layouts
+- Provider interfaces and type definitions
+- Basic database schema (teams, matches, users)
+- Public API endpoints
+- Documentation and guides
 
-### Supabase Configuration
-1. Enable Row Level Security (RLS) on tables
-2. Configure authentication providers
-3. Set up Realtime subscriptions for live updates
-
-## ✅ Acceptance Criteria Status
-
-- ✅ **Auth works**: Email magic-link authentication implemented
-- ✅ **Home shows fixtures**: Match grid with filters and auto-translation
-- ✅ **Region cookie set**: Automatic region detection and storage
-- ✅ **Odds pill shows "coming soon"**: Placeholder odds component
-- ✅ **Match page streams dummy snapshots**: SSE implementation with 15s intervals
-- ✅ **AI Insights render**: Markdown content with confidence bars
-- ✅ **AdSlot empty but layout intact**: Collapsible ad slots
-- ⏳ **Lighthouse mobile ≥ 90**: TODO - Performance optimization needed
-- ✅ **README explains seeding & deploy**: This documentation
-
-## 🔧 TODO Items
-
-### Backend Integration
-- [ ] Implement actual IP geolocation service (ipapi.co integration)
-- [ ] Set up Supabase Realtime subscriptions for live updates
-- [ ] Configure social authentication providers
-- [ ] Implement proper API key validation for agent ingestion
-- [ ] Add Row Level Security policies
-
-### Agent Integration
-- [ ] External AI agent implementation (separate service)
-- [ ] Webhook endpoints for real-time analysis ingestion
-- [ ] Data validation against JSON schema
-
-### Production Readiness
-- [ ] Performance optimization for Lighthouse score
-- [ ] Error handling and logging
-- [ ] Rate limiting on API endpoints
-- [ ] Monitoring and alerting setup
-- [ ] GDPR compliance implementation
-
-### Features
-- [ ] User profile management
-- [ ] Betting odds integration
-- [ ] Push notifications for live matches
-- [ ] Advanced filtering and search
-- [ ] Match statistics visualization
+### What's Proprietary ❌
+- AI prompts and analysis algorithms
+- Payment processing logic
+- User analytics and tracking
+- Advanced business rules
+- API keys and secrets
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Commit your changes: `git commit -m 'Add amazing feature'`
-4. Push to the branch: `git push origin feature/amazing-feature`
-5. Open a Pull Request
+We welcome contributions to the open-source components! Please see our [Contributing Guide](./docs/CONTRIBUTING.md) for details.
+
+### Areas for Contribution
+- 🎨 UI/UX improvements
+- 🔧 Performance optimizations
+- 📱 Mobile responsiveness
+- 🌐 Internationalization
+- 📚 Documentation
+- 🧪 Testing coverage
+
+## 📚 Documentation
+
+- [Repository Structure](./REPOSITORY_STRUCTURE.md) - Detailed architecture overview
+- [API Documentation](./docs/API.md) - Public API reference
+- [Contributing Guide](./docs/CONTRIBUTING.md) - How to contribute
+- [Deployment Guide](./docs/DEPLOYMENT.md) - Production deployment
+
+## 🛠️ Tech Stack
+
+### Frontend
+- **Next.js 14** - React framework with App Router
+- **TypeScript** - Type safety and better DX
+- **Tailwind CSS** - Utility-first CSS framework
+- **shadcn/ui** - High-quality UI components
+- **Framer Motion** - Smooth animations
+
+### Backend & Database
+- **Supabase** - PostgreSQL database and authentication
+- **Next.js API Routes** - Serverless API endpoints
+- **Provider Pattern** - Dependency injection system
+
+### Development Tools
+- **ESLint & Prettier** - Code linting and formatting
+- **Husky** - Git hooks for quality gates
+- **TypeScript** - Static type checking
+- **pnpm** - Fast, disk space efficient package manager
+
+## 📊 Business Model
+
+BetHub operates on a **freemium model**:
+
+- **Free Tier**: Basic match data and limited AI analysis
+- **Premium Tier**: Unlimited AI analysis and real-time updates
+- **Pro Tier**: Advanced analytics and betting insights
+- **Enterprise**: Custom solutions and API access
+
+## 🔮 Roadmap
+
+### Phase 1: Core Platform ✅
+- [x] Modern UI with match cards and analysis tabs
+- [x] Provider system architecture
+- [x] Mock data for development
+- [x] Basic database schema
+
+### Phase 2: MVP Features (In Progress)
+- [ ] User authentication and profiles
+- [ ] Payment processing integration
+- [ ] Real match data integration
+- [ ] AI analysis service
+
+### Phase 3: Advanced Features
+- [ ] Mobile app (React Native)
+- [ ] Social features and community
+- [ ] Advanced betting tools
+- [ ] Multi-language support
+
+### Phase 4: Scale & Optimize
+- [ ] Performance optimization
+- [ ] Advanced analytics dashboard
+- [ ] API marketplace
+- [ ] White-label solutions
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🆘 Support
+The open-source components are free to use, modify, and distribute. Proprietary components are subject to separate commercial licensing.
 
-For support and questions:
-- Check the GitHub Issues
-- Review the Supabase documentation
-- Consult the Next.js documentation
+## 🙏 Acknowledgments
+
+- [shadcn/ui](https://ui.shadcn.com/) for the excellent UI components
+- [Supabase](https://supabase.com/) for the backend infrastructure
+- [Next.js](https://nextjs.org/) team for the amazing framework
+- Football data providers for making sports data accessible
+
+## 📞 Support
+
+- 📧 **Email**: support@bethub.com
+- 💬 **Discord**: [Join our community](https://discord.gg/bethub)
+- 📖 **Documentation**: [docs.bethub.com](https://docs.bethub.com)
+- 🐛 **Issues**: [GitHub Issues](https://github.com/yourusername/bethub/issues)
 
 ---
 
-**SPORTSBET INSIGHT v1.0** - Ready to display AI-powered sports insights to the world! 🏆
+**Built with ❤️ by the BetHub team**
 

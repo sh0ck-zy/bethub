@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { MatchCard } from '@/components/MatchCard';
+import { MatchCard } from '@/components/features/MatchCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { RefreshCw, Plus, AlertCircle } from 'lucide-react';
@@ -9,19 +9,15 @@ import { useAuth } from '@/contexts/AuthContext';
 import { authService } from '@/lib/auth';
 import { Loading, LoadingCard } from '@/components/ui/loading';
 
-interface Match {
-  id: string;
-  league: string;
-  home_team: string;
-  away_team: string;
-  kickoff_utc: string;
-  status: string;
+import type { Match } from '@/lib/types';
+
+interface AdminMatch extends Match {
   is_published?: boolean;
   analysis_status?: 'none' | 'pending' | 'completed' | 'failed';
 }
 
 export default function AdminPage() {
-  const [matches, setMatches] = useState<Match[]>([]);
+  const [matches, setMatches] = useState<AdminMatch[]>([]);
   const [selectedLeague, setSelectedLeague] = useState('all');
   const [showFilter, setShowFilter] = useState('all'); // all, published, unpublished
   const [isLoading, setIsLoading] = useState(true);

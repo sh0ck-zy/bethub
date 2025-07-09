@@ -25,6 +25,16 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       });
     }
 
+    // Validate UUID format - if it's not a valid UUID, use fallback data
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(id)) {
+      console.warn(`Invalid UUID format for match ID: ${id}, using fallback data`);
+      return NextResponse.json({ 
+        match: getFallbackMatch(id),
+        latestSnapshot: null 
+      });
+    }
+
     const { data: match, error: matchError } = await supabase
       .from('matches')
       .select('*')
