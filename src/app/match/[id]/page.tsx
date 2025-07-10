@@ -263,7 +263,7 @@ export default function MatchDetailPage() {
   const kickoffDate = new Date(match.kickoff_utc);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background app-background dark:app-background flex flex-col">
       {/* Consistent Header */}
       <Header 
         onLoginClick={() => setShowAuthModal(true)}
@@ -273,7 +273,7 @@ export default function MatchDetailPage() {
       />
 
       {/* Match Header - Mobile Optimized */}
-      <div className="bg-card border-b border-border">
+      <div className="bg-card border-b border-border texture-overlay dark:texture-overlay">
         <div className="max-w-4xl mx-auto px-4 py-6">
           {/* Navigation & Actions */}
           <div className="flex items-center justify-between mb-6">
@@ -372,7 +372,7 @@ export default function MatchDetailPage() {
           </div>
 
           {/* AI Headline - Hero Section */}
-          <Card className="bg-gradient-to-r from-primary/5 via-primary/10 to-purple-500/5 border-primary/20 shadow-sm">
+          <Card className="sport-card dark:sport-card bg-gradient-to-r from-primary/5 via-primary/10 to-purple-500/5 border-primary/20">
             <CardContent className="p-6 text-center">
               <div className="flex items-center justify-center space-x-2 mb-4">
                 <div className="w-8 h-8 bg-gradient-to-r from-primary to-purple-600 rounded-lg flex items-center justify-center">
@@ -404,7 +404,7 @@ export default function MatchDetailPage() {
                   </div>
                   <Button 
                     onClick={() => setShowAuthModal(true)}
-                    className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-700 text-white font-semibold px-6 py-2"
+                    className="sport-button-premium font-semibold px-6 py-2"
                   >
                     Unlock Premium Analysis
                   </Button>
