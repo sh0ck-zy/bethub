@@ -123,21 +123,6 @@
 
 /* BetHub Premium Styles */
 @layer components {
-  /* Enhanced app background with subtle texture */
-  .app-background {
-    background-image: 
-      radial-gradient(circle at 25% 25%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
-      radial-gradient(circle at 75% 75%, rgba(139, 92, 246, 0.05) 0%, transparent 50%),
-      linear-gradient(135deg, transparent 0%, rgba(34, 197, 94, 0.02) 100%);
-  }
-
-  .app-background.dark {
-    background-image: 
-      radial-gradient(circle at 25% 25%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
-      radial-gradient(circle at 75% 75%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
-      linear-gradient(135deg, transparent 0%, rgba(34, 197, 94, 0.03) 100%);
-  }
-
   /* Premium gradient text animation */
   .gradient-text {
     background: linear-gradient(45deg, #22c55e, #3b82f6, #8b5cf6, #22c55e);
@@ -153,113 +138,19 @@
     50% { background-position: 100% 50%; }
   }
 
-  /* Enhanced card styling with depth */
-  .sport-card {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 
-      0 4px 20px rgba(0, 0, 0, 0.08),
-      0 1px 3px rgba(0, 0, 0, 0.05),
-      inset 0 1px 0 rgba(255, 255, 255, 0.6);
-    transition: all 0.3s ease;
-  }
-
-  .sport-card.dark {
-    background: rgba(15, 23, 42, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 
-      0 4px 20px rgba(0, 0, 0, 0.3),
-      0 1px 3px rgba(0, 0, 0, 0.2),
-      inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  }
-
-  .sport-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 
-      0 8px 30px rgba(0, 0, 0, 0.12),
-      0 2px 6px rgba(0, 0, 0, 0.08),
-      inset 0 1px 0 rgba(255, 255, 255, 0.8);
-  }
-
-  .sport-card.dark:hover {
-    box-shadow: 
-      0 8px 30px rgba(0, 0, 0, 0.4),
-      0 2px 6px rgba(0, 0, 0, 0.3),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  }
-
-  /* Enhanced header with subtle depth */
-  .sport-header {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    box-shadow: 
-      0 1px 3px rgba(0, 0, 0, 0.05),
-      inset 0 1px 0 rgba(255, 255, 255, 0.8);
-  }
-
-  .sport-header.dark {
-    background: rgba(15, 23, 42, 0.95);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 
-      0 1px 3px rgba(0, 0, 0, 0.3),
-      inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  }
-
   /* Premium card hover effects */
   .premium-card {
     background: linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     transition: all 0.3s ease;
-    box-shadow: 
-      0 4px 20px rgba(0, 0, 0, 0.3),
-      0 1px 3px rgba(0, 0, 0, 0.2),
-      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   }
 
   .premium-card:hover {
     border-color: rgba(34, 197, 94, 0.3);
-    box-shadow: 
-      0 20px 40px rgba(0, 0, 0, 0.4), 
-      0 0 20px rgba(34, 197, 94, 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(34, 197, 94, 0.1);
     transform: translateY(-2px);
-  }
-
-  /* Enhanced buttons with sporty feel */
-  .sport-button {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 1), rgba(37, 99, 235, 1));
-    border: 1px solid rgba(59, 130, 246, 0.5);
-    box-shadow: 
-      0 2px 8px rgba(59, 130, 246, 0.25),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    transition: all 0.2s ease;
-  }
-
-  .sport-button:hover {
-    background: linear-gradient(135deg, rgba(37, 99, 235, 1), rgba(29, 78, 216, 1));
-    box-shadow: 
-      0 4px 12px rgba(59, 130, 246, 0.35),
-      inset 0 1px 0 rgba(255, 255, 255, 0.3);
-    transform: translateY(-1px);
-  }
-
-  .sport-button-premium {
-    background: linear-gradient(135deg, rgba(251, 146, 60, 1), rgba(245, 101, 101, 1));
-    border: 1px solid rgba(251, 146, 60, 0.5);
-    box-shadow: 
-      0 2px 8px rgba(251, 146, 60, 0.25),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  }
-
-  .sport-button-premium:hover {
-    background: linear-gradient(135deg, rgba(245, 101, 101, 1), rgba(239, 68, 68, 1));
-    box-shadow: 
-      0 4px 12px rgba(251, 146, 60, 0.35),
-      inset 0 1px 0 rgba(255, 255, 255, 0.3);
-    transform: translateY(-1px);
   }
 
   /* Team logo animations */
@@ -272,75 +163,32 @@
     box-shadow: 0 8px 25px rgba(34, 197, 94, 0.3);
   }
 
-  /* Enhanced status indicators with depth */
+  /* Enhanced status indicators */
   .status-live {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
+    background: linear-gradient(45deg, #ef4444, #dc2626);
     animation: livePulse 1.5s infinite;
-    box-shadow: 
-      0 0 20px rgba(239, 68, 68, 0.5),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2),
-      0 2px 4px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.3);
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
   }
 
   .status-upcoming {
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-    box-shadow: 
-      0 0 15px rgba(59, 130, 246, 0.3),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2),
-      0 2px 4px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(59, 130, 246, 0.3);
+    background: linear-gradient(45deg, #3b82f6, #2563eb);
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
   }
 
   .status-finished {
-    background: linear-gradient(135deg, #22c55e, #16a34a);
-    box-shadow: 
-      0 0 15px rgba(34, 197, 94, 0.3),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2),
-      0 2px 4px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(34, 197, 94, 0.3);
+    background: linear-gradient(45deg, #22c55e, #16a34a);
+    box-shadow: 0 0 15px rgba(34, 197, 94, 0.3);
   }
 
   @keyframes livePulse {
     0%, 100% { 
-      box-shadow: 
-        0 0 10px rgba(239, 68, 68, 0.5),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2),
-        0 2px 4px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
       transform: scale(1);
     }
     50% { 
-      box-shadow: 
-        0 0 25px rgba(239, 68, 68, 0.8),
-        inset 0 1px 0 rgba(255, 255, 255, 0.3),
-        0 3px 6px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 0 25px rgba(239, 68, 68, 0.8);
       transform: scale(1.05);
     }
-  }
-
-  /* Subtle texture overlays */
-  .texture-overlay {
-    position: relative;
-  }
-
-  .texture-overlay::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image: 
-      radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.05) 1px, transparent 0);
-    background-size: 20px 20px;
-    pointer-events: none;
-    opacity: 0.3;
-  }
-
-  .texture-overlay.dark::before {
-    background-image: 
-      radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.02) 1px, transparent 0);
-    opacity: 0.5;
   }
 
   /* Enhanced scrollbar styling */
