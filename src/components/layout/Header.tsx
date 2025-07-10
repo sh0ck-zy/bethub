@@ -80,42 +80,49 @@ export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentP
             {/* User Actions */}
             <div className="flex items-center space-x-3">
               {/* Demo Role Selector - Development Only */}
-              {process.env.NODE_ENV === 'development' && (
-                <RoleSelector className="hidden sm:flex" />
-              )}
+              <RoleSelector className="hidden sm:flex" />
               
               <ThemeToggle />
               {finalIsAuthenticated ? (
                 <div className="flex items-center space-x-3">
-                  {/* User Info & Status */}
+                  {/* User Info & Account Type */}
                   <div className="hidden sm:flex items-center space-x-3">
                     <div className="text-right">
-                      <div className="text-sm font-medium text-foreground truncate max-w-32">
-                        {user?.email?.split('@')[0] || role}
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm font-medium text-foreground truncate max-w-32">
+                          {user?.email?.split('@')[0] || role}
+                        </span>
+                        {finalIsPremium ? (
+                          <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0 text-xs font-semibold shadow-md">
+                            <Crown className="w-3 h-3 mr-1" />
+                            Premium
+                          </Badge>
+                        ) : finalIsAdmin ? (
+                          <Badge className="bg-red-500 text-white border-0 text-xs font-medium">
+                            <Settings className="w-3 h-3 mr-1" />
+                            Admin
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-xs border-border">
+                            <User className="w-3 h-3 mr-1" />
+                            Free
+                          </Badge>
+                        )}
                       </div>
-                      {!finalIsPremium && (
-                        <div className="text-xs text-muted-foreground">1 analysis remaining</div>
+                      {!finalIsPremium && !finalIsAdmin && (
+                        <p className="text-xs text-muted-foreground">1 analysis remaining</p>
                       )}
                     </div>
-                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-sm">
                       <User className="w-4 h-4 text-white" />
                     </div>
                   </div>
 
-                  {/* Account Status Button */}
-                  {finalIsPremium ? (
-                    <Button
-                      variant="outline"
-                      className="border-yellow-400 text-yellow-600 hover:bg-yellow-50 dark:text-yellow-400 dark:border-yellow-500 dark:hover:bg-yellow-900/20 text-sm px-4 py-2"
-                    >
-                      <Crown className="w-4 h-4 mr-2" />
-                      <span className="hidden sm:inline">Premium</span>
-                      <span className="sm:hidden">Pro</span>
-                    </Button>
-                  ) : (
+                  {/* Upgrade Button - Only for Free Users */}
+                  {!finalIsPremium && !finalIsAdmin && (
                     <Button
                       onClick={() => alert('Premium upgrade modal')}
-                      className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white border-0 text-sm px-4 py-2"
+                      className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white border-0 text-sm px-4 py-2 font-medium shadow-sm"
                     >
                       <Crown className="w-4 h-4 mr-2" />
                       <span className="hidden sm:inline">Upgrade</span>
@@ -123,7 +130,7 @@ export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentP
                     </Button>
                   )}
 
-                  {/* Settings/Logout */}
+                  {/* Action Buttons */}
                   <div className="flex items-center space-x-2">
                     {/* Dashboard Link - Mobile */}
                     <Link href="/dashboard" className="md:hidden">

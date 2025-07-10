@@ -9,6 +9,11 @@ export function DemoRoleIndicator() {
   const { role, isAuthenticated, isPremium, isAdmin } = useRoleSelector();
   const [isVisible, setIsVisible] = useState(true);
 
+  // Hide in production
+  if (process.env.NODE_ENV === 'production') {
+    return null;
+  }
+
   // Auto-hide after 10 seconds, but show again when role changes
   useEffect(() => {
     setIsVisible(true);
@@ -16,8 +21,6 @@ export function DemoRoleIndicator() {
     return () => clearTimeout(timer);
   }, [role]);
 
-  // Only show in development
-  if (process.env.NODE_ENV !== 'development') return null;
   if (!isVisible) return null;
 
   const getRoleIcon = () => {
