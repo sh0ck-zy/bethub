@@ -72,7 +72,7 @@ export function RoleSelector({ onRoleChange, currentRole = 'guest', className }:
   const Icon = currentRoleData.icon;
 
   return (
-    <div className={`flex items-center space-x-2 ${className}`}>
+    <div className={className}>
       <Select value={selectedRole} onValueChange={handleRoleChange}>
         <SelectTrigger className="w-40">
           <SelectValue>
@@ -99,10 +99,6 @@ export function RoleSelector({ onRoleChange, currentRole = 'guest', className }:
           })}
         </SelectContent>
       </Select>
-      
-      <Badge className={`text-xs ${currentRoleData.color}`}>
-        {currentRoleData.label}
-      </Badge>
     </div>
   );
 }
