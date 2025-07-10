@@ -16,6 +16,8 @@ export function DemoRoleIndicator() {
     return () => clearTimeout(timer);
   }, [role]);
 
+  // Only show in development
+  if (process.env.NODE_ENV !== 'development') return null;
   if (!isVisible) return null;
 
   const getRoleIcon = () => {
