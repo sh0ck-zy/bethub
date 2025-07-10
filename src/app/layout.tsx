@@ -4,6 +4,7 @@ import "./globals.css";
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { ProviderInitializer } from '@/components/ProviderInitializer';
+import { DemoRoleIndicator } from '@/components/ui/DemoRoleIndicator';
 // import '@/i18n'; // Initialize i18n
 
 const geistSans = Geist({
@@ -44,6 +45,7 @@ export default function RootLayout({
         <ThemeProvider>
           <AuthProvider>
             {children}
+            <DemoRoleIndicator />
           </AuthProvider>
         </ThemeProvider>
       </body>

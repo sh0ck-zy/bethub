@@ -63,6 +63,9 @@ export function RoleSelector({ onRoleChange, currentRole = 'guest', className }:
     setSelectedRole(role);
     localStorage.setItem('demo-role', role);
     onRoleChange?.(role);
+    
+    // Dispatch a custom event to notify all components
+    window.dispatchEvent(new CustomEvent('role-changed', { detail: role }));
   };
 
   const currentRoleData = ROLES[selectedRole];
@@ -113,6 +116,17 @@ export function useRoleSelector() {
     if (savedRole && ROLES[savedRole]) {
       setRole(savedRole);
     }
+    
+    // Listen for role changes from other components
+    const handleRoleChange = (event: CustomEvent<UserRole>) => {
+      setRole(event.detail);
+    };
+    
+    window.addEventListener('role-changed', handleRoleChange as EventListener);
+    
+    return () => {
+      window.removeEventListener('role-changed', handleRoleChange as EventListener);
+    };
   }, []);
 
   const isGuest = role === 'guest';
