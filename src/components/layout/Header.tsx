@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { RoleSelector, useRoleSelector } from '@/components/ui/RoleSelector';
 import { Crown, User, LogOut, Settings, BarChart3 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { AuthModal } from '@/components/features/AuthModal';
@@ -16,9 +17,12 @@ interface HeaderProps {
 
 export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentPage = 'home' }: HeaderProps) {
   const { user, isAdmin, signOut } = useAuth();
+  const { role, isAuthenticated, isPremium, isAdmin: isDemoAdmin } = useRoleSelector();
   
-  // Check if user is premium (placeholder - implement subscription logic later)
-  const isPremium = false; // TODO: Implement subscription system
+  // Use demo role system for testing
+  const finalIsAdmin = isDemoAdmin || isAdmin;
+  const finalIsAuthenticated = isAuthenticated || user;
+  const finalIsPremium = isPremium;
 
   const handleSignOut = async () => {
     await signOut();
@@ -54,7 +58,7 @@ export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentP
                   Matches
                 </Link>
                 
-                {user && (
+                {finalIsAuthenticated && (
                   <Link 
                     href="/dashboard"
                     className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -68,7 +72,7 @@ export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentP
                   </Link>
                 )}
 
-                {isAdmin && (
+                {finalIsAdmin && (
                   <Link 
                     href="/admin"
                     className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -86,17 +90,20 @@ export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentP
 
             {/* User Actions */}
             <div className="flex items-center space-x-3">
+              {/* Demo Role Selector */}
+              <RoleSelector className="hidden sm:flex" />
+              
               <ThemeToggle />
-              {user ? (
+              {finalIsAuthenticated ? (
                 <div className="flex items-center space-x-3">
                   {/* User Info - Desktop */}
                   <div className="hidden sm:flex items-center space-x-3">
                     <div className="text-right">
                       <div className="flex items-center space-x-2">
                         <span className="text-sm font-medium text-foreground truncate max-w-32">
-                          {user.email?.split('@')[0]}
+                          {user?.email?.split('@')[0] || role}
                         </span>
-                        {isPremium ? (
+                        {finalIsPremium ? (
                           <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0 text-xs">
                             <Crown className="w-3 h-3 mr-1" />
                             Premium
@@ -107,7 +114,7 @@ export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentP
                           </Badge>
                         )}
                       </div>
-                      {!isPremium && (
+                      {!finalIsPremium && (
                         <p className="text-xs text-muted-foreground">1 analysis remaining</p>
                       )}
                     </div>
@@ -117,7 +124,7 @@ export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentP
                   </div>
 
                   {/* Premium Button */}
-                  {!isPremium && (
+                  {!finalIsPremium && (
                     <Button
                       onClick={() => alert('Premium upgrade modal')}
                       className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white border-0 text-sm px-4 py-2"
