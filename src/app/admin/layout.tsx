@@ -18,17 +18,57 @@ export default function AdminLayout({
   const finalIsAdmin = isDemoAdmin || isAdmin;
   const finalUser = user || (role !== 'guest' ? { email: role } : null);
 
+  const handleLogout = async () => {
+    await signOut();
+    router.push('/');
+  };
+
   useEffect(() => {
-    // Redirect non-admin users
+    // Redirect non-admin users after auth check is complete
     if (!isLoading && !finalIsAdmin) {
       router.push('/');
     }
   }, [finalIsAdmin, isLoading, router]);
 
-  const handleLogout = async () => {
-    await signOut();
-    router.push('/');
-  };
+  // Don't show loading for demo admin role
+  if (isDemoAdmin && !isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
+        <header className="border-b border-white/10 bg-gray-900/90 backdrop-blur-xl sticky top-0 z-50">
+          <div className="container mx-auto px-4 py-3">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">B</span>
+                </div>
+                <h1 className="text-xl font-bold text-white">BetHub Admin</h1>
+              </div>
+              
+              <div className="flex items-center space-x-4">
+                <div className="text-gray-300 text-sm">
+                  Welcome, {role}
+                </div>
+                <button
+                  onClick={() => router.push('/')}
+                  className="text-gray-400 hover:text-white text-sm transition-colors"
+                >
+                  View Public Site
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
+                >
+                  Exit Demo
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {children}
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (

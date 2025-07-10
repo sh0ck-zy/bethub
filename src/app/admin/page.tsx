@@ -34,6 +34,9 @@ export default function AdminPage() {
   useEffect(() => {
     if (finalIsAdmin) {
       fetchMatches();
+    } else {
+      // If not admin, stop loading immediately
+      setIsLoading(false);
     }
   }, [finalIsAdmin]);
 

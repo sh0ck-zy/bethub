@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { RefreshCw, AlertCircle, Brain, TrendingUp, Filter, Crown } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useRoleSelector } from '@/components/ui/RoleSelector';
 
 interface Match {
   id: string;
@@ -101,9 +102,13 @@ export default function HomePage() {
     return leagueMatch && statusMatch;
   });
 
-  // User state content
+  // User state content - integrate with demo role system
+  const { isAuthenticated: isDemoAuthenticated, isPremium: isDemoPremium } = useRoleSelector();
+  const finalIsAuthenticated = isDemoAuthenticated || !!user;
+  const finalIsPremium = isDemoPremium || isPremium;
+  
   const getUserStateMessage = () => {
-    if (!user) {
+    if (!finalIsAuthenticated) {
       return {
         title: "AI-Powered Match Analysis",
         subtitle: "Get intelligent insights for today's biggest matches",
@@ -111,11 +116,11 @@ export default function HomePage() {
       };
     }
     
-    if (!isPremium) {
+    if (!finalIsPremium) {
       return {
-        title: `Welcome back, ${user.email?.split('@')[0]}`,
+        title: `Welcome back, ${user?.email?.split('@')[0] || 'User'}`,
         subtitle: "You have 1 free analysis remaining today",
-        cta: "Upgrade to unlimited access"
+        cta: null // No CTA for authenticated users
       };
     }
     
@@ -145,7 +150,7 @@ export default function HomePage() {
             <h1 className="text-2xl md:text-3xl font-bold text-foreground">
               {userState.title}
             </h1>
-            {isPremium && (
+            {finalIsPremium && (
               <Crown className="w-6 h-6 text-yellow-500" />
             )}
           </div>
@@ -157,10 +162,10 @@ export default function HomePage() {
           {/* User State CTA */}
           {userState.cta && (
             <Button 
-              onClick={() => user ? alert('Upgrade modal') : setShowAuthModal(true)}
+              onClick={() => finalIsAuthenticated ? alert('Upgrade modal') : setShowAuthModal(true)}
               className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-8 py-3 text-lg border-0"
             >
-              {user ? (
+              {finalIsAuthenticated ? (
                 <>
                   <Crown className="w-5 h-5 mr-2" />
                   {userState.cta}
@@ -175,7 +180,7 @@ export default function HomePage() {
           )}
 
           {/* Usage indicator for free users */}
-          {user && !isPremium && (
+          {finalIsAuthenticated && !finalIsPremium && (
             <div className="mt-4 flex items-center justify-center space-x-4 text-sm text-muted-foreground">
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-green-400 rounded-full"></div>
@@ -339,7 +344,7 @@ export default function HomePage() {
         )}
 
         {/* Premium CTA for non-premium users */}
-        {!isLoading && filteredMatches.length > 0 && user && !isPremium && (
+        {!isLoading && filteredMatches.length > 0 && finalIsAuthenticated && !finalIsPremium && (
           <Card className="mt-12 bg-gradient-to-r from-primary/90 to-primary/70 text-primary-foreground border-0">
             <CardContent className="p-8 text-center">
               <Crown className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
