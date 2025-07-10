@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { RefreshCw, Plus, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useRoleSelector } from '@/components/ui/RoleSelector';
 import { authService } from '@/lib/auth';
 import { Loading, LoadingCard } from '@/components/ui/loading';
 
@@ -24,12 +25,17 @@ export default function AdminPage() {
   const [error, setError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { user, isAdmin } = useAuth();
+  const { isAdmin: isDemoAdmin, isAuthenticated: isDemoAuthenticated } = useRoleSelector();
+
+  // Use demo role system for testing
+  const finalIsAdmin = isDemoAdmin || isAdmin;
+  const finalIsAuthenticated = isDemoAuthenticated || !!user;
 
   useEffect(() => {
-    if (user && isAdmin) {
+    if (finalIsAdmin) {
       fetchMatches();
     }
-  }, [user, isAdmin]);
+  }, [finalIsAdmin]);
 
   const fetchMatches = async (isRefresh = false) => {
     if (isRefresh) {
@@ -40,6 +46,49 @@ export default function AdminPage() {
     setError(null);
     
     try {
+      // For demo admin, use fallback data
+      if (isDemoAdmin && !user) {
+        // Simulate API delay for realistic demo
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Demo admin matches data
+        const demoMatches: AdminMatch[] = [
+          {
+            id: '550e8400-e29b-41d4-a716-446655440001',
+            league: 'Premier League',
+            home_team: 'Manchester United',
+            away_team: 'Liverpool',
+            kickoff_utc: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+            status: 'PRE',
+            is_published: true,
+            analysis_status: 'completed'
+          },
+          {
+            id: '550e8400-e29b-41d4-a716-446655440002',
+            league: 'La Liga',
+            home_team: 'Real Madrid',
+            away_team: 'Barcelona',
+            kickoff_utc: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
+            status: 'PRE',
+            is_published: false,
+            analysis_status: 'pending'
+          },
+          {
+            id: '550e8400-e29b-41d4-a716-446655440003',
+            league: 'Serie A',
+            home_team: 'Juventus',
+            away_team: 'AC Milan',
+            kickoff_utc: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
+            status: 'FT',
+            is_published: true,
+            analysis_status: 'completed'
+          }
+        ];
+        
+        setMatches(demoMatches);
+        return;
+      }
+      
       const token = await authService.getAuthToken();
       
       if (!token) {
@@ -70,18 +119,31 @@ export default function AdminPage() {
 
   const handleSendToAI = async (matchId: string) => {
     try {
-      const token = await authService.getAuthToken();
-      
-      if (!token) {
-        throw new Error('No auth token available');
-      }
-
       // Update UI immediately
       setMatches(prev => prev.map(match => 
         match.id === matchId 
           ? { ...match, analysis_status: 'pending' }
           : match
       ));
+
+      // For demo admin, just simulate the action
+      if (isDemoAdmin && !user) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Simulate successful analysis
+        setMatches(prev => prev.map(match => 
+          match.id === matchId 
+            ? { ...match, analysis_status: 'completed' }
+            : match
+        ));
+        return;
+      }
+
+      const token = await authService.getAuthToken();
+      
+      if (!token) {
+        throw new Error('No auth token available');
+      }
 
       const response = await fetch('/api/v1/admin/send-to-ai', {
         method: 'POST',
@@ -109,18 +171,24 @@ export default function AdminPage() {
 
   const handleTogglePublish = async (matchId: string, shouldPublish: boolean) => {
     try {
-      const token = await authService.getAuthToken();
-      
-      if (!token) {
-        throw new Error('No auth token available');
-      }
-
       // Update UI immediately
       setMatches(prev => prev.map(match => 
         match.id === matchId 
           ? { ...match, is_published: shouldPublish }
           : match
       ));
+
+      // For demo admin, just simulate the action
+      if (isDemoAdmin && !user) {
+        await new Promise(resolve => setTimeout(resolve, 300));
+        return;
+      }
+
+      const token = await authService.getAuthToken();
+      
+      if (!token) {
+        throw new Error('No auth token available');
+      }
 
       const response = await fetch('/api/v1/admin/toggle-publish', {
         method: 'POST',

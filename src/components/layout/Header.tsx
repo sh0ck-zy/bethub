@@ -47,17 +47,6 @@ export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentP
 
               {/* Navigation Links - Desktop */}
               <nav className="hidden md:flex items-center space-x-1">
-                <Link 
-                  href="/"
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    currentPage === 'home' 
-                      ? 'bg-accent text-accent-foreground' 
-                      : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
-                  }`}
-                >
-                  Matches
-                </Link>
-                
                 {finalIsAuthenticated && (
                   <Link 
                     href="/dashboard"

@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { useRoleSelector } from '@/components/ui/RoleSelector';
 
 export default function AdminLayout({
   children,
@@ -10,14 +11,19 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const { user, isAdmin, isLoading, signOut } = useAuth();
+  const { isAdmin: isDemoAdmin, role } = useRoleSelector();
   const router = useRouter();
+
+  // Use demo role system for testing
+  const finalIsAdmin = isDemoAdmin || isAdmin;
+  const finalUser = user || (role !== 'guest' ? { email: role } : null);
 
   useEffect(() => {
     // Redirect non-admin users
-    if (!isLoading && (!user || !isAdmin)) {
+    if (!isLoading && !finalIsAdmin) {
       router.push('/');
     }
-  }, [user, isAdmin, isLoading, router]);
+  }, [finalIsAdmin, isLoading, router]);
 
   const handleLogout = async () => {
     await signOut();
@@ -33,7 +39,7 @@ export default function AdminLayout({
   }
 
   // If not admin, don't render anything (will redirect)
-  if (!user || !isAdmin) {
+  if (!finalIsAdmin) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 flex items-center justify-center">
         <div className="bg-gray-800/50 border border-white/10 rounded-lg p-8 max-w-md w-full mx-4">
@@ -43,6 +49,9 @@ export default function AdminLayout({
             </div>
             <h1 className="text-2xl font-bold text-white mb-2">Access Denied</h1>
             <p className="text-gray-400 text-sm mb-6">You need admin privileges to access this area</p>
+            <p className="text-gray-500 text-xs mb-4">
+              Current role: {role} | Required: admin
+            </p>
             <button
               onClick={() => router.push('/')}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition-all"
@@ -70,7 +79,7 @@ export default function AdminLayout({
             
             <div className="flex items-center space-x-4">
               <div className="text-gray-300 text-sm">
-                Welcome, {user.email}
+                Welcome, {finalUser?.email || role}
               </div>
               <button
                 onClick={() => router.push('/')}
