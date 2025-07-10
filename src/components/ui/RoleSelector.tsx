@@ -50,6 +50,11 @@ const ROLES = {
 export function RoleSelector({ onRoleChange, currentRole = 'guest', className }: RoleSelectorProps) {
   const [selectedRole, setSelectedRole] = useState<UserRole>(currentRole);
 
+  // Hide in production
+  if (process.env.NODE_ENV === 'production') {
+    return null;
+  }
+
   useEffect(() => {
     // Load role from localStorage
     const savedRole = localStorage.getItem('demo-role') as UserRole;
