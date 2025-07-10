@@ -129,7 +129,7 @@ export default function HomePage() {
   const userState = getUserStateMessage();
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Consistent Header */}
       <Header 
         onLoginClick={() => setShowAuthModal(true)}
@@ -138,11 +138,11 @@ export default function HomePage() {
       />
 
       {/* Hero Section - User State Aware */}
-      <div className="bg-gradient-to-r from-blue-50 via-purple-50 to-blue-50 border-b border-gray-200">
+      <div className="bg-accent/30 border-b border-border">
         <div className="max-w-7xl mx-auto px-4 py-8 text-center">
           <div className="flex items-center justify-center space-x-2 mb-3">
-            <Brain className="w-6 h-6 text-blue-600" />
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+            <Brain className="w-6 h-6 text-primary" />
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">
               {userState.title}
             </h1>
             {isPremium && (
@@ -150,7 +150,7 @@ export default function HomePage() {
             )}
           </div>
           
-          <p className="text-gray-600 text-lg mb-6 max-w-2xl mx-auto">
+          <p className="text-muted-foreground text-lg mb-6 max-w-2xl mx-auto">
             {userState.subtitle}
           </p>
 
@@ -158,7 +158,7 @@ export default function HomePage() {
           {userState.cta && (
             <Button 
               onClick={() => user ? alert('Upgrade modal') : setShowAuthModal(true)}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-8 py-3 text-lg"
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-8 py-3 text-lg border-0"
             >
               {user ? (
                 <>
@@ -176,7 +176,7 @@ export default function HomePage() {
 
           {/* Usage indicator for free users */}
           {user && !isPremium && (
-            <div className="mt-4 flex items-center justify-center space-x-4 text-sm text-gray-600">
+            <div className="mt-4 flex items-center justify-center space-x-4 text-sm text-muted-foreground">
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-green-400 rounded-full"></div>
                 <span>1 analysis remaining today</span>
@@ -184,7 +184,7 @@ export default function HomePage() {
               <span>•</span>
               <button 
                 onClick={() => alert('Upgrade modal')}
-                className="text-blue-600 hover:text-blue-700 font-medium"
+                className="text-primary hover:text-primary/80 font-medium"
               >
                 Upgrade for unlimited
               </button>
@@ -198,12 +198,12 @@ export default function HomePage() {
         {/* Filters & Controls */}
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-8">
           <div className="flex items-center space-x-4">
-            <h2 className="text-xl font-bold text-gray-900">Today's Matches</h2>
-            <Badge className="bg-blue-50 text-blue-600 border-blue-200">
+            <h2 className="text-xl font-bold text-foreground">Today's Matches</h2>
+            <Badge className="bg-primary/10 text-primary border-primary/20">
               {filteredMatches.length} matches
             </Badge>
             {isRefreshing && (
-              <div className="flex items-center gap-2 text-gray-500">
+              <div className="flex items-center gap-2 text-muted-foreground">
                 <RefreshCw className="w-4 h-4 animate-spin" />
                 <span className="text-sm">Updating...</span>
               </div>
@@ -224,11 +224,11 @@ export default function HomePage() {
 
             {/* League Filter */}
             <div className="flex items-center space-x-2">
-              <Filter className="w-4 h-4 text-gray-500" />
+              <Filter className="w-4 h-4 text-muted-foreground" />
               <select 
                 value={selectedLeague}
                 onChange={(e) => setSelectedLeague(e.target.value)}
-                className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none min-w-[140px]"
+                className="bg-card border border-border rounded-lg px-3 py-2 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none min-w-[140px] text-foreground"
               >
                 {leagues.map(league => (
                   <option key={league} value={league}>
@@ -242,7 +242,7 @@ export default function HomePage() {
             <select 
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none min-w-[120px]"
+              className="bg-card border border-border rounded-lg px-3 py-2 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none min-w-[120px] text-foreground"
             >
               {statuses.map(status => (
                 <option key={status.value} value={status.value}>
@@ -255,19 +255,19 @@ export default function HomePage() {
 
         {/* Error State */}
         {error && (
-          <Card className="border-red-200 bg-red-50 mb-8">
+          <Card className="border-destructive/20 bg-destructive/10 mb-8">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
-                <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0" />
                 <div className="flex-1">
-                  <p className="text-red-700 font-medium">Error loading matches</p>
-                  <p className="text-red-600 text-sm">{error}</p>
+                  <p className="text-destructive font-medium">Error loading matches</p>
+                  <p className="text-destructive/80 text-sm">{error}</p>
                 </div>
                 <Button
                   onClick={() => fetchMatches(true)}
                   variant="outline"
                   size="sm"
-                  className="text-red-600 border-red-300 hover:bg-red-50"
+                  className="text-destructive border-destructive/30 hover:bg-destructive/10"
                 >
                   Retry
                 </Button>
@@ -283,22 +283,22 @@ export default function HomePage() {
               <Card key={i} className="animate-pulse">
                 <CardContent className="p-6">
                   <div className="flex justify-between items-center mb-4">
-                    <div className="h-4 bg-gray-200 rounded w-24"></div>
-                    <div className="h-6 bg-gray-200 rounded w-16"></div>
+                    <div className="h-4 bg-muted rounded w-24"></div>
+                    <div className="h-6 bg-muted rounded w-16"></div>
                   </div>
-                  <div className="h-4 bg-gray-200 rounded w-32 mb-6"></div>
+                  <div className="h-4 bg-muted rounded w-32 mb-6"></div>
                   <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
-                      <div className="h-4 bg-gray-200 rounded w-20"></div>
+                      <div className="w-8 h-8 bg-muted rounded-full"></div>
+                      <div className="h-4 bg-muted rounded w-20"></div>
                     </div>
-                    <div className="h-4 bg-gray-200 rounded w-8"></div>
+                    <div className="h-4 bg-muted rounded w-8"></div>
                     <div className="flex items-center space-x-3">
-                      <div className="h-4 bg-gray-200 rounded w-20"></div>
-                      <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+                      <div className="h-4 bg-muted rounded w-20"></div>
+                      <div className="w-8 h-8 bg-muted rounded-full"></div>
                     </div>
                   </div>
-                  <div className="h-16 bg-gray-200 rounded"></div>
+                  <div className="h-16 bg-muted rounded"></div>
                 </CardContent>
               </Card>
             ))}
@@ -318,9 +318,9 @@ export default function HomePage() {
         {!isLoading && filteredMatches.length === 0 && !error && (
           <Card className="text-center py-16">
             <CardContent>
-              <Brain className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">No matches found</h3>
-              <p className="text-gray-500 mb-6">
+              <Brain className="w-16 h-16 mx-auto text-muted-foreground/50 mb-4" />
+              <h3 className="text-xl font-semibold text-foreground mb-2">No matches found</h3>
+              <p className="text-muted-foreground mb-6">
                 Try adjusting your filters or check back later for new matches.
               </p>
               <Button
@@ -340,14 +340,14 @@ export default function HomePage() {
 
         {/* Premium CTA for non-premium users */}
         {!isLoading && filteredMatches.length > 0 && user && !isPremium && (
-          <Card className="mt-12 bg-gradient-to-r from-gray-900 to-gray-800 text-white border-0">
+          <Card className="mt-12 bg-gradient-to-r from-primary/90 to-primary/70 text-primary-foreground border-0">
             <CardContent className="p-8 text-center">
               <Crown className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
               <h3 className="text-2xl font-bold mb-3">Unlock Unlimited Analysis</h3>
-              <p className="text-gray-300 mb-6 max-w-2xl mx-auto">
+              <p className="text-primary-foreground/90 mb-6 max-w-2xl mx-auto">
                 Get unlimited AI analysis, live tactical updates, and advanced insights for every match
               </p>
-              <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-300 mb-6">
+              <div className="flex flex-wrap justify-center gap-4 text-sm text-primary-foreground/90 mb-6">
                 <div className="flex items-center space-x-2">
                   <TrendingUp className="w-4 h-4" />
                   <span>Unlimited match analysis</span>
@@ -363,11 +363,11 @@ export default function HomePage() {
               </div>
               <Button 
                 onClick={() => alert('Premium upgrade modal')}
-                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-8 py-3 text-lg"
+                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-8 py-3 text-lg border-0"
               >
                 Upgrade to Premium • $9.99/month
               </Button>
-              <p className="text-xs text-gray-400 mt-3">7-day free trial • Cancel anytime</p>
+              <p className="text-xs text-primary-foreground/70 mt-3">7-day free trial • Cancel anytime</p>
             </CardContent>
           </Card>
         )}

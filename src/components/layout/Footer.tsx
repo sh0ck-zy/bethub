@@ -4,7 +4,7 @@ import { Brain, Shield, FileText, Mail, Twitter, Github } from 'lucide-react';
 
 export function Footer() {
   return (
-    <footer className="bg-white border-t border-gray-200 mt-auto">
+    <footer className="bg-background border-t border-border mt-auto">
       <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
@@ -14,17 +14,17 @@ export function Footer() {
                 <span className="text-white font-bold text-sm">B</span>
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">BetHub</h3>
-                <p className="text-xs text-gray-500">AI Sports Analysis</p>
+                <h3 className="text-lg font-bold text-foreground">BetHub</h3>
+                <p className="text-xs text-muted-foreground">AI Sports Analysis</p>
               </div>
             </div>
-            <p className="text-sm text-gray-600 max-w-xs">
+            <p className="text-sm text-muted-foreground max-w-xs">
               Intelligent football analysis powered by AI. Get insights that help you understand the beautiful game.
             </p>
             <div className="flex items-center space-x-3">
               <a 
                 href="https://twitter.com/bethub" 
-                className="text-gray-400 hover:text-blue-500 transition-colors"
+                className="text-muted-foreground hover:text-primary transition-colors"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -32,7 +32,7 @@ export function Footer() {
               </a>
               <a 
                 href="https://github.com/bethub" 
-                className="text-gray-400 hover:text-gray-900 transition-colors"
+                className="text-muted-foreground hover:text-foreground transition-colors"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -40,7 +40,7 @@ export function Footer() {
               </a>
               <a 
                 href="mailto:hello@bethub.com" 
-                className="text-gray-400 hover:text-blue-500 transition-colors"
+                className="text-muted-foreground hover:text-primary transition-colors"
               >
                 <Mail className="w-5 h-5" />
               </a>
@@ -49,27 +49,27 @@ export function Footer() {
 
           {/* Product */}
           <div className="space-y-4">
-            <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">Product</h4>
+            <h4 className="text-sm font-semibold text-foreground uppercase tracking-wider">Product</h4>
             <ul className="space-y-3">
               <li>
-                <Link href="/" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
+                <Link href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Match Analysis
                 </Link>
               </li>
               <li>
-                <Link href="/pricing" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
+                <Link href="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Pricing
                 </Link>
               </li>
               <li>
-                <Link href="/features" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
+                <Link href="/features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Features
                 </Link>
               </li>
               <li>
                 <button 
                   onClick={() => alert('API documentation coming soon')}
-                  className="text-sm text-gray-600 hover:text-gray-900 transition-colors text-left"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors text-left"
                 >
                   API Access
                 </button>
@@ -79,12 +79,12 @@ export function Footer() {
 
           {/* Company */}
           <div className="space-y-4">
-            <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">Company</h4>
+            <h4 className="text-sm font-semibold text-foreground uppercase tracking-wider">Company</h4>
             <ul className="space-y-3">
               <li>
                 <button 
                   onClick={() => alert('About page coming soon')}
-                  className="text-sm text-gray-600 hover:text-gray-900 transition-colors text-left"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors text-left"
                 >
                   About Us
                 </button>
@@ -92,7 +92,7 @@ export function Footer() {
               <li>
                 <button 
                   onClick={() => alert('Blog coming soon')}
-                  className="text-sm text-gray-600 hover:text-gray-900 transition-colors text-left"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors text-left"
                 >
                   Blog
                 </button>
@@ -100,7 +100,7 @@ export function Footer() {
               <li>
                 <button 
                   onClick={() => alert('Careers page coming soon')}
-                  className="text-sm text-gray-600 hover:text-gray-900 transition-colors text-left"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors text-left"
                 >
                   Careers
                 </button>
@@ -108,7 +108,7 @@ export function Footer() {
               <li>
                 <a 
                   href="mailto:hello@bethub.com" 
-                  className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Contact
                 </a>
@@ -118,12 +118,12 @@ export function Footer() {
 
           {/* Legal */}
           <div className="space-y-4">
-            <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">Legal</h4>
+            <h4 className="text-sm font-semibold text-foreground uppercase tracking-wider">Legal</h4>
             <ul className="space-y-3">
               <li>
                 <button 
                   onClick={() => alert('Privacy policy modal')}
-                  className="text-sm text-gray-600 hover:text-gray-900 transition-colors text-left"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors text-left"
                 >
                   <Shield className="w-4 h-4 mr-2 inline" />
                   Privacy Policy
@@ -132,7 +132,7 @@ export function Footer() {
               <li>
                 <button 
                   onClick={() => alert('Terms of service modal')}
-                  className="text-sm text-gray-600 hover:text-gray-900 transition-colors text-left"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors text-left"
                 >
                   <FileText className="w-4 h-4 mr-2 inline" />
                   Terms of Service
@@ -141,7 +141,7 @@ export function Footer() {
               <li>
                 <button 
                   onClick={() => alert('Cookie policy modal')}
-                  className="text-sm text-gray-600 hover:text-gray-900 transition-colors text-left"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors text-left"
                 >
                   Cookie Policy
                 </button>
@@ -149,7 +149,7 @@ export function Footer() {
               <li>
                 <button 
                   onClick={() => alert('GDPR compliance info')}
-                  className="text-sm text-gray-600 hover:text-gray-900 transition-colors text-left"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors text-left"
                 >
                   GDPR
                 </button>
@@ -159,9 +159,9 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-12 pt-8 border-t border-gray-200">
+        <div className="mt-12 pt-8 border-t border-border">
           <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
-            <div className="flex items-center space-x-4 text-sm text-gray-500">
+            <div className="flex items-center space-x-4 text-sm text-muted-foreground">
               <p>&copy; 2024 BetHub. All rights reserved.</p>
               <span className="hidden md:inline">•</span>
               <div className="flex items-center space-x-1">
@@ -170,7 +170,7 @@ export function Footer() {
               </div>
             </div>
             
-            <div className="flex items-center space-x-6 text-sm text-gray-500">
+            <div className="flex items-center space-x-6 text-sm text-muted-foreground">
               <span>Made with ❤️ for football fans</span>
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
