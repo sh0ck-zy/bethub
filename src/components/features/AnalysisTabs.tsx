@@ -270,7 +270,7 @@ export function AnalysisTabs({ matchId, isAuthenticated }: AnalysisTabsProps) {
             
             {/* Show more free insights (4 instead of 2) */}
             {insights.freeInsights.map((insight, index) => (
-              <Card key={index} className="border-0 sport-card dark:sport-card shadow-sm transition-shadow">
+              <Card key={index} className="border-0 bg-card shadow-sm hover:shadow-md transition-shadow">
                 <CardContent className="p-4">
                   <div className="flex items-start space-x-3">
                     <div className="flex-shrink-0 mt-0.5">
@@ -292,7 +292,7 @@ export function AnalysisTabs({ matchId, isAuthenticated }: AnalysisTabsProps) {
             
             {/* Additional free insights from premium pool */}
             {insights.premiumInsights.slice(0, 2).map((insight, index) => (
-              <Card key={`free-bonus-${index}`} className="border-0 sport-card dark:sport-card shadow-sm transition-shadow">
+              <Card key={`free-bonus-${index}`} className="border-0 bg-card shadow-sm hover:shadow-md transition-shadow">
                 <CardContent className="p-4">
                   <div className="flex items-start space-x-3">
                     <div className="flex-shrink-0 mt-0.5">
@@ -331,10 +331,10 @@ export function AnalysisTabs({ matchId, isAuthenticated }: AnalysisTabsProps) {
                     Sign Up for Free Analysis
                   </Button>
                 ) : !hasUsageLeft ? (
-                                  <Button 
-                  onClick={() => alert('Premium upgrade modal')}
-                  className="sport-button-premium font-semibold px-8 py-3"
-                >
+                  <Button 
+                    onClick={() => alert('Premium upgrade modal')}
+                    className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white font-semibold px-8 py-3"
+                  >
                     <Crown className="w-5 h-5 mr-2" />
                     Upgrade to Premium • $9.99/month
                   </Button>

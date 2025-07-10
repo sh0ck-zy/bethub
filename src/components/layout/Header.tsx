@@ -12,7 +12,7 @@ interface HeaderProps {
   onLoginClick: () => void;
   showAuthModal: boolean;
   setShowAuthModal: (show: boolean) => void;
-  currentPage?: 'home' | 'match' | 'dashboard' | 'admin';
+  currentPage?: 'home' | 'match' | 'admin';
 }
 
 export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentPage = 'home' }: HeaderProps) {
@@ -30,7 +30,7 @@ export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentP
 
   return (
     <>
-      <header className="sport-header dark:sport-header sticky top-0 z-50">
+      <header className="bg-background border-b border-border sticky top-0 z-50 backdrop-blur-sm bg-background/95">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             {/* Logo & Navigation */}
@@ -47,20 +47,6 @@ export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentP
 
               {/* Navigation Links - Desktop */}
               <nav className="hidden md:flex items-center space-x-1">
-                {finalIsAuthenticated && (
-                  <Link 
-                    href="/dashboard"
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      currentPage === 'dashboard' 
-                        ? 'bg-accent text-accent-foreground' 
-                        : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
-                    }`}
-                  >
-                    <Settings className="w-4 h-4 mr-1 inline" />
-                    Dashboard
-                  </Link>
-                )}
-
                 {finalIsAdmin && (
                   <Link 
                     href="/admin"
@@ -132,13 +118,6 @@ export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentP
 
                   {/* Action Buttons */}
                   <div className="flex items-center space-x-2">
-                    {/* Dashboard Link - Mobile */}
-                    <Link href="/dashboard" className="md:hidden">
-                      <Button variant="outline" size="sm">
-                        <Settings className="w-4 h-4" />
-                      </Button>
-                    </Link>
-
                     {/* Logout */}
                     <Button
                       onClick={handleSignOut}

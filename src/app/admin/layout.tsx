@@ -33,8 +33,8 @@ export default function AdminLayout({
   // Don't show loading for demo admin role
   if (isDemoAdmin && !isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 app-background dark:app-background texture-overlay dark:texture-overlay">
-        <header className="sport-header dark:sport-header border-b border-white/10 sticky top-0 z-50">
+      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
+        <header className="border-b border-white/10 bg-gray-900/90 backdrop-blur-xl sticky top-0 z-50">
           <div className="container mx-auto px-4 py-3">
             <div className="flex justify-between items-center">
               <div className="flex items-center space-x-3">
