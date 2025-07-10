@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { TeamLogo } from '@/components/TeamLogo';
 import { useAuth } from '@/contexts/AuthContext';
+import { useRoleSelector } from '@/components/ui/RoleSelector';
 
 interface Match {
   id: string;
@@ -106,8 +107,11 @@ export default function MatchDetailPage() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const { user } = useAuth();
+  const { isAuthenticated, isPremium } = useRoleSelector();
   
-  const isPremium = false; // Placeholder - will be implemented with proper subscription system
+  // Use demo role system for testing
+  const finalIsAuthenticated = isAuthenticated || !!user;
+  const finalIsPremium = isPremium;
 
   useEffect(() => {
     if (matchId) {
@@ -259,7 +263,7 @@ export default function MatchDetailPage() {
   const kickoffDate = new Date(match.kickoff_utc);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Consistent Header */}
       <Header 
         onLoginClick={() => setShowAuthModal(true)}
@@ -269,7 +273,7 @@ export default function MatchDetailPage() {
       />
 
       {/* Match Header - Mobile Optimized */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-card border-b border-border">
         <div className="max-w-4xl mx-auto px-4 py-6">
           {/* Navigation & Actions */}
           <div className="flex items-center justify-between mb-6">
@@ -303,12 +307,12 @@ export default function MatchDetailPage() {
           </div>
 
           {/* League & Time Info */}
-          <div className="text-center mb-6">
-            <Badge className="bg-blue-50 text-blue-600 border-blue-200 mb-3">
+          <div className="text-center mb-8">
+            <Badge className="bg-primary/10 text-primary border-primary/20 mb-4">
               {match.league}
             </Badge>
             
-            <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-gray-600">
+            <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
               <div className="flex items-center space-x-1">
                 <Calendar className="w-4 h-4" />
                 <span>{kickoffDate.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}</span>
@@ -326,74 +330,81 @@ export default function MatchDetailPage() {
             </div>
           </div>
           
-          {/* Teams Display */}
-          <div className="flex items-center justify-center mb-6">
-            <div className="flex items-center space-x-8 max-w-lg w-full">
+          {/* Teams Display - Better Aligned */}
+          <div className="relative mb-8">
+            <div className="grid grid-cols-3 items-center gap-4 max-w-2xl mx-auto">
               {/* Home Team */}
-              <div className="text-center flex-1">
-                <TeamLogo team={match.home_team} size={64} />
-                <h2 className="text-lg font-bold text-gray-900 mt-3 mb-1">{match.home_team}</h2>
-                <span className="text-sm text-gray-500">Home</span>
+              <div className="text-center">
+                <div className="mb-4 flex justify-center">
+                  <TeamLogo team={match.home_team} size={80} />
+                </div>
+                <h2 className="text-lg font-bold text-foreground mb-1 line-clamp-2">{match.home_team}</h2>
+                <span className="text-xs text-muted-foreground uppercase tracking-wide">Home</span>
                 {match.home_score !== undefined && (
-                  <div className="text-3xl font-bold text-blue-600 mt-2">{match.home_score}</div>
+                  <div className="text-3xl font-bold text-primary mt-3">{match.home_score}</div>
                 )}
               </div>
               
               {/* VS + Status */}
-              <div className="text-center">
-                <div className="text-2xl font-bold text-gray-400 mb-2">VS</div>
-                <Badge className={`${statusConfig.color} border font-semibold ${statusConfig.pulse ? 'animate-pulse' : ''}`}>
+              <div className="text-center px-4">
+                <div className="text-2xl font-bold text-muted-foreground mb-3">VS</div>
+                <Badge className={`${statusConfig.color} border font-semibold px-3 py-1 ${statusConfig.pulse ? 'animate-pulse' : ''}`}>
                   <span className="mr-1">{statusConfig.icon}</span>
                   {statusConfig.text}
                 </Badge>
+                {(match.home_score !== undefined || match.away_score !== undefined) && (
+                  <div className="text-xs text-muted-foreground mt-2">Final Score</div>
+                )}
               </div>
 
               {/* Away Team */}
-              <div className="text-center flex-1">
-                <TeamLogo team={match.away_team} size={64} />
-                <h2 className="text-lg font-bold text-gray-900 mt-3 mb-1">{match.away_team}</h2>
-                <span className="text-sm text-gray-500">Away</span>
+              <div className="text-center">
+                <div className="mb-4 flex justify-center">
+                  <TeamLogo team={match.away_team} size={80} />
+                </div>
+                <h2 className="text-lg font-bold text-foreground mb-1 line-clamp-2">{match.away_team}</h2>
+                <span className="text-xs text-muted-foreground uppercase tracking-wide">Away</span>
                 {match.away_score !== undefined && (
-                  <div className="text-3xl font-bold text-blue-600 mt-2">{match.away_score}</div>
+                  <div className="text-3xl font-bold text-primary mt-3">{match.away_score}</div>
                 )}
               </div>
             </div>
           </div>
 
           {/* AI Headline - Hero Section */}
-          <Card className="bg-gradient-to-r from-blue-50 via-purple-50 to-blue-50 border-0 shadow-sm">
+          <Card className="bg-gradient-to-r from-primary/5 via-primary/10 to-purple-500/5 border-primary/20 shadow-sm">
             <CardContent className="p-6 text-center">
               <div className="flex items-center justify-center space-x-2 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-gradient-to-r from-primary to-purple-600 rounded-lg flex items-center justify-center">
                   <Brain className="w-4 h-4 text-white" />
                 </div>
-                <h3 className="text-lg font-bold text-gray-900">AI Analysis</h3>
+                <h3 className="text-lg font-bold text-foreground">AI Analysis</h3>
                 <div className="flex items-center space-x-1">
                   <TrendingUp className="w-4 h-4 text-green-500" />
-                  <Badge className="bg-green-100 text-green-700 text-xs">
+                  <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs">
                     {analysis.confidence}% confidence
                   </Badge>
                 </div>
               </div>
               
-              <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 leading-tight">
+              <h1 className="text-xl md:text-2xl font-bold text-foreground mb-4 leading-tight">
                 {analysis.headline}
               </h1>
               
-              <p className="text-gray-700 text-lg leading-relaxed max-w-2xl mx-auto">
+              <p className="text-muted-foreground text-lg leading-relaxed max-w-2xl mx-auto">
                 {analysis.prediction}
               </p>
 
               {/* Premium Upgrade CTA for non-premium users */}
-              {!isPremium && (
-                <div className="mt-6 p-4 bg-white/50 rounded-lg border border-white/20">
+              {!finalIsPremium && (
+                <div className="mt-6 p-4 bg-card/50 rounded-lg border border-border/50">
                   <div className="flex items-center justify-center space-x-2 mb-3">
-                    <Crown className="w-5 h-5 text-yellow-600" />
-                    <span className="text-sm font-semibold text-gray-800">Get the full tactical breakdown</span>
+                    <Crown className="w-5 h-5 text-yellow-500" />
+                    <span className="text-sm font-semibold text-foreground">Get the full tactical breakdown</span>
                   </div>
                   <Button 
                     onClick={() => setShowAuthModal(true)}
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-6 py-2"
+                    className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-700 text-white font-semibold px-6 py-2"
                   >
                     Unlock Premium Analysis
                   </Button>
@@ -408,7 +419,7 @@ export default function MatchDetailPage() {
       <main className="flex-1 max-w-4xl mx-auto px-4 py-8 w-full">
         <AnalysisTabs 
           matchId={matchId} 
-          isAuthenticated={!!user}
+          isAuthenticated={finalIsAuthenticated}
         />
       </main>
 

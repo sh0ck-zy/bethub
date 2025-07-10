@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { useRoleSelector } from '@/components/ui/RoleSelector';
 import { 
   Brain, 
   BarChart3, 
@@ -166,20 +167,22 @@ export function AnalysisTabs({ matchId, isAuthenticated }: AnalysisTabsProps) {
   const [hasViewedAnalysis, setHasViewedAnalysis] = useState(false);
   const [usageCount, setUsageCount] = useState(0);
   
-  // Check if user is premium (placeholder)
-  const isPremium = false; // You'll implement this based on your auth system
+  // Use demo role system for testing
+  const { isPremium, isAuthenticated: isDemoAuthenticated } = useRoleSelector();
+  const finalIsAuthenticated = isDemoAuthenticated || isAuthenticated;
+  const finalIsPremium = isPremium;
   
   const insights = generateEnhancedInsights(matchId);
-  const hasUsageLeft = !isAuthenticated || isPremium || usageTracker.hasUsageLeft();
+  const hasUsageLeft = !finalIsAuthenticated || finalIsPremium || usageTracker.hasUsageLeft();
 
   useEffect(() => {
-    if (isAuthenticated && !isPremium) {
+    if (finalIsAuthenticated && !finalIsPremium) {
       setUsageCount(usageTracker.getUsageToday());
     }
-  }, [isAuthenticated, isPremium]);
+  }, [finalIsAuthenticated, finalIsPremium]);
 
   const handleViewAnalysis = () => {
-    if (!isAuthenticated || isPremium) {
+    if (!finalIsAuthenticated || finalIsPremium) {
       setHasViewedAnalysis(true);
       return;
     }
@@ -203,10 +206,10 @@ export function AnalysisTabs({ matchId, isAuthenticated }: AnalysisTabsProps) {
   return (
     <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 bg-white border border-gray-200 rounded-lg p-1 h-auto">
+        <TabsList className="grid w-full grid-cols-3 bg-card border border-border rounded-lg p-1 h-auto">
           <TabsTrigger 
             value="insights"
-            className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 font-medium py-3 text-sm"
+            className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary font-medium py-3 text-sm"
           >
             <Brain className="w-4 h-4 mr-2" />
             <span className="hidden sm:inline">AI Insights</span>
@@ -215,7 +218,7 @@ export function AnalysisTabs({ matchId, isAuthenticated }: AnalysisTabsProps) {
           
           <TabsTrigger 
             value="stats"
-            className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 font-medium py-3 text-sm"
+            className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary font-medium py-3 text-sm"
           >
             <BarChart3 className="w-4 h-4 mr-2" />
             <span className="hidden sm:inline">Statistics</span>
@@ -224,7 +227,7 @@ export function AnalysisTabs({ matchId, isAuthenticated }: AnalysisTabsProps) {
           
           <TabsTrigger 
             value="live"
-            className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 font-medium py-3 text-sm"
+            className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary font-medium py-3 text-sm"
           >
             <Activity className="w-4 h-4 mr-2" />
             <span className="hidden sm:inline">Live Feed</span>
@@ -233,18 +236,18 @@ export function AnalysisTabs({ matchId, isAuthenticated }: AnalysisTabsProps) {
         </TabsList>
 
         {/* Usage Indicator for Free Users */}
-        {isAuthenticated && !isPremium && (
-          <Card className="border-orange-200 bg-orange-50">
+        {finalIsAuthenticated && !finalIsPremium && (
+          <Card className="border-orange-200 bg-orange-500/10 dark:border-orange-800/50 dark:bg-orange-500/5">
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-2">
-                  <Eye className="w-4 h-4 text-orange-600" />
-                  <span className="text-sm font-medium text-orange-800">Daily Usage</span>
+                  <Eye className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                  <span className="text-sm font-medium text-orange-800 dark:text-orange-200">Daily Usage</span>
                 </div>
-                <span className="text-sm text-orange-600">{usageCount}/1 used</span>
+                <span className="text-sm text-orange-600 dark:text-orange-400">{usageCount}/1 used</span>
               </div>
               <Progress value={usageCount * 100} className="h-2 mb-2" />
-              <p className="text-xs text-orange-700">
+              <p className="text-xs text-orange-700 dark:text-orange-300">
                 {hasUsageLeft ? 'You have 1 free analysis remaining today' : 'Daily limit reached - upgrade for unlimited access'}
               </p>
             </CardContent>
@@ -253,20 +256,21 @@ export function AnalysisTabs({ matchId, isAuthenticated }: AnalysisTabsProps) {
 
         {/* AI Insights Tab */}
         <TabsContent value="insights" className="space-y-4">
-          {/* Free Insights */}
+          {/* Free Insights - Enhanced */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-gray-900 flex items-center">
-                <Brain className="w-5 h-5 mr-2 text-blue-600" />
+              <h3 className="font-semibold text-foreground flex items-center">
+                <Brain className="w-5 h-5 mr-2 text-primary" />
                 Key Insights
               </h3>
-              <Badge className="bg-green-50 text-green-600 border-green-200 text-xs">
+              <Badge className="bg-green-500/10 text-green-600 border-green-500/20 dark:text-green-400 text-xs">
                 Always Free
               </Badge>
             </div>
             
+            {/* Show more free insights (4 instead of 2) */}
             {insights.freeInsights.map((insight, index) => (
-              <Card key={index} className="border-0 bg-white shadow-sm hover:shadow-md transition-shadow">
+              <Card key={index} className="border-0 bg-card shadow-sm hover:shadow-md transition-shadow">
                 <CardContent className="p-4">
                   <div className="flex items-start space-x-3">
                     <div className="flex-shrink-0 mt-0.5">
@@ -274,12 +278,34 @@ export function AnalysisTabs({ matchId, isAuthenticated }: AnalysisTabsProps) {
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium text-gray-900 text-sm">{insight.title}</h4>
-                        <Badge className="bg-green-100 text-green-700 text-xs">
+                        <h4 className="font-medium text-foreground text-sm">{insight.title}</h4>
+                        <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs">
                           {insight.confidence}%
                         </Badge>
                       </div>
-                      <p className="text-sm text-gray-700 leading-relaxed">{insight.content}</p>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{insight.content}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+            
+            {/* Additional free insights from premium pool */}
+            {insights.premiumInsights.slice(0, 2).map((insight, index) => (
+              <Card key={`free-bonus-${index}`} className="border-0 bg-card shadow-sm hover:shadow-md transition-shadow">
+                <CardContent className="p-4">
+                  <div className="flex items-start space-x-3">
+                    <div className="flex-shrink-0 mt-0.5">
+                      <CheckCircle className="w-4 h-4 text-blue-500" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-medium text-foreground text-sm">{insight.title}</h4>
+                        <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-xs">
+                          Free
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{insight.content}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -287,9 +313,9 @@ export function AnalysisTabs({ matchId, isAuthenticated }: AnalysisTabsProps) {
             ))}
           </div>
 
-          {/* Premium Content Gate */}
-          {(!isAuthenticated || !isPremium) && !hasViewedAnalysis ? (
-            <Card className="border-0 bg-gradient-to-r from-gray-900 to-gray-800 text-white">
+          {/* Premium Content Gate - Only show if no free analysis left */}
+          {(!finalIsAuthenticated || (!finalIsPremium && !hasUsageLeft)) && !hasViewedAnalysis ? (
+            <Card className="border-0 bg-gradient-to-r from-slate-900 to-slate-800 dark:from-slate-800 dark:to-slate-900 text-white">
               <CardContent className="p-6 text-center">
                 <Lock className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
                 <h3 className="text-xl font-bold mb-2">Unlock Advanced Analysis</h3>
@@ -297,10 +323,10 @@ export function AnalysisTabs({ matchId, isAuthenticated }: AnalysisTabsProps) {
                   Get tactical formations, player analysis, and live updates
                 </p>
                 
-                {!isAuthenticated ? (
+                {!finalIsAuthenticated ? (
                   <Button 
                     onClick={() => alert('Sign up modal')}
-                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold px-8 py-3"
+                    className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-700 text-white font-semibold px-8 py-3"
                   >
                     Sign Up for Free Analysis
                   </Button>
@@ -315,7 +341,7 @@ export function AnalysisTabs({ matchId, isAuthenticated }: AnalysisTabsProps) {
                 ) : (
                   <Button 
                     onClick={handleViewAnalysis}
-                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold px-8 py-3"
+                    className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-700 text-white font-semibold px-8 py-3"
                   >
                     <Eye className="w-5 h-5 mr-2" />
                     Use Your Free Analysis
@@ -323,30 +349,30 @@ export function AnalysisTabs({ matchId, isAuthenticated }: AnalysisTabsProps) {
                 )}
                 
                 <p className="text-xs text-gray-400 mt-3">
-                  {!isAuthenticated ? 'Free account gets 1 analysis per day' : 'Upgrade for unlimited access'}
+                  {!finalIsAuthenticated ? 'Free account gets 1 analysis per day' : 'Upgrade for unlimited access'}
                 </p>
               </CardContent>
             </Card>
           ) : (
-            /* Premium Insights */
+            /* Premium Insights - Only remaining premium content */
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-gray-900 flex items-center">
-                  <Target className="w-5 h-5 mr-2 text-purple-600" />
+                <h3 className="font-semibold text-foreground flex items-center">
+                  <Target className="w-5 h-5 mr-2 text-purple-600 dark:text-purple-400" />
                   Tactical Analysis
                 </h3>
-                <Badge className="bg-blue-50 text-blue-600 border-blue-200 text-xs">
-                  {isPremium ? 'Premium' : 'Free Today'}
+                <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">
+                  {finalIsPremium ? 'Premium' : 'Free Today'}
                 </Badge>
               </div>
 
-              {insights.premiumInsights?.map((insight, index) => (
-                <Card key={index} className="border-0 bg-gradient-to-r from-blue-50 to-purple-50">
+              {insights.premiumInsights?.slice(2).map((insight, index) => (
+                <Card key={index} className="border-0 bg-gradient-to-r from-primary/5 to-purple-500/5 dark:from-primary/10 dark:to-purple-500/10">
                   <CardContent className="p-6">
-                    <h4 className="font-semibold text-gray-900 mb-3">{insight.title}</h4>
-                    <p className="text-gray-700 mb-4 leading-relaxed">{insight.content}</p>
-                    <div className="bg-white/50 rounded-lg p-4 border border-white/20">
-                      <p className="text-sm text-gray-600 leading-relaxed">{insight.details}</p>
+                    <h4 className="font-semibold text-foreground mb-3">{insight.title}</h4>
+                    <p className="text-muted-foreground mb-4 leading-relaxed">{insight.content}</p>
+                    <div className="bg-card/50 rounded-lg p-4 border border-border/20">
+                      <p className="text-sm text-muted-foreground leading-relaxed">{insight.details}</p>
                     </div>
                   </CardContent>
                 </Card>
