@@ -74,10 +74,7 @@ export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentP
                   {/* User Info & Account Type */}
                   <div className="hidden sm:flex items-center space-x-3">
                     <div className="text-right">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-sm font-medium text-foreground truncate max-w-32">
-                          {user?.email?.split('@')[0] || role}
-                        </span>
+                      <div className="flex items-center justify-end">
                         {finalIsPremium ? (
                           <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0 text-xs font-semibold shadow-md">
                             <Crown className="w-3 h-3 mr-1" />
@@ -96,7 +93,7 @@ export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentP
                         )}
                       </div>
                       {!finalIsPremium && !finalIsAdmin && (
-                        <p className="text-xs text-muted-foreground">1 analysis remaining</p>
+                        <p className="text-xs text-muted-foreground text-right">1 analysis remaining</p>
                       )}
                     </div>
                     <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-sm">
