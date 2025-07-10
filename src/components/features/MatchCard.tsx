@@ -80,25 +80,25 @@ export function MatchCard({ match, mode = 'public', adminControls }: MatchCardPr
     switch (status) {
       case 'LIVE':
         return {
-          color: 'bg-red-50 text-red-600 border-red-200',
+          color: 'bg-destructive/10 text-destructive border-destructive/20',
           text: 'Live',
           icon: '🔴'
         };
       case 'FT':
         return {
-          color: 'bg-green-50 text-green-600 border-green-200',
+          color: 'bg-green-500/10 text-green-600 border-green-500/20',
           text: 'Finished',
           icon: '✅'
         };
       case 'HT':
         return {
-          color: 'bg-yellow-50 text-yellow-600 border-yellow-200',
+          color: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20',
           text: 'Half Time',
           icon: '⏸️'
         };
       default:
         return {
-          color: 'bg-blue-50 text-blue-600 border-blue-200',
+          color: 'bg-primary/10 text-primary border-primary/20',
           text: 'Upcoming',
           icon: '⏰'
         };
@@ -122,12 +122,12 @@ export function MatchCard({ match, mode = 'public', adminControls }: MatchCardPr
   const insight = generateSmartInsight(match);
 
   const cardContent = (
-    <Card className="group transition-all duration-300 border-0 bg-white shadow-sm hover:shadow-md overflow-hidden cursor-pointer active:scale-[0.98] md:hover:scale-[1.01]">
+    <Card className="group transition-all duration-300 border border-border bg-card shadow-sm hover:shadow-md overflow-hidden cursor-pointer active:scale-[0.98] md:hover:scale-[1.01]">
       <CardContent className="p-0">
         {/* Header - Mobile Optimized */}
         <div className="p-3 pb-2 md:p-4 md:pb-3">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               {match.league}
             </span>
             <Badge className={`${statusConfig.color} text-xs px-2 py-0.5 rounded-full border`}>
@@ -136,7 +136,7 @@ export function MatchCard({ match, mode = 'public', adminControls }: MatchCardPr
             </Badge>
           </div>
           
-          <div className="flex items-center text-xs text-gray-600 space-x-3">
+          <div className="flex items-center text-xs text-muted-foreground space-x-3">
             <div className="flex items-center">
               <Calendar className="w-3 h-3 mr-1" />
               <span className="font-medium">{kickoffDate}</span>
@@ -154,7 +154,7 @@ export function MatchCard({ match, mode = 'public', adminControls }: MatchCardPr
             {/* Home Team */}
             <div className="flex items-center space-x-2 flex-1 min-w-0">
               <TeamLogo team={match.home_team} size={28} />
-              <span className="font-semibold text-gray-900 text-sm truncate">
+              <span className="font-semibold text-foreground text-sm truncate">
                 {match.home_team.length > 12 ? 
                   match.home_team.split(' ')[0] + (match.home_team.split(' ')[1] ? ` ${match.home_team.split(' ')[1][0]}.` : '') :
                   match.home_team
@@ -163,11 +163,11 @@ export function MatchCard({ match, mode = 'public', adminControls }: MatchCardPr
             </div>
             
             {/* VS */}
-            <div className="mx-3 text-gray-400 font-bold text-sm">VS</div>
+            <div className="mx-3 text-muted-foreground font-bold text-sm">VS</div>
             
             {/* Away Team */}
             <div className="flex items-center space-x-2 flex-1 min-w-0 justify-end">
-              <span className="font-semibold text-gray-900 text-sm truncate">
+              <span className="font-semibold text-foreground text-sm truncate">
                 {match.away_team.length > 12 ? 
                   match.away_team.split(' ')[0] + (match.away_team.split(' ')[1] ? ` ${match.away_team.split(' ')[1][0]}.` : '') :
                   match.away_team
@@ -179,14 +179,14 @@ export function MatchCard({ match, mode = 'public', adminControls }: MatchCardPr
         </div>
 
         {/* AI Insight - Thumb Friendly */}
-        <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-t border-gray-100">
+        <div className="bg-accent/50 border-t border-border">
           <div className="p-3 md:p-4">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center space-x-2">
                 <div className="w-4 h-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded flex items-center justify-center">
                   <Brain className="w-2.5 h-2.5 text-white" />
                 </div>
-                <span className="text-xs font-semibold text-gray-800">AI Insight</span>
+                <span className="text-xs font-semibold text-foreground">AI Insight</span>
               </div>
               <div className="flex items-center space-x-1">
                 <TrendingUp className="w-3 h-3 text-green-500" />
@@ -194,7 +194,7 @@ export function MatchCard({ match, mode = 'public', adminControls }: MatchCardPr
               </div>
             </div>
             
-            <p className="text-sm text-gray-700 leading-relaxed mb-3 line-clamp-2">
+            <p className="text-sm text-foreground leading-relaxed mb-3 line-clamp-2">
               {insight.text}
             </p>
             
@@ -203,9 +203,9 @@ export function MatchCard({ match, mode = 'public', adminControls }: MatchCardPr
                 <div className="flex space-x-1">
                   <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
                   <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
-                  <div className="w-1.5 h-1.5 bg-gray-300 rounded-full"></div>
+                  <div className="w-1.5 h-1.5 bg-muted rounded-full"></div>
                 </div>
-                <div className="flex items-center text-blue-600 text-sm font-semibold group-hover:text-blue-700 py-2 px-3 -m-2 rounded-lg active:bg-blue-50 transition-colors">
+                <div className="flex items-center text-primary text-sm font-semibold hover:text-primary/80 py-2 px-3 -m-2 rounded-lg hover:bg-accent/50 transition-colors">
                   <span>Read analysis</span>
                   <ArrowRight className="w-3 h-3 ml-1 group-hover:translate-x-1 transition-transform" />
                 </div>
@@ -216,23 +216,23 @@ export function MatchCard({ match, mode = 'public', adminControls }: MatchCardPr
 
         {/* Admin Controls */}
         {mode === 'admin' && adminControls && (
-          <div className="border-t border-gray-100 p-3 md:p-4">
+          <div className="border-t border-border p-3 md:p-4">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center space-x-2">
                 <div className={`w-2 h-2 rounded-full ${
                   adminControls.analysisStatus === 'completed' ? 'bg-green-500' :
                   adminControls.analysisStatus === 'pending' ? 'bg-yellow-500 animate-pulse' :
-                  adminControls.analysisStatus === 'failed' ? 'bg-red-500' :
-                  'bg-gray-400'
+                  adminControls.analysisStatus === 'failed' ? 'bg-destructive' :
+                  'bg-muted-foreground'
                 }`}></div>
-                <span className="text-xs font-medium text-gray-700 capitalize">
+                <span className="text-xs font-medium text-foreground capitalize">
                   {adminControls.analysisStatus}
                 </span>
               </div>
               <Badge className={`text-xs ${
                 adminControls.isPublished 
-                  ? 'bg-green-50 text-green-600 border-green-200' 
-                  : 'bg-gray-50 text-gray-600 border-gray-200'
+                  ? 'bg-green-500/10 text-green-600 border-green-500/20' 
+                  : 'bg-muted text-muted-foreground border-border'
               }`}>
                 {adminControls.isPublished ? 'Published' : 'Hidden'}
               </Badge>
@@ -242,7 +242,7 @@ export function MatchCard({ match, mode = 'public', adminControls }: MatchCardPr
               <button
                 onClick={() => adminControls.onSendToAI(match.id)}
                 disabled={adminControls.analysisStatus === 'pending'}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white text-xs font-medium py-2 px-3 rounded-lg transition-colors"
+                className="flex-1 bg-primary hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed text-primary-foreground text-xs font-medium py-2 px-3 rounded-lg transition-colors"
               >
                 {adminControls.analysisStatus === 'pending' ? 'Analyzing...' : 'Send to AI'}
               </button>
@@ -251,7 +251,7 @@ export function MatchCard({ match, mode = 'public', adminControls }: MatchCardPr
                 onClick={() => adminControls.onTogglePublish(match.id, !adminControls.isPublished)}
                 className={`flex-1 text-xs font-medium py-2 px-3 rounded-lg transition-colors ${
                   adminControls.isPublished
-                    ? 'bg-red-600 hover:bg-red-700 text-white'
+                    ? 'bg-destructive hover:bg-destructive/90 text-destructive-foreground'
                     : 'bg-green-600 hover:bg-green-700 text-white'
                 }`}
               >

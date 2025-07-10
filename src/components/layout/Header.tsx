@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { Crown, User, LogOut, Settings, BarChart3 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { AuthModal } from '@/components/features/AuthModal';
@@ -25,7 +26,7 @@ export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentP
 
   return (
     <>
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+      <header className="bg-background border-b border-border sticky top-0 z-50 backdrop-blur-sm bg-background/95">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             {/* Logo & Navigation */}
@@ -35,8 +36,8 @@ export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentP
                   <span className="text-white font-bold text-sm">B</span>
                 </div>
                 <div>
-                  <h1 className="text-lg font-bold text-gray-900">BetHub</h1>
-                  <p className="text-xs text-gray-500 hidden sm:block">AI Sports Analysis</p>
+                  <h1 className="text-lg font-bold text-foreground">BetHub</h1>
+                  <p className="text-xs text-muted-foreground hidden sm:block">AI Sports Analysis</p>
                 </div>
               </Link>
 
@@ -46,8 +47,8 @@ export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentP
                   href="/"
                   className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                     currentPage === 'home' 
-                      ? 'bg-blue-50 text-blue-700' 
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      ? 'bg-accent text-accent-foreground' 
+                      : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
                   }`}
                 >
                   Matches
@@ -58,8 +59,8 @@ export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentP
                     href="/dashboard"
                     className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                       currentPage === 'dashboard' 
-                        ? 'bg-blue-50 text-blue-700' 
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                        ? 'bg-accent text-accent-foreground' 
+                        : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
                     }`}
                   >
                     <Settings className="w-4 h-4 mr-1 inline" />
@@ -72,8 +73,8 @@ export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentP
                     href="/admin"
                     className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                       currentPage === 'admin' 
-                        ? 'bg-purple-50 text-purple-700' 
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                        ? 'bg-accent text-accent-foreground' 
+                        : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
                     }`}
                   >
                     <BarChart3 className="w-4 h-4 mr-1 inline" />
@@ -85,13 +86,14 @@ export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentP
 
             {/* User Actions */}
             <div className="flex items-center space-x-3">
+              <ThemeToggle />
               {user ? (
                 <div className="flex items-center space-x-3">
                   {/* User Info - Desktop */}
                   <div className="hidden sm:flex items-center space-x-3">
                     <div className="text-right">
                       <div className="flex items-center space-x-2">
-                        <span className="text-sm font-medium text-gray-900 truncate max-w-32">
+                        <span className="text-sm font-medium text-foreground truncate max-w-32">
                           {user.email?.split('@')[0]}
                         </span>
                         {isPremium ? (
@@ -100,13 +102,13 @@ export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentP
                             Premium
                           </Badge>
                         ) : (
-                          <Badge className="bg-gray-100 text-gray-600 border-gray-200 text-xs">
+                          <Badge variant="secondary" className="text-xs">
                             Free
                           </Badge>
                         )}
                       </div>
                       {!isPremium && (
-                        <p className="text-xs text-gray-500">1 analysis remaining</p>
+                        <p className="text-xs text-muted-foreground">1 analysis remaining</p>
                       )}
                     </div>
                     <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
@@ -140,7 +142,6 @@ export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentP
                       onClick={handleSignOut}
                       variant="outline"
                       size="sm"
-                      className="text-gray-600 hover:text-gray-900"
                     >
                       <LogOut className="w-4 h-4 sm:mr-2" />
                       <span className="hidden sm:inline">Logout</span>
@@ -160,7 +161,7 @@ export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentP
                   
                   <Button
                     onClick={onLoginClick}
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-sm px-4 py-2"
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-sm px-4 py-2 border-0"
                   >
                     <Crown className="w-4 h-4 mr-2" />
                     <span className="hidden sm:inline">Get Premium</span>
