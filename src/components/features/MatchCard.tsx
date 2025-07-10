@@ -122,7 +122,7 @@ export function MatchCard({ match, mode = 'public', adminControls }: MatchCardPr
   const insight = generateSmartInsight(match);
 
   const cardContent = (
-    <Card className="group transition-all duration-300 border border-border bg-card shadow-sm hover:shadow-md overflow-hidden cursor-pointer active:scale-[0.98] md:hover:scale-[1.01]">
+    <Card className="group sport-card dark:sport-card transition-all duration-300 border border-border overflow-hidden cursor-pointer active:scale-[0.98] md:hover:scale-[1.01]">
       <CardContent className="p-0">
         {/* Header - Mobile Optimized */}
         <div className="p-3 pb-2 md:p-4 md:pb-3">
