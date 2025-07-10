@@ -134,7 +134,7 @@ export default function HomePage() {
   const userState = getUserStateMessage();
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background app-background dark:app-background flex flex-col">
       {/* Consistent Header */}
       <Header 
         onLoginClick={() => setShowAuthModal(true)}
@@ -143,7 +143,7 @@ export default function HomePage() {
       />
 
       {/* Hero Section - User State Aware */}
-      <div className="bg-accent/30 border-b border-border">
+      <div className="bg-accent/30 border-b border-border texture-overlay dark:texture-overlay">
         <div className="max-w-7xl mx-auto px-4 py-8 text-center">
           <div className="flex items-center justify-center space-x-2 mb-3">
             <Brain className="w-6 h-6 text-primary" />
