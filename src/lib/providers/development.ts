@@ -28,13 +28,13 @@ export async function initializeDevelopmentProviders(): Promise<void> {
   // Initialize the registry with development config
   await providerRegistry.initialize(config);
 
-  // Create multi-source data provider (Football-Data.org + Sports DB + more)
-  const multiSourceProvider = new SportsAPIProvider();
+  // Create Football-Data.org provider (your API key is configured!)
+  const footballDataProvider = new FootballDataProvider();
 
-  // Register providers - use MULTI-SOURCE data provider, mock others
+  // Register providers - use FOOTBALL-DATA.ORG provider, mock others
   providerRegistry.registerProvider('ai', mockProviders.ai);
   providerRegistry.registerProvider('payment', mockProviders.payment);
-  providerRegistry.registerProvider('data', multiSourceProvider); // 🔥 MULTI-SOURCE REAL DATA!
+  providerRegistry.registerProvider('data', footballDataProvider); // 🔥 FOOTBALL-DATA.ORG REAL DATA!
   providerRegistry.registerProvider('realtime', mockProviders.realtime);
   providerRegistry.registerProvider('analytics', mockProviders.analytics);
 
@@ -45,7 +45,7 @@ export async function initializeDevelopmentProviders(): Promise<void> {
   console.log('📊 Available services:', {
     ai: 'Mock AI Analysis Provider',
     payment: 'Mock Payment Provider',
-    data: '🔥 MULTI-SOURCE Sports API (Football-Data.org + Sports DB)', // Updated!
+    data: '🔥 FOOTBALL-DATA.ORG Real Sports API (FREE)', // Updated!
     realtime: 'Mock Realtime Provider',
     analytics: 'Mock Analytics Provider',
   });
@@ -53,14 +53,14 @@ export async function initializeDevelopmentProviders(): Promise<void> {
   // Verify providers are accessible
   console.log('🔍 Provider verification:');
   console.log('- AI Provider:', providerRegistry.getAIProvider() ? '✅' : '❌');
-  console.log('- Data Provider:', providerRegistry.getDataProvider() ? '✅ MULTI-SOURCE REAL DATA!' : '❌');
+  console.log('- Data Provider:', providerRegistry.getDataProvider() ? '✅ FOOTBALL-DATA.ORG REAL DATA!' : '❌');
   console.log('- Payment Provider:', providerRegistry.getPaymentProvider() ? '✅' : '❌');
   console.log('- Realtime Provider:', providerRegistry.getRealtimeProvider() ? '✅' : '❌');
   console.log('- Analytics Provider:', providerRegistry.getAnalyticsProvider() ? '✅' : '❌');
 }
 
 // Auto-initialize in development environment
-if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV === 'development') {
   console.log('🔧 Auto-initializing development providers with MULTI-SOURCE REAL DATA...');
   initializeDevelopmentProviders().catch(console.error);
 } 
