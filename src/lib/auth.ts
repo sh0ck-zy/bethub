@@ -90,10 +90,51 @@ export const authService = {
     if (error) throw error;
   },
 
+  // Server-side admin check for API routes
+  async checkAdminFromRequest(request: Request): Promise<{ isAdmin: boolean; user: any; error?: string }> {
+    try {
+      // Get the authorization header
+      const authHeader = request.headers.get('authorization');
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return { isAdmin: false, user: null, error: 'No authorization header' };
+      }
+
+      const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+
+      // Verify the JWT token with Supabase
+      const { data: { user }, error } = await supabase.auth.getUser(token);
+      
+      if (error || !user) {
+        return { isAdmin: false, user: null, error: 'Invalid token' };
+      }
+
+      // Check if user has admin role
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError || !profile) {
+        return { isAdmin: false, user, error: 'Profile not found' };
+      }
+
+      return { isAdmin: profile.role === 'admin', user };
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+      return { isAdmin: false, user: null, error: 'Server error' };
+    }
+  },
+
   // Get auth token for API calls
   async getAuthToken(): Promise<string | null> {
-    const { data: { session } } = await supabase.auth.getSession();
-    return session?.access_token || null;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      return session?.access_token || null;
+    } catch (error) {
+      console.error('Error getting auth token:', error);
+      return null;
+    }
   },
 
   // Listen to auth changes

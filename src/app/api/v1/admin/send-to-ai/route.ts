@@ -1,7 +1,14 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { requireAdmin } from '@/lib/admin-protection';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  // Check admin access
+  const adminCheck = await requireAdmin(request);
+  if (adminCheck) {
+    return adminCheck;
+  }
+
   try {
     const { matchId } = await request.json();
 
@@ -10,32 +17,6 @@ export async function POST(request: Request) {
         { error: 'matchId is required' },
         { status: 400 }
       );
-    }
-
-    // Check admin authentication
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Authorization required' }, { status: 401 });
-    }
-
-    const token = authHeader.replace('Bearer ', '');
-    
-    // Verify the auth token and check admin role
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-    }
-
-    // Check if user is admin
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (profileError || profile?.role !== 'admin') {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
     // Check if Supabase is configured

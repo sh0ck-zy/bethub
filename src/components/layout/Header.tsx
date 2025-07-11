@@ -24,6 +24,16 @@ export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentP
   const finalIsAuthenticated = isAuthenticated || user;
   const finalIsPremium = isPremium;
 
+  // Debug logging
+  console.log('Header Debug:', {
+    user: user?.email,
+    isAdmin,
+    isDemoAdmin,
+    finalIsAdmin,
+    role,
+    currentPage
+  });
+
   const handleSignOut = async () => {
     await signOut();
   };
@@ -50,11 +60,12 @@ export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentP
                 {finalIsAdmin && (
                   <Link 
                     href="/admin"
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors relative z-10 ${
                       currentPage === 'admin' 
                         ? 'bg-accent text-accent-foreground' 
                         : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
                     }`}
+                    onClick={() => console.log('Admin button clicked')}
                   >
                     <BarChart3 className="w-4 h-4 mr-1 inline" />
                     Admin
@@ -71,6 +82,17 @@ export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentP
               <ThemeToggle />
               {finalIsAuthenticated ? (
                 <div className="flex items-center space-x-3">
+                  {/* Mobile Admin Button */}
+                  {finalIsAdmin && (
+                    <Link 
+                      href="/admin"
+                      className="md:hidden px-3 py-2 rounded-lg text-sm font-medium transition-colors relative z-10 bg-accent text-accent-foreground"
+                      onClick={() => console.log('Mobile admin button clicked')}
+                    >
+                      <BarChart3 className="w-4 h-4" />
+                    </Link>
+                  )}
+
                   {/* User Info & Account Type */}
                   <div className="hidden sm:flex items-center space-x-3">
                     <div className="text-right">
