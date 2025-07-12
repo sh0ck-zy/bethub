@@ -27,12 +27,16 @@ import {
   X,
   Play,
   Pause,
-  Brain
+  Brain,
+  Plus,
+  Filter,
+  Search
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRoleSelector } from '@/components/ui/RoleSelector';
 import { adminApiGet, adminApiPost, adminApiPut, adminApiDelete } from '@/lib/admin-api';
 import { useRouter } from 'next/navigation';
+import AdminDashboardTabs from '@/components/admin/AdminDashboardTabs';
 
 // Admin interface types
 interface AdminMatch {
@@ -46,6 +50,17 @@ interface AdminMatch {
   analysis_status: 'none' | 'pending' | 'completed';
   created_at: string;
   updated_at?: string;
+}
+
+// Future Match interface (from real data)
+interface FutureMatch {
+  id: string;
+  league: string;
+  home_team: string;
+  away_team: string;
+  kickoff_utc: string;
+  status: 'PRE';
+  submitted_for_analysis?: boolean;
 }
 
 // Real Match Sync Panel Component
@@ -260,7 +275,266 @@ function RealMatchSyncPanel() {
       </Card>
     </div>
   );
+}
+
+// Future Matches Panel Component - NEW!
+function FutureMatchesPanel() {
+  const [futureMatches, setFutureMatches] = useState<FutureMatch[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedLeague, setSelectedLeague] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [submittingMatches, setSubmittingMatches] = useState<Set<string>>(new Set());
+
+  // Fetch future matches from real data
+  const fetchFutureMatches = async () => {
+    setIsLoading(true);
+    try {
+      const response = await adminApiGet('/api/v1/admin/real-matches?days=30');
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setFutureMatches(data.data || []);
+        }
       }
+    } catch (error) {
+      console.error('Error fetching future matches:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Submit match for analysis
+  const submitForAnalysis = async (match: FutureMatch) => {
+    setSubmittingMatches(prev => new Set(prev).add(match.id));
+    
+    try {
+      const response = await adminApiPost('/api/v1/admin/submit-for-analysis', {
+        matchId: match.id,
+        league: match.league,
+        homeTeam: match.home_team,
+        awayTeam: match.away_team,
+        kickoffUtc: match.kickoff_utc
+      });
+
+      if (response.ok) {
+        // Update local state to show as submitted
+        setFutureMatches(prev => 
+          prev.map(m => 
+            m.id === match.id 
+              ? { ...m, submitted_for_analysis: true }
+              : m
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error submitting for analysis:', error);
+    } finally {
+      setSubmittingMatches(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(match.id);
+        return newSet;
+      });
+    }
+  };
+
+  // Filter matches
+  const filteredMatches = futureMatches.filter(match => {
+    const matchesLeague = selectedLeague === 'all' || match.league === selectedLeague;
+    const matchesSearch = searchTerm === '' || 
+      match.home_team.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      match.away_team.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      match.league.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    return matchesLeague && matchesSearch;
+  });
+
+  // Get unique leagues
+  const leagues = ['all', ...Array.from(new Set(futureMatches.map(m => m.league)))];
+
+  // Load future matches on component mount
+  useEffect(() => {
+    fetchFutureMatches();
+  }, []);
+
+  return (
+    <div className="space-y-6">
+      {/* Header with stats */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span className="flex items-center space-x-2">
+              <Calendar className="w-5 h-5" />
+              <span>Future Matches</span>
+            </span>
+            <div className="flex items-center space-x-4">
+              <Badge variant="outline">
+                {futureMatches.length} Total
+              </Badge>
+              <Badge variant="outline">
+                {futureMatches.filter(m => m.submitted_for_analysis).length} Submitted
+              </Badge>
+              <Button onClick={fetchFutureMatches} variant="outline" size="sm">
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Refresh
+              </Button>
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {/* Filters */}
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                <input
+                  type="text"
+                  placeholder="Search teams or leagues..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border rounded-lg"
+                />
+              </div>
+            </div>
+            <div className="sm:w-48">
+              <select
+                value={selectedLeague}
+                onChange={(e) => setSelectedLeague(e.target.value)}
+                className="w-full p-2 border rounded-lg"
+              >
+                {leagues.map(league => (
+                  <option key={league} value={league}>
+                    {league === 'all' ? 'All Leagues' : league}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Matches List */}
+          {isLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-6 h-6 animate-spin mr-2" />
+              <span>Loading future matches...</span>
+            </div>
+          ) : filteredMatches.length === 0 ? (
+            <div className="text-center py-8">
+              <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground mb-4">
+                {searchTerm || selectedLeague !== 'all' 
+                  ? 'No matches found with current filters'
+                  : 'No future matches available'
+                }
+              </p>
+              {(searchTerm || selectedLeague !== 'all') && (
+                <Button onClick={() => { setSearchTerm(''); setSelectedLeague('all'); }}>
+                  Clear Filters
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                {filteredMatches.length} matches found
+              </p>
+              
+              <div className="grid gap-4">
+                {filteredMatches.map((match) => (
+                  <Card key={match.id} className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <Badge variant="outline">{match.league}</Badge>
+                          <Badge variant="secondary">Future</Badge>
+                          {match.submitted_for_analysis && (
+                            <Badge variant="default" className="bg-blue-500">
+                              Submitted
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="font-semibold text-lg">
+                          {match.home_team} vs {match.away_team}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(match.kickoff_utc).toLocaleString()}
+                        </p>
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        {!match.submitted_for_analysis ? (
+                          <Button
+                            onClick={() => submitForAnalysis(match)}
+                            disabled={submittingMatches.has(match.id)}
+                            size="sm"
+                          >
+                            {submittingMatches.has(match.id) ? (
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            ) : (
+                              <Brain className="w-4 h-4 mr-2" />
+                            )}
+                            Submit for Analysis
+                          </Button>
+                        ) : (
+                          <div className="flex items-center space-x-2">
+                            <CheckCircle className="w-5 h-5 text-green-600" />
+                            <span className="text-sm text-green-600">Submitted</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Workflow Info */}
+      <Card className="bg-blue-50 border-blue-200">
+        <CardHeader>
+          <CardTitle className="text-blue-800">📋 Workflow Guide</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3 text-sm text-blue-700">
+            <div className="flex items-start space-x-3">
+              <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold mt-0.5">
+                1
+              </div>
+              <div>
+                <strong>Browse Future Matches:</strong> View upcoming matches from real data sources
+              </div>
+            </div>
+            <div className="flex items-start space-x-3">
+              <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold mt-0.5">
+                2
+              </div>
+              <div>
+                <strong>Submit for Analysis:</strong> Click "Submit for Analysis" to send to AI agent
+              </div>
+            </div>
+            <div className="flex items-start space-x-3">
+              <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold mt-0.5">
+                3
+              </div>
+              <div>
+                <strong>Wait for Analysis:</strong> AI agent will analyze the match (coming soon)
+              </div>
+            </div>
+            <div className="flex items-start space-x-3">
+              <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold mt-0.5">
+                4
+              </div>
+              <div>
+                <strong>Publish Match:</strong> Once analysis is complete, publish for users to see
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
 
 // Match Edit Card Component
 function MatchEditCard({ match, onUpdate }: { match: AdminMatch; onUpdate: () => void }) {
@@ -307,6 +581,20 @@ function MatchEditCard({ match, onUpdate }: { match: AdminMatch; onUpdate: () =>
       }
     } catch (error) {
       console.error('Error sending to AI:', error);
+    }
+  };
+
+  const handleCompleteAnalysis = async () => {
+    try {
+      const response = await adminApiPost('/api/v1/admin/complete-analysis', {
+        matchId: match.id
+      });
+
+      if (response.ok) {
+        onUpdate();
+      }
+    } catch (error) {
+      console.error('Error completing analysis:', error);
     }
   };
 
@@ -462,15 +750,35 @@ function MatchEditCard({ match, onUpdate }: { match: AdminMatch; onUpdate: () =>
                 )}
               </Button>
               
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleSendToAI}
-                disabled={match.analysis_status === 'pending'}
-              >
-                <Brain className="w-4 h-4 mr-2" />
-                {match.analysis_status === 'pending' ? 'Analyzing...' : 'Analyze'}
-              </Button>
+              {match.analysis_status === 'none' && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleSendToAI}
+                >
+                  <Brain className="w-4 h-4 mr-2" />
+                  Submit for Analysis
+                </Button>
+              )}
+              
+              {match.analysis_status === 'pending' && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCompleteAnalysis}
+                  className="bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100"
+                >
+                  <Brain className="w-4 h-4 mr-2" />
+                  Complete Analysis (Mock)
+                </Button>
+              )}
+              
+              {match.analysis_status === 'completed' && (
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                  <span className="text-sm text-green-600">Analyzed</span>
+                </div>
+              )}
               
             <Button
                 variant="outline"
@@ -502,7 +810,7 @@ export default function AdminPage() {
   const { user } = useAuth();
   const { isAdmin, isAuthenticated: isDemoAuthenticated } = useRoleSelector();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState('sync'); // Start with sync tab
+  const [activeTab, setActiveTab] = useState('future'); // Start with future matches tab
   const [showAuthModal, setShowAuthModal] = useState(false);
   
   // Admin state
@@ -593,142 +901,10 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header 
-        onLoginClick={() => setShowAuthModal(true)}
-        showAuthModal={showAuthModal}
-        setShowAuthModal={setShowAuthModal}
-        currentPage="admin"
-      />
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">BetHub Admin Panel</h1>
-          <p className="text-muted-foreground">Manage matches, sync real data, and monitor AI analysis</p>
-        </div>
-
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="sync">
-              <Download className="w-4 h-4 mr-2" />
-              Real Match Sync
-            </TabsTrigger>
-            <TabsTrigger value="matches">
-              <Trophy className="w-4 h-4 mr-2" />
-              Match Management  
-            </TabsTrigger>
-            <TabsTrigger value="analytics">
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Analytics
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Real Match Sync Tab - NEW! */}
-          <TabsContent value="sync">
-            <RealMatchSyncPanel />
-          </TabsContent>
-
-          {/* Match Management tab */}
-          <TabsContent value="matches">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span>Match Management</span>
-                  <div className="flex items-center space-x-2">
-                    <Badge variant="outline" className="text-xs">
-                      {matches.filter(m => m.is_published).length} Published
-                    </Badge>
-                    <Badge variant="outline" className="text-xs">
-                      {matches.filter(m => m.analysis_status === 'completed').length} Analyzed
-                    </Badge>
-                  </div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <div className="flex items-center justify-center py-8">
-                    <Loader2 className="w-6 h-6 animate-spin mr-2" />
-                    <span>Loading matches...</span>
-                  </div>
-                ) : error ? (
-                  <div className="text-center py-8">
-                    <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-                    <p className="text-red-600">{error}</p>
-                    <Button onClick={fetchMatches} className="mt-4">
-                      <RefreshCw className="w-4 h-4 mr-2" />
-                      Retry
-                    </Button>
-                  </div>
-                ) : matches.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Trophy className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-muted-foreground mb-4">
-                      No matches found. Sync some real matches to get started!
-                    </p>
-                    <Button onClick={() => setActiveTab('sync')}>
-                      <Download className="w-4 h-4 mr-2" />
-                      Go to Sync Tab
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm text-muted-foreground">
-                        {matches.length} matches found
-                      </p>
-                      <Button onClick={fetchMatches} variant="outline" size="sm">
-                        <RefreshCw className="w-4 h-4 mr-2" />
-                        Refresh
-                      </Button>
-                    </div>
-                    
-                    <div className="grid gap-4">
-                      {matches.map((match) => (
-                        <MatchEditCard 
-                          key={match.id} 
-                          match={match} 
-                          onUpdate={fetchMatches}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Analytics tab */}
-          <TabsContent value="analytics">
-            <Card>
-              <CardHeader>
-                <CardTitle>Analytics & Monitoring</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                  <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <p className="text-2xl font-bold text-blue-600">{matches.length}</p>
-                    <p className="text-sm text-blue-700">Total Matches</p>
-                  </div>
-                  <div className="text-center p-4 bg-green-50 rounded-lg">
-                    <p className="text-2xl font-bold text-green-600">
-                      {matches.filter(m => m.is_published).length}
-                    </p>
-                    <p className="text-sm text-green-700">Published</p>
-                  </div>
-                  <div className="text-center p-4 bg-orange-50 rounded-lg">
-                    <p className="text-2xl font-bold text-orange-600">
-                      {matches.filter(m => m.analysis_status === 'completed').length}
-                    </p>
-                    <p className="text-sm text-orange-700">Analyzed</p>
-                  </div>
-                </div>
-                
-                <p className="text-muted-foreground">
-                  Advanced analytics dashboard coming soon...
-                </p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      <main className="flex-1 container mx-auto py-8">
+        <AdminDashboardTabs />
       </main>
       <Footer />
     </div>
