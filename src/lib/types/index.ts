@@ -12,6 +12,8 @@ export interface Match {
   odds?: Odds;
   venue?: string;
   referee?: string;
+  is_published?: boolean;
+  analysis_status?: 'none' | 'pending' | 'completed' | 'failed';
 }
 
 export interface Team {

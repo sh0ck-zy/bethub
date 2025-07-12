@@ -1,3 +1,5 @@
+'use client';
+
 import Image from 'next/image';
 import { TEAMS } from '@/lib/teams';
 import { useState } from 'react';

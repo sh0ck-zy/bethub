@@ -46,7 +46,9 @@ export default function HomePage() {
       }
       setError(null);
       
-      const response = await fetch(`/api/v1/today`);
+      // Include admin flag if user is admin
+      const adminParam = isAdmin ? '&admin=true' : '';
+      const response = await fetch(`/api/v1/today?${adminParam}`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -54,9 +56,28 @@ export default function HomePage() {
       
       const data = await response.json();
       
-      if (Array.isArray(data)) {
+      // Handle new API response format
+      const matches = data.matches || data;
+      
+      if (Array.isArray(matches)) {
+        // Remove any duplicates before processing
+        const uniqueMatches = matches.filter((match, index, self) => 
+          index === self.findIndex(m => m.id === match.id)
+        );
+        
+        console.log(`Fetched ${matches.length} matches, ${uniqueMatches.length} unique`);
+        
+        // Log any duplicates found
+        const duplicateIds = matches.filter((match, index, self) => 
+          self.findIndex(m => m.id === match.id) !== index
+        ).map(m => m.id);
+        
+        if (duplicateIds.length > 0) {
+          console.warn('Duplicate IDs found:', duplicateIds);
+        }
+        
         // Smart sorting: Live → Upcoming → Finished
-        const sortedMatches = data.sort((a, b) => {
+        const sortedMatches = uniqueMatches.sort((a, b) => {
           const getWeight = (match: Match) => {
             if (match.status === 'LIVE') return 1;
             if (match.status === 'FT') return 3;
