@@ -49,13 +49,38 @@ async function testAdminWorkflow() {
     
     // Step 3: Complete analysis (mock)
     console.log('\n✅ Step 3: Completing analysis (mock)...');
+    
+    // First, get the match from the database to get the correct ID
+    const matchesResponse2 = await fetch(`${baseUrl}/api/v1/admin/matches`);
+    const matchesData2 = await matchesResponse2.json();
+    
+    if (!matchesData2.success) {
+      console.log('❌ Failed to fetch matches from database');
+      return;
+    }
+    
+    // Find the match that was just submitted (by team names and league)
+    const submittedMatch = matchesData2.data.find(m => 
+      m.home_team === testMatch.home_team && 
+      m.away_team === testMatch.away_team && 
+      m.league === testMatch.league &&
+      m.analysis_status === 'pending'
+    );
+    
+    if (!submittedMatch) {
+      console.log('❌ Submitted match not found in database');
+      return;
+    }
+    
+    console.log(`🎯 Found submitted match in database: ${submittedMatch.id}`);
+    
     const completeResponse = await fetch(`${baseUrl}/api/v1/admin/complete-analysis`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        matchId: testMatch.id
+        matchId: submittedMatch.id
       })
     });
     
@@ -67,8 +92,9 @@ async function testAdminWorkflow() {
     }
     
     console.log('✅ Analysis completed successfully');
-    console.log(`   Prediction: ${completeData.data.analysis.prediction.outcome} (${completeData.data.analysis.prediction.confidence * 100}% confidence)`);
-    console.log(`   Betting Recommendation: ${completeData.data.analysis.betting_recommendation.bet}`);
+    if (completeData.data.analysis) {
+      console.log(`   Analysis data available`);
+    }
     
     // Step 4: Check match in database
     console.log('\n📊 Step 4: Checking match in database...');

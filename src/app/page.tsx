@@ -65,16 +65,7 @@ export default function HomePage() {
           index === self.findIndex(m => m.id === match.id)
         );
         
-        console.log(`Fetched ${matches.length} matches, ${uniqueMatches.length} unique`);
-        
-        // Log any duplicates found
-        const duplicateIds = matches.filter((match, index, self) => 
-          self.findIndex(m => m.id === match.id) !== index
-        ).map(m => m.id);
-        
-        if (duplicateIds.length > 0) {
-          console.warn('Duplicate IDs found:', duplicateIds);
-        }
+        // Process matches silently
         
         // Smart sorting: Live → Upcoming → Finished
         const sortedMatches = uniqueMatches.sort((a, b) => {

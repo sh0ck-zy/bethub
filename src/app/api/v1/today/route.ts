@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize Supabase client with service role for admin operations
+// Initialize Supabase client with service role for admin operations, fallback to anon key
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
 export async function GET() {
@@ -42,13 +42,13 @@ export async function GET() {
     const transformedMatches = matches?.map(match => ({
       id: match.id,
       league: match.league,
-      homeTeam: match.home_team,
-      awayTeam: match.away_team,
-      kickoffUtc: match.kickoff_utc,
+      home_team: match.home_team,
+      away_team: match.away_team,
+      kickoff_utc: match.kickoff_utc,
       status: match.status,
-      isPublished: match.is_published,
-      analysisStatus: match.analysis_status,
-      createdAt: match.created_at
+      is_published: match.is_published,
+      analysis_status: match.analysis_status,
+      created_at: match.created_at
     })) || [];
 
     return NextResponse.json({
