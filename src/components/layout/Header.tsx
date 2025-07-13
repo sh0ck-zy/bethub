@@ -24,15 +24,7 @@ export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentP
   const finalIsAuthenticated = isAuthenticated || user;
   const finalIsPremium = isPremium;
 
-  // Debug logging
-  console.log('Header Debug:', {
-    user: user?.email,
-    isAdmin,
-    isDemoAdmin,
-    finalIsAdmin,
-    role,
-    currentPage
-  });
+  // Debug logging removed
 
   const handleSignOut = async () => {
     await signOut();
@@ -65,7 +57,7 @@ export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentP
                         ? 'bg-accent text-accent-foreground' 
                         : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
                     }`}
-                    onClick={() => console.log('Admin button clicked')}
+                    onClick={() => {}}
                   >
                     <BarChart3 className="w-4 h-4 mr-1 inline" />
                     Admin
@@ -87,7 +79,7 @@ export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentP
                     <Link 
                       href="/admin"
                       className="md:hidden px-3 py-2 rounded-lg text-sm font-medium transition-colors relative z-10 bg-accent text-accent-foreground"
-                      onClick={() => console.log('Mobile admin button clicked')}
+                      onClick={() => {}}
                     >
                       <BarChart3 className="w-4 h-4" />
                     </Link>

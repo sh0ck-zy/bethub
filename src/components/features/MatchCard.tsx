@@ -153,11 +153,11 @@ export function MatchCard({ match, mode = 'public', adminControls }: MatchCardPr
           <div className="flex items-center justify-between">
             {/* Home Team */}
             <div className="flex items-center space-x-2 flex-1 min-w-0">
-              <TeamLogo team={match.home_team} size={28} />
+              <TeamLogo team={match.home_team || 'Unknown'} size={28} />
               <span className="font-semibold text-foreground text-sm truncate">
-                {match.home_team.length > 12 ? 
+                {match.home_team && match.home_team.length > 12 ? 
                   match.home_team.split(' ')[0] + (match.home_team.split(' ')[1] ? ` ${match.home_team.split(' ')[1][0]}.` : '') :
-                  match.home_team
+                  match.home_team || 'Unknown Team'
                 }
               </span>
             </div>
@@ -168,12 +168,12 @@ export function MatchCard({ match, mode = 'public', adminControls }: MatchCardPr
             {/* Away Team */}
             <div className="flex items-center space-x-2 flex-1 min-w-0 justify-end">
               <span className="font-semibold text-foreground text-sm truncate">
-                {match.away_team.length > 12 ? 
+                {match.away_team && match.away_team.length > 12 ? 
                   match.away_team.split(' ')[0] + (match.away_team.split(' ')[1] ? ` ${match.away_team.split(' ')[1][0]}.` : '') :
-                  match.away_team
+                  match.away_team || 'Unknown Team'
                 }
               </span>
-              <TeamLogo team={match.away_team} size={28} />
+              <TeamLogo team={match.away_team || 'Unknown'} size={28} />
             </div>
           </div>
         </div>
