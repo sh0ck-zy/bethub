@@ -32,7 +32,14 @@ export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentP
 
   return (
     <>
-      <header className="bg-background border-b border-border sticky top-0 z-50 backdrop-blur-sm bg-background/95">
+      <header
+        className="sticky top-0 z-50 backdrop-blur-md"
+        style={{
+          background: 'linear-gradient(90deg, rgba(25,25,36,0.92) 60%, rgba(39,41,61,0.92) 100%)',
+          boxShadow: '0 4px 24px 0 rgba(0,0,0,0.12)',
+          borderBottom: '1.5px solid rgba(255,255,255,0.06)',
+        }}
+      >
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             {/* Logo & Navigation */}
@@ -54,10 +61,9 @@ export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentP
                     href="/admin"
                     className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors relative z-10 ${
                       currentPage === 'admin' 
-                        ? 'bg-accent text-accent-foreground' 
-                        : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
+                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md' 
+                        : 'text-muted-foreground hover:text-white hover:bg-accent/40'
                     }`}
-                    onClick={() => {}}
                   >
                     <BarChart3 className="w-4 h-4 mr-1 inline" />
                     Admin
@@ -70,7 +76,6 @@ export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentP
             <div className="flex items-center space-x-3">
               {/* Demo Role Selector - Development Only */}
               <RoleSelector className="hidden sm:flex" />
-              
               <ThemeToggle />
               {finalIsAuthenticated ? (
                 <div className="flex items-center space-x-3">
@@ -79,12 +84,10 @@ export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentP
                     <Link 
                       href="/admin"
                       className="md:hidden px-3 py-2 rounded-lg text-sm font-medium transition-colors relative z-10 bg-accent text-accent-foreground"
-                      onClick={() => {}}
                     >
                       <BarChart3 className="w-4 h-4" />
                     </Link>
                   )}
-
                   {/* User Info & Account Type */}
                   <div className="hidden sm:flex items-center space-x-3">
                     <div className="text-right">
@@ -114,7 +117,6 @@ export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentP
                       <User className="w-4 h-4 text-white" />
                     </div>
                   </div>
-
                   {/* Upgrade Button - Only for Free Users */}
                   {!finalIsPremium && !finalIsAdmin && (
                     <Button
@@ -126,7 +128,6 @@ export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentP
                       <span className="sm:hidden">Pro</span>
                     </Button>
                   )}
-
                   {/* Action Buttons */}
                   <div className="flex items-center space-x-2">
                     {/* Logout */}
@@ -150,7 +151,6 @@ export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentP
                     <User className="w-4 h-4 mr-2" />
                     Sign In
                   </Button>
-                  
                   <Button
                     onClick={onLoginClick}
                     className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-sm px-4 py-2 border-0"
