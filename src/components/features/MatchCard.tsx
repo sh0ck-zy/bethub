@@ -1,257 +1,320 @@
 'use client';
 
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Brain, TrendingUp, Clock, Calendar, ArrowRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { Clock, TrendingUp, Users, MapPin, Star, ChevronRight, BarChart3 } from 'lucide-react';
 import Link from 'next/link';
 import { TeamLogo } from '@/components/TeamLogo';
+import type { Match, Odds, MatchStats, AnalysisResult } from '@/lib/types';
 
-interface Match {
-  id: string;
-  league: string;
-  home_team: string;
-  away_team: string;
-  kickoff_utc: string;
-  status: string;
-  is_published?: boolean;
-  analysis_status?: 'none' | 'pending' | 'completed' | 'failed';
-}
-
-interface AdminControls {
-  onSendToAI: (matchId: string) => void;
-  onTogglePublish: (matchId: string, isPublished: boolean) => void;
-  analysisStatus: string;
-  isPublished: boolean;
+// Extended interface for the enhanced match card
+interface EnhancedMatch extends Match {
+  odds?: Odds;
+  venue?: string;
+  attendance?: string;
+  homeTeam?: {
+    form: string[];
+    homeRecord: string;
+  };
+  awayTeam?: {
+    form: string[];
+    awayRecord: string;
+  };
+  sponsor?: {
+    name: string;
+    logo: string;
+    country: string;
+    slogan: string;
+  };
+  aiInsight?: {
+    confidence: number;
+    prediction: string;
+    keyFactors: string[];
+  };
+  stats?: {
+    possession: { home: number; away: number };
+    shots: { home: number; away: number };
+    corners: { home: number; away: number };
+  };
 }
 
 interface MatchCardProps {
-  match: Match;
+  match: EnhancedMatch;
   mode?: 'public' | 'admin';
-  adminControls?: AdminControls;
+  adminControls?: {
+    onSendToAI: (matchId: string) => void;
+    onTogglePublish: (matchId: string, isPublished: boolean) => void;
+    analysisStatus: string;
+    isPublished: boolean;
+  };
 }
 
-// Intelligent insight generation based on match data
-const generateSmartInsight = (match: Match): { text: string; confidence: number } => {
-  // Check for specific match conditions
-  if (match.home_team === 'Manchester United' && match.away_team === 'Liverpool') {
-    return {
-      text: "Without Van Dijk, Liverpool concede 40% more goals. United's pace could be decisive.",
-      confidence: 87
-    };
-  }
+// Helper function to generate mock data for missing fields
+const generateMockData = (match: Match): Partial<EnhancedMatch> => {
+  const homeTeam = match.home_team;
+  const awayTeam = match.away_team;
   
-  if (match.home_team === 'Real Madrid' && match.away_team === 'Barcelona') {
-    return {
-      text: "Clasico history favors Real Madrid at home with 3 wins in last 5 meetings.",
-      confidence: 82
-    };
-  }
-  
-  if (match.home_team === 'Arsenal' && match.away_team === 'Chelsea') {
-    return {
-      text: "Arsenal's set-piece dominance vs Chelsea's aerial weakness could decide this.",
-      confidence: 79
-    };
-  }
-  
-  if (match.league === 'Premier League') {
-    return {
-      text: `${match.home_team} at home average 2.1 goals vs ${match.away_team}'s 1.3 away defense.`,
-      confidence: 75
-    };
-  }
-  
-  if (match.status === 'LIVE') {
-    return {
-      text: "Live tactical battle unfolding - home team's press vs away counter-attack.",
-      confidence: 85
-    };
-  }
-
-  // Default insight
   return {
-    text: `${match.home_team}'s home form vs ${match.away_team}'s away record will be key.`,
-    confidence: 72
+    odds: match.odds || {
+      home: 2.1 + Math.random() * 0.8,
+      draw: 3.2 + Math.random() * 0.6,
+      away: 2.8 + Math.random() * 0.8,
+      provider: 'BetHub',
+      last_updated: new Date().toISOString(),
+    },
+    venue: match.venue || `${homeTeam} Stadium`,
+    attendance: `${Math.floor(Math.random() * 30000) + 20000}`,
+    homeTeam: {
+      form: ['W', 'L', 'W', 'D', 'W'].sort(() => Math.random() - 0.5),
+      homeRecord: `${Math.floor(Math.random() * 8) + 4}W-${Math.floor(Math.random() * 4) + 1}D-${Math.floor(Math.random() * 3) + 1}L`
+    },
+    awayTeam: {
+      form: ['W', 'W', 'L', 'W', 'D'].sort(() => Math.random() - 0.5),
+      awayRecord: `${Math.floor(Math.random() * 6) + 2}W-${Math.floor(Math.random() * 3) + 1}D-${Math.floor(Math.random() * 5) + 2}L`
+    },
+    sponsor: {
+      name: 'BetHub',
+      logo: '/bethub-logo.png',
+      country: 'BR',
+      slogan: 'Your winning moment'
+    },
+    aiInsight: {
+      confidence: Math.floor(Math.random() * 30) + 65,
+      prediction: `${homeTeam}'s strong home form against ${awayTeam}'s inconsistent away record will be decisive.`,
+      keyFactors: ['Home advantage', 'Recent form', 'Head-to-head']
+    },
+    stats: {
+      possession: { 
+        home: Math.floor(Math.random() * 20) + 40, 
+        away: Math.floor(Math.random() * 20) + 40 
+      },
+      shots: { 
+        home: Math.floor(Math.random() * 8) + 8, 
+        away: Math.floor(Math.random() * 8) + 6 
+      },
+      corners: { 
+        home: Math.floor(Math.random() * 4) + 4, 
+        away: Math.floor(Math.random() * 4) + 3 
+      }
+    }
   };
 };
 
-export function MatchCard({ match, mode = 'public', adminControls }: MatchCardProps) {
-  const getStatusConfig = (status: string) => {
+// Status Badge Component
+const StatusBadge = ({ status, kickoffTime }: { status: string; kickoffTime: string }) => {
+  const getStatusDisplay = () => {
     switch (status) {
       case 'LIVE':
-        return {
-          color: 'bg-destructive/10 text-destructive border-destructive/20',
-          text: 'Live',
-          icon: '🔴'
-        };
-      case 'FT':
-        return {
-          color: 'bg-green-500/10 text-green-600 border-green-500/20',
-          text: 'Finished',
-          icon: '✅'
-        };
+        return (
+          <div className="flex items-center justify-center gap-1 text-red-400">
+            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+            <span className="text-xs font-medium">LIVE</span>
+          </div>
+        );
       case 'HT':
-        return {
-          color: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20',
-          text: 'Half Time',
-          icon: '⏸️'
-        };
+        return (
+          <div className="flex items-center justify-center gap-1 text-orange-400">
+            <div className="w-2 h-2 bg-orange-500 rounded-full" />
+            <span className="text-xs font-medium">HT</span>
+          </div>
+        );
+      case 'FT':
+        return (
+          <div className="flex items-center justify-center">
+            <span className="text-xs font-medium text-green-400">FT</span>
+          </div>
+        );
+      case 'PRE':
+        if (kickoffTime) {
+          const date = new Date(kickoffTime);
+          const now = new Date();
+          const tomorrow = new Date(now);
+          tomorrow.setDate(tomorrow.getDate() + 1);
+          
+          const isToday = date.toDateString() === now.toDateString();
+          const isTomorrow = date.toDateString() === tomorrow.toDateString();
+          const timeString = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          
+          if (isToday) {
+            return (
+              <div className="flex flex-col items-center text-center">
+                <div className="text-xs font-semibold text-blue-400 leading-tight">Today</div>
+                <div className="text-xs font-medium text-gray-300 leading-tight">{timeString}</div>
+              </div>
+            );
+          } else if (isTomorrow) {
+            return (
+              <div className="flex flex-col items-center text-center">
+                <div className="text-xs font-semibold text-blue-400 leading-tight">Tomorrow</div>
+                <div className="text-xs font-medium text-gray-300 leading-tight">{timeString}</div>
+              </div>
+            );
+          } else {
+            return (
+              <div className="flex flex-col items-center text-center">
+                <div className="text-xs font-semibold text-blue-400 leading-tight">
+                  {date.toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                </div>
+                <div className="text-xs font-medium text-gray-300 leading-tight">{timeString}</div>
+              </div>
+            );
+          }
+        }
+        return (
+          <div className="flex items-center justify-center">
+            <span className="text-xs font-medium text-blue-400">PRE</span>
+          </div>
+        );
       default:
-        return {
-          color: 'bg-primary/10 text-primary border-primary/20',
-          text: 'Upcoming',
-          icon: '⏰'
-        };
+        return null;
     }
   };
 
-  const statusConfig = getStatusConfig(match.status);
+  return (
+    <div className="flex items-center justify-end text-right min-w-[50px]">
+      {getStatusDisplay()}
+    </div>
+  );
+};
+
+// Helper functions
+const truncateTeamName = (name: string, maxLength: number = 12) => {
+  if (name.length <= maxLength) return name;
   
-  const kickoffTime = new Date(match.kickoff_utc).toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  const words = name.split(' ');
+  if (words.length > 1) {
+    return `${words[0]} ${words[1].charAt(0)}.`;
+  }
+  
+  return name.substring(0, maxLength - 3) + '...';
+};
 
-  const kickoffDate = new Date(match.kickoff_utc).toLocaleDateString([], {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-  });
+const getConfidenceColor = (confidence: number) => {
+  if (confidence >= 80) return 'text-green-400';
+  if (confidence >= 60) return 'text-yellow-400';
+  return 'text-red-400';
+};
 
-  // Generate intelligent insight
-  const insight = generateSmartInsight(match);
+export function MatchCard({ match, mode = 'public', adminControls }: MatchCardProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  
+  // Merge match data with generated mock data for missing fields
+  const enhancedMatch: EnhancedMatch = {
+    ...match,
+    ...generateMockData(match)
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      // Navigate to match page
+      window.location.href = `/match/${enhancedMatch.id}`;
+    }
+  };
 
   const cardContent = (
-    <Card className="group transition-all duration-300 border border-border bg-card shadow-sm hover:shadow-md overflow-hidden cursor-pointer active:scale-[0.98] md:hover:scale-[1.01]">
-      <CardContent className="p-0">
-        {/* Header - Mobile Optimized */}
-        <div className="p-3 pb-2 md:p-4 md:pb-3">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              {match.league}
+    <div
+      role="button"
+      tabIndex={0}
+      onKeyDown={handleKeyDown}
+      className="w-full bg-gray-900 border border-gray-700 rounded-xl cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+      aria-label={`Match: ${enhancedMatch.home_team} vs ${enhancedMatch.away_team}`}
+    >
+      {/* Header with League and Status */}
+      <div className="flex justify-between items-center p-3 bg-gradient-to-r from-gray-800 to-gray-700 border-b border-gray-600 rounded-t-xl">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <div className="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0"></div>
+          <span className="text-orange-400 font-semibold text-sm tracking-wide truncate">
+            {enhancedMatch.league}
+          </span>
+        </div>
+        <StatusBadge status={enhancedMatch.status} kickoffTime={enhancedMatch.kickoff_utc} />
+      </div>
+
+      {/* Main Content */}
+      <div className="p-3">
+        {/* Teams Section */}
+        <div className="space-y-2 mb-3">
+          <div className="flex items-center gap-2">
+            <TeamLogo team={enhancedMatch.home_team} size={24} />
+            <span className="text-sm font-medium text-white truncate">
+              {truncateTeamName(enhancedMatch.home_team)}
             </span>
-            <Badge className={`${statusConfig.color} text-xs px-2 py-0.5 rounded-full border`}>
-              <span className="mr-1">{statusConfig.icon}</span>
-              {statusConfig.text}
-            </Badge>
           </div>
-          
-          <div className="flex items-center text-xs text-muted-foreground space-x-3">
-            <div className="flex items-center">
-              <Calendar className="w-3 h-3 mr-1" />
-              <span className="font-medium">{kickoffDate}</span>
-            </div>
-            <div className="flex items-center">
-              <Clock className="w-3 h-3 mr-1" />
-              <span className="font-medium">{kickoffTime}</span>
-            </div>
+          <div className="flex items-center gap-2">
+            <TeamLogo team={enhancedMatch.away_team} size={24} />
+            <span className="text-sm font-medium text-white truncate">
+              {truncateTeamName(enhancedMatch.away_team)}
+            </span>
           </div>
         </div>
 
-        {/* Teams - Mobile First Layout */}
-        <div className="px-3 pb-3 md:px-4 md:pb-4">
-          <div className="flex items-center justify-between">
-            {/* Home Team */}
-            <div className="flex items-center space-x-2 flex-1 min-w-0">
-              <TeamLogo team={match.home_team || 'Unknown'} size={28} />
-              <span className="font-semibold text-foreground text-sm truncate">
-                {match.home_team && match.home_team.length > 12 ? 
-                  match.home_team.split(' ')[0] + (match.home_team.split(' ')[1] ? ` ${match.home_team.split(' ')[1][0]}.` : '') :
-                  match.home_team || 'Unknown Team'
-                }
-              </span>
+        {/* AI Insight - Hero Section */}
+        <div className="border-t border-gray-700 pt-2">
+          <div className="flex items-center justify-between mb-1">
+            <div className="text-xs font-semibold text-blue-400 flex items-center gap-1">
+              <span className="text-xs">🤖</span>
+              AI Insight
             </div>
-            
-            {/* VS */}
-            <div className="mx-3 text-muted-foreground font-bold text-sm">VS</div>
-            
-            {/* Away Team */}
-            <div className="flex items-center space-x-2 flex-1 min-w-0 justify-end">
-              <span className="font-semibold text-foreground text-sm truncate">
-                {match.away_team && match.away_team.length > 12 ? 
-                  match.away_team.split(' ')[0] + (match.away_team.split(' ')[1] ? ` ${match.away_team.split(' ')[1][0]}.` : '') :
-                  match.away_team || 'Unknown Team'
-                }
-              </span>
-              <TeamLogo team={match.away_team || 'Unknown'} size={28} />
-            </div>
-          </div>
-        </div>
-
-        {/* AI Insight - Thumb Friendly */}
-        <div className="bg-accent/50 border-t border-border">
-          <div className="p-3 md:p-4">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded flex items-center justify-center">
-                  <Brain className="w-2.5 h-2.5 text-white" />
-                </div>
-                <span className="text-xs font-semibold text-foreground">AI Insight</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <TrendingUp className="w-3 h-3 text-green-500" />
-                <span className="text-xs font-semibold text-green-600">{insight.confidence}%</span>
-              </div>
-            </div>
-            
-            <p className="text-sm text-foreground leading-relaxed mb-3 line-clamp-2">
-              {insight.text}
-            </p>
-            
-            {mode === 'public' && (
-              <div className="flex items-center justify-between">
-                <div className="flex space-x-1">
-                  <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
-                  <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
-                  <div className="w-1.5 h-1.5 bg-muted rounded-full"></div>
-                </div>
-                <div className="flex items-center text-primary text-sm font-semibold hover:text-primary/80 py-2 px-3 -m-2 rounded-lg hover:bg-accent/50 transition-colors">
-                  <span>Read analysis</span>
-                  <ArrowRight className="w-3 h-3 ml-1 group-hover:translate-x-1 transition-transform" />
-                </div>
+            {enhancedMatch.aiInsight && (
+              <div className={`text-xs font-bold ${getConfidenceColor(enhancedMatch.aiInsight.confidence)}`}>
+                {enhancedMatch.aiInsight.confidence}%
               </div>
             )}
+          </div>
+          {enhancedMatch.aiInsight && (
+            <p className="text-xs text-gray-300 leading-relaxed line-clamp-2 mb-1">
+              {enhancedMatch.aiInsight.prediction}
+            </p>
+          )}
+          <div className="text-xs text-blue-400 font-medium">
+            View full analysis →
           </div>
         </div>
 
         {/* Admin Controls */}
         {mode === 'admin' && adminControls && (
-          <div className="border-t border-border p-3 md:p-4">
-            <div className="flex items-center justify-between mb-3">
+          <div className="border-t border-gray-700 mt-3 pt-3">
+            <div className="flex items-center justify-between mb-2">
               <div className="flex items-center space-x-2">
                 <div className={`w-2 h-2 rounded-full ${
                   adminControls.analysisStatus === 'completed' ? 'bg-green-500' :
                   adminControls.analysisStatus === 'pending' ? 'bg-yellow-500 animate-pulse' :
-                  adminControls.analysisStatus === 'failed' ? 'bg-destructive' :
-                  'bg-muted-foreground'
+                  adminControls.analysisStatus === 'failed' ? 'bg-red-500' :
+                  'bg-gray-400'
                 }`}></div>
-                <span className="text-xs font-medium text-foreground capitalize">
+                <span className="text-xs font-medium text-gray-300 capitalize">
                   {adminControls.analysisStatus}
                 </span>
               </div>
-              <Badge className={`text-xs ${
+              <div className={`text-xs px-2 py-1 rounded ${
                 adminControls.isPublished 
-                  ? 'bg-green-500/10 text-green-600 border-green-500/20' 
-                  : 'bg-muted text-muted-foreground border-border'
+                  ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
+                  : 'bg-gray-500/20 text-gray-400 border border-gray-500/30'
               }`}>
                 {adminControls.isPublished ? 'Published' : 'Hidden'}
-              </Badge>
+              </div>
             </div>
             
             <div className="flex gap-2">
               <button
-                onClick={() => adminControls.onSendToAI(match.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  adminControls.onSendToAI(enhancedMatch.id);
+                }}
                 disabled={adminControls.analysisStatus === 'pending'}
-                className="flex-1 bg-primary hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed text-primary-foreground text-xs font-medium py-2 px-3 rounded-lg transition-colors"
+                className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:text-gray-400 disabled:cursor-not-allowed text-white text-xs font-medium py-2 px-3 rounded-lg transition-colors"
               >
                 {adminControls.analysisStatus === 'pending' ? 'Analyzing...' : 'Send to AI'}
               </button>
               
               <button
-                onClick={() => adminControls.onTogglePublish(match.id, !adminControls.isPublished)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  adminControls.onTogglePublish(enhancedMatch.id, !adminControls.isPublished);
+                }}
                 className={`flex-1 text-xs font-medium py-2 px-3 rounded-lg transition-colors ${
                   adminControls.isPublished
-                    ? 'bg-destructive hover:bg-destructive/90 text-destructive-foreground'
+                    ? 'bg-red-600 hover:bg-red-700 text-white'
                     : 'bg-green-600 hover:bg-green-700 text-white'
                 }`}
               >
@@ -260,8 +323,75 @@ export function MatchCard({ match, mode = 'public', adminControls }: MatchCardPr
             </div>
           </div>
         )}
-      </CardContent>
-    </Card>
+
+        {/* Expand/Collapse Button */}
+        <button 
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsExpanded(!isExpanded);
+          }}
+          className="w-full flex items-center justify-center gap-2 py-2 text-blue-400 hover:text-blue-300 transition-colors border-t border-gray-700 mt-3 pt-3 bg-gradient-to-r from-blue-900/10 to-purple-900/10 hover:from-blue-900/20 hover:to-purple-900/20 rounded-b-lg"
+        >
+          <BarChart3 className="w-4 h-4" />
+          <span className="text-sm font-medium">
+            {isExpanded ? 'Hide Preview' : 'Unlock Deep AI Analysis'}
+          </span>
+          <ChevronRight className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+        </button>
+
+        {/* Expanded Content - Preview Teaser */}
+        {isExpanded && (
+          <div className="mt-3 space-y-3 border-t border-gray-700 pt-3">
+            {/* AI Analysis Preview */}
+            <div className="bg-gradient-to-r from-blue-900/20 to-purple-900/20 rounded-lg p-3 border border-blue-500/20">
+              <div className="flex items-center gap-2 mb-2">
+                <BarChart3 className="w-4 h-4 text-blue-400" />
+                <span className="text-blue-400 font-semibold text-sm">AI Analysis Preview</span>
+              </div>
+              <p className="text-gray-300 text-xs leading-relaxed mb-3">
+                {enhancedMatch.home_team} shows {Math.floor(Math.random() * 20) + 75}% home dominance vs {enhancedMatch.away_team}'s recent away struggles. Key tactical insights and 12+ predictive factors analyzed...
+              </p>
+              <div className="text-xs text-gray-400 space-y-1">
+                <div>🎯 Expected Goals Model: {enhancedMatch.home_team} {(1.5 + Math.random() * 0.8).toFixed(1)} - {(1.0 + Math.random() * 0.6).toFixed(1)} {enhancedMatch.away_team}</div>
+                <div>📊 Win Probability: {enhancedMatch.home_team} {Math.floor(Math.random() * 20) + 45}% | Draw {Math.floor(Math.random() * 15) + 20}% | {enhancedMatch.away_team} {Math.floor(Math.random() * 15) + 15}%</div>
+                <div>⚡ Live Updates: Formation changes, weather impact, lineups</div>
+              </div>
+            </div>
+
+            {/* Premium Features Teaser */}
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="bg-gray-800/50 p-2 rounded border border-gray-600">
+                <div className="text-yellow-400 font-semibold mb-1">🔒 Player Analysis</div>
+                <div className="text-gray-400">Individual performance metrics</div>
+              </div>
+              <div className="bg-gray-800/50 p-2 rounded border border-gray-600">
+                <div className="text-green-400 font-semibold mb-1">🔒 Live Momentum</div>
+                <div className="text-gray-400">Real-time tactical shifts</div>
+              </div>
+            </div>
+
+            {/* Strong CTA - Premium Upgrade */}
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                alert('Premium upgrade modal - Get unlimited AI analysis!');
+              }}
+              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 px-4 rounded-lg font-medium transition-all flex items-center justify-center gap-2 mt-3"
+            >
+              <BarChart3 className="w-4 h-4" />
+              Upgrade to Premium
+              <ChevronRight className="w-4 h-4" />
+            </button>
+            
+            <div className="text-center">
+              <span className="text-xs text-gray-500">
+                Unlock unlimited AI analysis, live updates & winning strategies
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 
   if (mode === 'admin') {
@@ -269,8 +399,9 @@ export function MatchCard({ match, mode = 'public', adminControls }: MatchCardPr
   }
 
   return (
-    <Link href={`/match/${match.id}`} className="block">
+    <Link href={`/match/${enhancedMatch.id}`} className="block">
       {cardContent}
     </Link>
   );
 }
+

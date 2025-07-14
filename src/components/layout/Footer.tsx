@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { Brain, Shield, FileText, Mail, Twitter, Github } from 'lucide-react';
+import { Brain, Shield, FileText, Mail, Github } from 'lucide-react';
 
 export function Footer() {
   return (
@@ -23,15 +23,7 @@ export function Footer() {
             </p>
             <div className="flex items-center space-x-3">
               <a 
-                href="https://twitter.com/bethub" 
-                className="text-muted-foreground hover:text-primary transition-colors"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Twitter className="w-5 h-5" />
-              </a>
-              <a 
-                href="https://github.com/bethub" 
+                href="https://github.com/sh0ck-zy/bethub" 
                 className="text-muted-foreground hover:text-foreground transition-colors"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -39,7 +31,7 @@ export function Footer() {
                 <Github className="w-5 h-5" />
               </a>
               <a 
-                href="mailto:hello@bethub.com" 
+                href="mailto:sh0ck.zy.25@gmail.com" 
                 className="text-muted-foreground hover:text-primary transition-colors"
               >
                 <Mail className="w-5 h-5" />
@@ -62,9 +54,12 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                <button 
+                  onClick={() => alert('Features page coming soon')}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors text-left"
+                >
                   Features
-                </Link>
+                </button>
               </li>
               <li>
                 <button 
@@ -107,7 +102,7 @@ export function Footer() {
               </li>
               <li>
                 <a 
-                  href="mailto:hello@bethub.com" 
+                  href="mailto:sh0ck.zy.25@gmail.com" 
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Contact
@@ -122,7 +117,7 @@ export function Footer() {
             <ul className="space-y-3">
               <li>
                 <button 
-                  onClick={() => alert('Privacy policy modal')}
+                  onClick={() => alert('Privacy policy coming soon')}
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors text-left"
                 >
                   <Shield className="w-4 h-4 mr-2 inline" />
@@ -131,7 +126,7 @@ export function Footer() {
               </li>
               <li>
                 <button 
-                  onClick={() => alert('Terms of service modal')}
+                  onClick={() => alert('Terms of service coming soon')}
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors text-left"
                 >
                   <FileText className="w-4 h-4 mr-2 inline" />
@@ -140,7 +135,7 @@ export function Footer() {
               </li>
               <li>
                 <button 
-                  onClick={() => alert('Cookie policy modal')}
+                  onClick={() => alert('Cookie policy coming soon')}
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors text-left"
                 >
                   Cookie Policy
@@ -148,7 +143,7 @@ export function Footer() {
               </li>
               <li>
                 <button 
-                  onClick={() => alert('GDPR compliance info')}
+                  onClick={() => alert('GDPR compliance info coming soon')}
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors text-left"
                 >
                   GDPR
