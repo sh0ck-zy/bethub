@@ -197,144 +197,230 @@ const generateCompleteAnalysis = (matchId: string) => {
         ],
         
         prediction: {
-          outcome: "Real Madrid Win", 
-          confidence: 68,
+          outcome: "Real Madrid Win",
+          confidence: 78,
           scoreline: "2-1 to Real Madrid",
-          reasoning: "Bernabéu advantage plus Real's experience in big moments should edge this. Barcelona need perfection; Real just need to be Real Madrid."
+          reasoning: "Real's experience and home advantage, combined with Vinícius' form and Barcelona's away struggles, should see the hosts edge a tight Clásico."
         },
         
-        weatherImpact: "Perfect conditions for technical football - no advantage either way"
+        weatherImpact: "Perfect conditions for technical football - both teams can play their preferred style"
       },
       
       premiumAnalysis: {
-        // Enhanced analysis for premium users (2x more depth)
-        historicalPatterns: [
-          "Last 5 Clásicos at Bernabéu: 3 Real wins, 1 draw, 1 Barca win",
-          "When Real score first at home vs Barca: 89% win rate since 2015"
-        ],
-        psychologicalFactors: [
-          "Real relaxed with La Liga won, could be dangerous or complacent",
-          "Barca desperate for statement win - creates pressure and opportunity"
-        ]
+        extendedTactical: {
+          defensiveSetups: [
+            "Real's 4-3-3 becomes 4-5-1 defensively, with Valverde dropping to help midfield",
+            "Barcelona's 4-2-3-1 presses high but leaves gaps for counter-attacks"
+          ],
+          attackingPatterns: [
+            "Real's right-sided attacks: Carvajal + Valverde + Vinícius creating overloads",
+            "Barcelona's left channel: Alba + Pedri + Lewandowski triangle"
+          ],
+          setpieceAnalysis: "Real's corners target the near post where Barcelona are vulnerable - 68% conversion rate"
+        },
+        
+        injuryImpact: {
+          missing: [
+            {
+              player: "Robert Lewandowski",
+              team: "Barcelona",
+              tacticalChange: "Barcelona lose their focal point - more reliance on wide play",
+              replacementQuality: "Ferran Torres lacks Lewandowski's aerial threat and finishing"
+            }
+          ]
+        },
+        
+        refereeAnalysis: {
+          referee: "Mateu Lahoz",
+          avgCards: 5.8,
+          tendencies: ["Strict on dissent", "Allows physical play", "Consistent with VAR"],
+          impact: "High card count expected - benefits Real's physical midfield"
+        },
+        
+        contextAnalysis: {
+          leaguePosition: "Real comfortable in 2nd, Barcelona fighting for title - more pressure on visitors",
+          recentForm: "Real won 6 of last 7, Barcelona lost 2 of last 5 - momentum clearly with hosts",
+          motivation: ["Real: Maintain dominance", "Barcelona: Prove they're back"],
+          pressure: "More on Barcelona - need points to stay in title race"
+        }
       }
     },
     
-    // Portuguese League Example - Liga Portugal
-    'benfica_porto': {
-      headline: "O Clássico: Benfica's Momentum vs Porto's Fortress",
+    '3': { // Juventus vs AC Milan
+      headline: "Milan's Attack Meets Juventus' Defensive Wall",
       confidence: 79,
       
       freeAnalysis: {
         tacticalBreakdown: {
-          title: "Dragão Fortress Under Siege",
-          formation: "Porto's 4-4-2 vs Benfica's 4-3-3",
-          keyInsight: "Porto's compact shape at Estádio do Dragão meets Benfica's attacking fluidity",
-          explanation: "Rafa Silva's pace down the flanks could stretch Porto's disciplined defensive block"
+          title: "Contrasting Styles in Serie A Showdown",
+          formation: "Juventus' 3-5-2 vs Milan's 4-2-3-1",
+          keyInsight: "Juventus' defensive solidity vs Milan's attacking flair - classic Italian tactical battle",
+          explanation: "Juventus will look to absorb pressure and counter, while Milan need to break down the organized defense"
         },
         
         dataInsights: [
           {
-            icon: <Users className="w-4 h-4 text-blue-500" />,
-            stat: "Porto: 78% win rate at Estádio do Dragão this season",
-            context: "The Dragão crowd creates an intimidating atmosphere Benfica must overcome"
-          },
-          {
             icon: <TrendingUp className="w-4 h-4 text-green-500" />,
-            stat: "Benfica: 12 goals in last 4 away games", 
-            context: "Their attacking momentum could break Porto's defensive resolve"
+            stat: "AC Milan: Scored in 12 consecutive Serie A matches",
+            context: "Attacking form is excellent - they'll create chances"
+        },
+        {
+            icon: <Shield className="w-4 h-4 text-blue-500" />,
+            stat: "Juventus: Only 0.8 goals conceded per game at home",
+            context: "Defensive fortress - very hard to break down"
           },
           {
-            icon: <Swords className="w-4 h-4 text-red-500" />,
-            stat: "Head-to-head: 3-2 to Porto in last 5 meetings",
-            context: "Tight margins in O Clássico - individual moments decide these games"
+            icon: <Target className="w-4 h-4 text-purple-500" />,
+            stat: "Head-to-head: 6 of last 8 meetings had under 2.5 goals",
+            context: "Tight, low-scoring encounters are the norm"
+          },
+          {
+            icon: <Users className="w-4 h-4 text-orange-500" />,
+            stat: "Leão: 3 goals in last 4 games vs Juventus",
+            context: "Milan's key man has good record against this opponent"
           }
         ],
         
         keyBattles: [
           {
-            title: "Rafa Silva vs Zaidu Sanusi",
-            advantage: "Benfica", 
-            explanation: "Rafa's dribbling and pace could expose Zaidu's occasional defensive lapses."
+            title: "Leão vs Danilo",
+            advantage: "Milan",
+            explanation: "Leão's pace and dribbling against Danilo's experience. This battle could decide the game."
+        },
+        {
+            title: "Vlahović vs Tomori",
+            advantage: "Even",
+            explanation: "Two quality players in their prime. Vlahović's movement vs Tomori's reading of the game."
           },
           {
-            title: "Pepe vs Darwin Núñez",
-            advantage: "Porto",
-            explanation: "Veteran experience vs raw talent - Pepe's positioning could neutralize Darwin's movement."
+            title: "Milan's Midfield vs Juventus' Organization",
+            advantage: "Juventus",
+            explanation: "Juventus' 3-5-2 gives them numerical advantage in midfield, making it hard for Milan to control possession."
           }
         ],
         
         prediction: {
           outcome: "Draw",
-          confidence: 71,
-          scoreline: "1-1", 
-          reasoning: "O Clássico rarely disappoints but often ends level. Both teams too well-organized to concede many chances."
-        }
-      }
-    },
-    
-    // Default analysis for any match
-    default: {
-      headline: "Tactical Chess Match Awaits",
-      confidence: 75,
-      
-      freeAnalysis: {
-        tacticalBreakdown: {
-          title: "Home vs Away Philosophies Clash",
-          formation: "Tactical battle between contrasting styles",
-          keyInsight: "Home team's familiarity with their system vs away team's adaptability",
-          explanation: "Set pieces and individual moments of quality likely to decide tight encounter"
+          confidence: 65,
+          scoreline: "1-1",
+          reasoning: "Milan's attacking form vs Juventus' defensive solidity suggests a balanced encounter. Both teams have quality but cancel each other out."
         },
         
-        dataInsights: [
-          {
-            icon: <BarChart3 className="w-4 h-4 text-blue-500" />,
-            stat: "Home team: 2.1 goals per game average",
-            context: "Strong attacking record at home ground"
-          },
-          {
-            icon: <Shield className="w-4 h-4 text-green-500" />,
-            stat: "Away team: 1.3 goals conceded per game",
-            context: "Solid defensive organization on the road"
-          }
-        ],
+        weatherImpact: "Cool conditions favor high-intensity football - both teams can maintain their preferred tempo"
+      },
+      
+      premiumAnalysis: {
+        extendedTactical: {
+          defensiveSetups: [
+            "Juventus' 3-5-2 becomes 5-3-2 defensively, with wing-backs dropping deep",
+            "Milan's 4-2-3-1 presses high but leaves space for counter-attacks"
+          ],
+          attackingPatterns: [
+            "Juventus' direct play: Long balls to Vlahović and Chiesa",
+            "Milan's left channel: Leão + Theo Hernández creating overloads"
+          ],
+          setpieceAnalysis: "Juventus' corners target the far post where Milan are weak - 62% conversion rate"
+        },
         
-        keyBattles: [
-          {
-            title: "Midfield Control",
-            advantage: "Even",
-            explanation: "Both teams will look to dominate the middle of the park to dictate tempo."
-          }
-        ],
+        injuryImpact: {
+          missing: [
+            {
+              player: "Federico Chiesa",
+              team: "Juventus",
+              tacticalChange: "Juventus lose their main counter-attacking threat",
+              replacementQuality: "Significant downgrade - Di María lacks Chiesa's pace and directness"
+            }
+          ]
+        },
         
-        prediction: {
-          outcome: "Close Contest",
-          confidence: 65,
-          scoreline: "1-1 or 2-1",
-          reasoning: "Evenly matched teams suggest tight affair decided by fine margins."
+        refereeAnalysis: {
+          referee: "Marco Guida",
+          avgCards: 4.1,
+          tendencies: ["Allows physical play", "Consistent with VAR", "Quick to book dissent"],
+          impact: "Benefits Juventus' physical style - won't penalize aggressive defending"
+        },
+        
+        contextAnalysis: {
+          leaguePosition: "Both teams fighting for Champions League spots - high stakes",
+          recentForm: "Juventus won 4 of last 5, Milan won 3 of last 5 - both in good form",
+          motivation: ["Juventus: Return to elite", "Milan: Defend title credentials"],
+          pressure: "Equal pressure - both need points for top-4"
         }
       }
     }
   };
 
-  return analysisDatabase[matchId as keyof typeof analysisDatabase] || analysisDatabase.default;
+  return analysisDatabase[matchId as keyof typeof analysisDatabase] || {
+    headline: "Tactical Battle Expected Between Evenly Matched Sides",
+    confidence: 75,
+    freeAnalysis: {
+      tacticalBreakdown: {
+        title: "Balanced Encounter Expected",
+        formation: "4-3-3 vs 4-3-3",
+        keyInsight: "Both teams prefer possession-based football with quick transitions",
+        explanation: "The team that can control midfield and create clear chances will likely prevail"
+      },
+      dataInsights: [
+        {
+          icon: <Users className="w-4 h-4 text-blue-500" />,
+          stat: "Both teams average 55% possession",
+          context: "Similar playing styles should lead to an even contest"
+        }
+      ],
+      keyBattles: [
+        {
+          title: "Midfield Control",
+          advantage: "Even",
+          explanation: "Both teams have quality midfielders - this battle will be crucial."
+        }
+      ],
+      prediction: {
+        outcome: "Draw",
+        confidence: 60,
+        scoreline: "1-1",
+        reasoning: "Evenly matched teams with similar styles suggest a balanced encounter."
+      },
+      weatherImpact: "Good conditions for technical football"
+    },
+    premiumAnalysis: {
+      extendedTactical: {
+        defensiveSetups: ["Standard defensive setups for both teams"],
+        attackingPatterns: ["Both teams prefer possession-based attacks"],
+        setpieceAnalysis: "Standard set-piece routines"
+      },
+      injuryImpact: { missing: [] },
+      refereeAnalysis: {
+        referee: "Standard referee",
+        avgCards: 3.5,
+        tendencies: ["Standard officiating"],
+        impact: "No significant impact"
+      },
+      contextAnalysis: {
+        leaguePosition: "Both teams in mid-table",
+        recentForm: "Similar recent form",
+        motivation: ["Both teams looking to improve"],
+        pressure: "Equal pressure on both teams"
+      }
+    }
+  };
 };
 
-// Usage tracking (Portuguese users get 3 analyses per day)
+// Usage tracking for free tier
 const usageTracker = {
   getUsageToday: () => {
     const today = new Date().toDateString();
-    const usage = localStorage.getItem(`usage_${today}`);
-    return usage ? parseInt(usage) : 0;
+    const stored = localStorage.getItem(`analysis-usage-${today}`);
+    return stored ? parseInt(stored) : 0;
   },
   
   incrementUsage: () => {
     const today = new Date().toDateString();
     const current = usageTracker.getUsageToday();
-    localStorage.setItem(`usage_${today}`, (current + 1).toString());
+    localStorage.setItem(`analysis-usage-${today}`, (current + 1).toString());
   },
   
   hasUsageLeft: () => {
-    return usageTracker.getUsageToday() < 3; // 3 free analyses per day (research finding)
+    return usageTracker.getUsageToday() < 3;
   }
 };
 
@@ -419,7 +505,7 @@ export function AnalysisTabs({ matchId, isAuthenticated }: AnalysisTabsProps) {
             <Card className="border-primary/20">
               <CardContent className="p-6 text-center">
                 <Brain className="w-12 h-12 text-primary mx-auto mb-4" />
-                <h3 className="text-xl font-bold mb-2">AI Tactical Analysis</h3>
+                <h3 className="text-xl font-bold mb-2 text-foreground">AI Tactical Analysis</h3>
                 <p className="text-muted-foreground mb-4">
                   Get complete pre-match analysis with tactical breakdowns, key battles, and data-driven insights.
                 </p>
@@ -433,7 +519,7 @@ export function AnalysisTabs({ matchId, isAuthenticated }: AnalysisTabsProps) {
             <Card className="border-orange-200">
               <CardContent className="p-6 text-center">
                 <Timer className="w-12 h-12 text-orange-500 mx-auto mb-4" />
-                <h3 className="text-xl font-bold mb-2">Daily Limit Reached</h3>
+                <h3 className="text-xl font-bold mb-2 text-foreground">Daily Limit Reached</h3>
                 <p className="text-muted-foreground mb-4">
                   You've used all 3 free analyses today. Reset in {24 - new Date().getHours()} hours or upgrade for unlimited access.
                 </p>
@@ -448,12 +534,12 @@ export function AnalysisTabs({ matchId, isAuthenticated }: AnalysisTabsProps) {
             <div className="space-y-6">
               {/* Usage indicator for free users */}
               {!finalIsPremium && finalIsAuthenticated && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
               <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-blue-700">
+                    <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
                       Free Analyses Today: {usageCount}/3
                     </span>
-                    <Badge variant="outline" className="text-blue-700 border-blue-300">
+                    <Badge variant="outline" className="text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-700">
                       {3 - usageCount} remaining
                     </Badge>
                   </div>
@@ -469,11 +555,11 @@ export function AnalysisTabs({ matchId, isAuthenticated }: AnalysisTabsProps) {
                       <Brain className="w-6 h-6 text-primary" />
                       <span className="font-semibold text-primary">AI Expert Analysis</span>
                     </div>
-                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">
+                    <Badge variant="outline" className="bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700">
                       {analysis.confidence}% Confidence
               </Badge>
             </div>
-                  <h2 className="text-2xl font-bold mb-2">{analysis.headline}</h2>
+                  <h2 className="text-2xl font-bold mb-2 text-foreground">{analysis.headline}</h2>
                 </CardContent>
               </Card>
               
@@ -487,10 +573,10 @@ export function AnalysisTabs({ matchId, isAuthenticated }: AnalysisTabsProps) {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="bg-muted/50 rounded-lg p-4">
-                    <h4 className="font-semibold text-lg mb-2">{analysis.freeAnalysis.tacticalBreakdown.title}</h4>
+                    <h4 className="font-semibold text-lg mb-2 text-foreground">{analysis.freeAnalysis.tacticalBreakdown.title}</h4>
                     <p className="text-sm text-muted-foreground mb-3">{analysis.freeAnalysis.tacticalBreakdown.formation}</p>
-                    <p className="font-medium mb-2">{analysis.freeAnalysis.tacticalBreakdown.keyInsight}</p>
-                    <p className="text-sm">{analysis.freeAnalysis.tacticalBreakdown.explanation}</p>
+                    <p className="font-medium mb-2 text-foreground">{analysis.freeAnalysis.tacticalBreakdown.keyInsight}</p>
+                    <p className="text-sm text-muted-foreground">{analysis.freeAnalysis.tacticalBreakdown.explanation}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -508,7 +594,7 @@ export function AnalysisTabs({ matchId, isAuthenticated }: AnalysisTabsProps) {
                     <div key={index} className="flex items-start space-x-3 p-3 bg-muted/30 rounded-lg">
                       {insight.icon}
                       <div className="flex-1">
-                        <p className="font-medium text-sm mb-1">{insight.stat}</p>
+                        <p className="font-medium text-sm mb-1 text-foreground">{insight.stat}</p>
                         <p className="text-xs text-muted-foreground">{insight.context}</p>
                       </div>
                     </div>
@@ -526,9 +612,9 @@ export function AnalysisTabs({ matchId, isAuthenticated }: AnalysisTabsProps) {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {analysis.freeAnalysis.keyBattles.map((battle, index) => (
-                    <div key={index} className="border rounded-lg p-4">
+                    <div key={index} className="border border-border rounded-lg p-4">
                       <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-semibold">{battle.title}</h4>
+                        <h4 className="font-semibold text-foreground">{battle.title}</h4>
                         <Badge variant={battle.advantage === "Even" ? "secondary" : "default"}>
                           {battle.advantage}
                         </Badge>
@@ -539,67 +625,47 @@ export function AnalysisTabs({ matchId, isAuthenticated }: AnalysisTabsProps) {
                 </CardContent>
               </Card>
               
-              {/* Match Prediction */}
-              <Card className="border-green-200 bg-green-50/50">
+              {/* Prediction */}
+              <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center space-x-2 text-green-700">
+                  <CardTitle className="flex items-center space-x-2">
                     <Trophy className="w-5 h-5" />
                     <span>AI Prediction</span>
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold">Outcome:</span>
-                      <Badge className="bg-green-600">{analysis.freeAnalysis.prediction.outcome}</Badge>
+                <CardContent className="space-y-4">
+                  <div className="bg-gradient-to-r from-primary/5 to-purple-500/5 rounded-lg p-4 border border-primary/20">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-bold text-lg text-foreground">{analysis.freeAnalysis.prediction.outcome}</h4>
+                      <Badge className="bg-primary text-primary-foreground">
+                        {analysis.freeAnalysis.prediction.confidence}% confidence
+                      </Badge>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold">Predicted Score:</span>
-                      <span className="font-mono text-lg">{analysis.freeAnalysis.prediction.scoreline}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold">Confidence:</span>
-                      <span className="font-semibold text-green-600">{analysis.freeAnalysis.prediction.confidence}%</span>
-                      </div>
-                    <div className="pt-2 border-t">
-                      <p className="text-sm">{analysis.freeAnalysis.prediction.reasoning}</p>
-                    </div>
+                    <p className="text-lg font-semibold text-primary mb-2">{analysis.freeAnalysis.prediction.scoreline}</p>
+                    <p className="text-sm text-muted-foreground">{analysis.freeAnalysis.prediction.reasoning}</p>
+                  </div>
+                  
+                  <div className="bg-muted/30 rounded-lg p-3">
+                    <h5 className="font-medium text-sm mb-1 text-foreground">Weather Impact</h5>
+                    <p className="text-xs text-muted-foreground">{analysis.freeAnalysis.weatherImpact}</p>
                   </div>
                 </CardContent>
               </Card>
               
-              {/* Premium Upgrade Prompt */}
+              {/* Premium Upgrade CTA */}
               {!finalIsPremium && (
-                <Card className="border-primary bg-gradient-to-r from-primary/5 to-purple/5">
-                  <CardContent className="p-6">
-                    <div className="flex items-center space-x-3 mb-4">
-                      <Crown className="w-8 h-8 text-primary" />
-                      <div>
-                        <h3 className="font-bold text-lg">Want Even Deeper Analysis?</h3>
-                        <p className="text-sm text-muted-foreground">Get 2x more tactical insights, injury impact analysis, and referee patterns</p>
-                      </div>
+                <Card className="border-yellow-200 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20">
+                  <CardContent className="p-6 text-center">
+                    <div className="flex items-center justify-center space-x-2 mb-3">
+                      <Crown className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+                      <span className="text-sm font-semibold text-foreground">Get Premium for 2x More Insights</span>
                     </div>
-                    <div className="space-y-2 mb-4 text-sm">
-                      <div className="flex items-center space-x-2">
-                        <CheckCircle className="w-4 h-4 text-green-500" />
-                        <span>Extended tactical deep-dive with formation analysis</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <CheckCircle className="w-4 h-4 text-green-500" />
-                        <span>Detailed injury impact and replacement quality assessment</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <CheckCircle className="w-4 h-4 text-green-500" />
-                        <span>Referee analysis and historical patterns</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <CheckCircle className="w-4 h-4 text-green-500" />
-                        <span>Unlimited analyses for all matches</span>
-                      </div>
-                    </div>
-                    <Button className="w-full">
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Extended tactical analysis, injury impact, referee analysis, and context breakdown.
+                    </p>
+                    <Button className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white">
                       <Crown className="w-4 h-4 mr-2" />
-                      Upgrade to Premium - €4.99/month
+                      Upgrade to Premium
                     </Button>
                   </CardContent>
                 </Card>
@@ -612,153 +678,131 @@ export function AnalysisTabs({ matchId, isAuthenticated }: AnalysisTabsProps) {
         <TabsContent value="stats" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Match Statistics</CardTitle>
+              <CardTitle className="flex items-center space-x-2">
+                <BarChart3 className="w-5 h-5" />
+                <span>Match Statistics</span>
+              </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div>
-                  <p className="text-2xl font-bold">{quickStats.possession.home}%</p>
-                  <p className="text-sm text-muted-foreground">Home Possession</p>
-                    </div>
-                <div>
-                  <p className="text-lg font-semibold text-muted-foreground">vs</p>
-                    </div>
-                <div>
-                  <p className="text-2xl font-bold">{quickStats.possession.away}%</p>
-                  <p className="text-sm text-muted-foreground">Away Possession</p>
-                    </div>
-                  </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-3 bg-muted/30 rounded">
-                  <p className="text-xl font-bold">{quickStats.shotsPerGame.home}</p>
-                  <p className="text-xs">Shots/Game (Home)</p>
+            <CardContent className="space-y-6">
+              {/* Possession */}
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-foreground">Possession</span>
+                  <span className="text-muted-foreground">{quickStats.possession.home}% - {quickStats.possession.away}%</span>
                 </div>
-                <div className="text-center p-3 bg-muted/30 rounded">
-                  <p className="text-xl font-bold">{quickStats.shotsPerGame.away}</p>
-                  <p className="text-xs">Shots/Game (Away)</p>
+                <div className="w-full bg-muted rounded-full h-2">
+                  <div 
+                    className="bg-primary h-2 rounded-full" 
+                    style={{ width: `${quickStats.possession.home}%` }}
+                  ></div>
                 </div>
               </div>
-
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Goals Per Game</span>
-                  <div className="flex space-x-4">
-                    <span className="font-semibold">{quickStats.goalsPerGame.home}</span>
-                    <span className="text-muted-foreground">vs</span>
-                    <span className="font-semibold">{quickStats.goalsPerGame.away}</span>
-                  </div>
-                  </div>
-                
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Recent Form (Last 5)</span>
-                  <div className="flex space-x-4">
-                    <span className="font-mono text-sm">{quickStats.recentForm.home}</span>
-                    <span className="text-muted-foreground">vs</span>
-                    <span className="font-mono text-sm">{quickStats.recentForm.away}</span>
-                  </div>
+              
+              {/* Shots per Game */}
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-foreground">Shots per Game</span>
+                  <span className="text-muted-foreground">{quickStats.shotsPerGame.home} - {quickStats.shotsPerGame.away}</span>
                 </div>
-                
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Head-to-Head</span>
-                  <span className="font-semibold text-sm">{quickStats.headToHead}</span>
+                <div className="w-full bg-muted rounded-full h-2">
+                  <div 
+                    className="bg-green-500 h-2 rounded-full" 
+                    style={{ width: `${(quickStats.shotsPerGame.home / 20) * 100}%` }}
+                  ></div>
                 </div>
-                
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Expected Goals (This Match)</span>
-                  <span className="font-semibold">{quickStats.avgGoals}</span>
+              </div>
+              
+              {/* Goals per Game */}
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-foreground">Goals per Game</span>
+                  <span className="text-muted-foreground">{quickStats.goalsPerGame.home} - {quickStats.goalsPerGame.away}</span>
                 </div>
+                <div className="w-full bg-muted rounded-full h-2">
+                  <div 
+                    className="bg-purple-500 h-2 rounded-full" 
+                    style={{ width: `${(quickStats.goalsPerGame.home / 3) * 100}%` }}
+                  ></div>
+                </div>
+              </div>
+              
+              {/* Recent Form */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center p-3 bg-muted/30 rounded-lg">
+                  <h4 className="font-semibold text-sm mb-1 text-foreground">Home Form</h4>
+                  <p className="text-lg font-mono text-green-600 dark:text-green-400">{quickStats.recentForm.home}</p>
+                </div>
+                <div className="text-center p-3 bg-muted/30 rounded-lg">
+                  <h4 className="font-semibold text-sm mb-1 text-foreground">Away Form</h4>
+                  <p className="text-lg font-mono text-red-600 dark:text-red-400">{quickStats.recentForm.away}</p>
+                </div>
+              </div>
+              
+              {/* Head to Head */}
+              <div className="text-center p-4 bg-muted/30 rounded-lg">
+                <h4 className="font-semibold text-sm mb-2 text-foreground">Head to Head</h4>
+                <p className="text-muted-foreground">{quickStats.headToHead}</p>
+                <p className="text-sm text-muted-foreground mt-1">Average: {quickStats.avgGoals} goals per game</p>
               </div>
             </CardContent>
           </Card>
-
-          {/* Premium Stats Teaser */}
-          {!finalIsPremium && (
-            <Card className="border-dashed border-primary/50 bg-primary/5">
-              <CardContent className="p-6 text-center">
-                <Lock className="w-8 h-8 text-primary mx-auto mb-3" />
-                <h3 className="font-semibold mb-2">Advanced Statistics</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Get detailed form curves, performance predictors, and advanced metrics
-                </p>
-                <Button variant="outline" size="sm">
-                  <Crown className="w-4 h-4 mr-2" />
-                  Unlock Premium Stats
-                </Button>
-              </CardContent>
-            </Card>
-          )}
         </TabsContent>
 
-        {/* Head-to-Head Tab */}
+        {/* Head to Head Tab */}
         <TabsContent value="h2h" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Head-to-Head Record</CardTitle>
+              <CardTitle className="flex items-center space-x-2">
+                <Activity className="w-5 h-5" />
+                <span>Recent Meetings</span>
+              </CardTitle>
             </CardHeader>
-                         <CardContent>
-                 <div className="space-y-4">
-                <div className="text-center p-4 bg-muted/30 rounded-lg">
-                  <p className="text-sm text-muted-foreground mb-1">Last 5 Meetings</p>
-                  <p className="text-lg font-bold">{quickStats.headToHead}</p>
-                       </div>
-                
-                <div className="space-y-3">
-                  <h4 className="font-semibold">Recent Matches</h4>
-                  
-                  {/* Mock recent matches */}
-                  {[
-                    { date: "2024-03-15", result: "2-1", venue: "Home" },
-                    { date: "2023-11-08", result: "0-2", venue: "Away" },
-                    { date: "2023-05-23", result: "3-1", venue: "Home" },
-                    { date: "2022-12-10", result: "1-1", venue: "Away" },
-                    { date: "2022-08-14", result: "2-0", venue: "Home" }
-                  ].map((match, index) => (
-                    <div key={index} className="flex justify-between items-center py-2 border-b border-muted">
-                      <span className="text-sm text-muted-foreground">{match.date}</span>
-                      <span className="font-mono font-semibold">{match.result}</span>
-                      <Badge variant={match.venue === "Home" ? "default" : "secondary"} className="text-xs">
-                        {match.venue}
-                           </Badge>
-                     </div>
-                   ))}
-                 </div>
-                
-                <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                  <h4 className="font-semibold text-blue-900 mb-2">Key Patterns</h4>
-                  <ul className="text-sm text-blue-800 space-y-1">
-                    <li>• Home team has won 3 of last 5 meetings</li>
-                    <li>• Average goals per game: {quickStats.avgGoals}</li>
-                    <li>• Both teams scored in 4 of last 5 matches</li>
-                    <li>• No draw in last 5 encounters</li>
-                  </ul>
+            <CardContent className="space-y-4">
+              {/* Recent Results */}
+              <div className="space-y-3">
+                <h4 className="font-semibold text-foreground">Last 5 Meetings</h4>
+                {[
+                  { date: '2024-01-15', home: '2', away: '1', venue: 'Home' },
+                  { date: '2023-08-20', home: '0', away: '2', venue: 'Away' },
+                  { date: '2023-03-10', home: '1', away: '1', venue: 'Home' },
+                  { date: '2022-11-05', home: '3', away: '0', venue: 'Away' },
+                  { date: '2022-04-15', home: '2', away: '2', venue: 'Home' }
+                ].map((match, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                    <span className="text-sm text-muted-foreground">{new Date(match.date).toLocaleDateString()}</span>
+                    <div className="flex items-center space-x-3">
+                      <span className="font-semibold text-foreground">{match.home}</span>
+                      <span className="text-muted-foreground">-</span>
+                      <span className="font-semibold text-foreground">{match.away}</span>
+                    </div>
+                    <Badge variant="outline" className="text-xs">
+                      {match.venue}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+              
+              {/* Key Stats */}
+              <div className="grid grid-cols-2 gap-4 mt-6">
+                <div className="text-center p-3 bg-muted/30 rounded-lg">
+                  <h5 className="font-semibold text-sm mb-1 text-foreground">Home Wins</h5>
+                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">3</p>
+                </div>
+                <div className="text-center p-3 bg-muted/30 rounded-lg">
+                  <h5 className="font-semibold text-sm mb-1 text-foreground">Away Wins</h5>
+                  <p className="text-2xl font-bold text-red-600 dark:text-red-400">1</p>
+                </div>
+                <div className="text-center p-3 bg-muted/30 rounded-lg">
+                  <h5 className="font-semibold text-sm mb-1 text-foreground">Draws</h5>
+                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">1</p>
+                </div>
+                <div className="text-center p-3 bg-muted/30 rounded-lg">
+                  <h5 className="font-semibold text-sm mb-1 text-foreground">Avg Goals</h5>
+                  <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">2.8</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-
-          {/* Premium H2H Teaser */}
-          {!finalIsPremium && (
-            <Card className="border-dashed border-primary/50 bg-primary/5">
-              <CardContent className="p-6 text-center">
-                <Activity className="w-8 h-8 text-primary mx-auto mb-3" />
-                <h3 className="font-semibold mb-2">Deep Historical Analysis</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  10+ years of patterns, seasonal trends, and referee influences
-                </p>
-                <div className="text-xs text-left space-y-1 mb-4 bg-white/50 p-3 rounded">
-                  <p>• Detailed situational stats (when trailing, leading, etc.)</p>
-                  <p>• Referee impact analysis and card patterns</p>
-                  <p>• Weather and venue-specific performance data</p>
-                  <p>• Injury impact on historical results</p>
-                </div>
-                <Button variant="outline" size="sm">
-                  <Crown className="w-4 h-4 mr-2" />
-                  Unlock Premium H2H
-                </Button>
-              </CardContent>
-            </Card>
-          )}
         </TabsContent>
       </Tabs>
     </div>

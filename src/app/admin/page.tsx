@@ -202,15 +202,11 @@ function AnalyzedMatchesPanel() {
   const fetchAnalyzedMatches = async () => {
     setIsLoading(true);
     try {
-      const response = await adminApiGet('/api/v1/admin/matches');
+      const response = await adminApiGet('/api/v1/admin/analyzed-matches');
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
-          // Filter only analyzed matches (completed or failed)
-          const analyzed = data.data.filter((match: AdminMatch) => 
-            match.analysis_status === 'completed' || match.analysis_status === 'failed'
-          );
-          setAnalyzedMatches(analyzed);
+          setAnalyzedMatches(data.data || []);
         }
       }
     } catch (error) {
@@ -382,17 +378,17 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-background">
       <Header 
         onLoginClick={() => setShowAuthModal(true)}
         showAuthModal={showAuthModal}
         setShowAuthModal={setShowAuthModal}
         currentPage="admin"
       />
-      <main className="flex-1 container mx-auto py-8">
+      <main className="flex-1 container mx-auto py-8 px-4">
         <div className="space-y-8">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Painel Admin</h1>
+            <h1 className="text-3xl font-bold mb-2 text-foreground">Painel Admin</h1>
             <p className="text-muted-foreground">Gerir análise e publicação de jogos</p>
           </div>
           
