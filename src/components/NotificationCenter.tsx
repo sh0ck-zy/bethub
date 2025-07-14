@@ -146,7 +146,7 @@ export default function NotificationCenter() {
       case 'match_start':
         return <Clock className="h-4 w-4 text-purple-400" />;
       default:
-        return <AlertTriangle className="h-4 w-4 text-gray-400" />;
+        return <AlertTriangle className="h-4 w-4 text-muted-foreground" />;
     }
   };
 
@@ -161,7 +161,7 @@ export default function NotificationCenter() {
       case 'match_start':
         return 'border-purple-500/30 bg-purple-500/10';
       default:
-        return 'border-gray-500/30 bg-gray-500/10';
+        return 'border-muted/30 bg-muted/10';
     }
   };
 
@@ -229,9 +229,9 @@ export default function NotificationCenter() {
         <div className="space-y-2 max-h-[60vh] overflow-y-auto">
           {notifications.length === 0 ? (
             <div className="text-center py-8">
-              <Bell className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">No notifications yet</p>
-              <p className="text-sm text-gray-400">We'll notify you about important updates</p>
+              <Bell className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">No notifications yet</p>
+              <p className="text-sm text-muted-foreground">We'll notify you about important updates</p>
             </div>
           ) : (
             notifications.map((notification) => (
@@ -250,13 +250,13 @@ export default function NotificationCenter() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1">
-                          <h4 className="text-sm font-medium text-white">
+                          <h4 className="text-sm font-medium text-foreground">
                             {notification.title}
                           </h4>
-                          <p className="text-xs text-gray-400 mt-1">
+                          <p className="text-xs text-muted-foreground mt-1">
                             {notification.message}
                           </p>
-                          <p className="text-xs text-gray-500 mt-2">
+                          <p className="text-xs text-muted-foreground mt-2">
                             {formatTimestamp(notification.timestamp)}
                           </p>
                         </div>
@@ -291,8 +291,8 @@ export default function NotificationCenter() {
         </div>
 
         {notifications.length > 0 && (
-          <div className="flex items-center justify-between pt-2 border-t border-gray-700">
-            <span className="text-xs text-gray-400">
+          <div className="flex items-center justify-between pt-2 border-t border-border">
+            <span className="text-xs text-muted-foreground">
               {unreadCount} unread of {notifications.length} total
             </span>
             <Button

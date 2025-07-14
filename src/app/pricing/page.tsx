@@ -88,14 +88,14 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-16">
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-blue-400 via-purple-500 to-pink-400 bg-clip-text text-transparent mb-6">
             Choose Your Plan
           </h1>
-          <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Get the most out of AI-powered football analysis with our flexible pricing plans
           </p>
         </div>
@@ -105,38 +105,38 @@ export default function PricingPage() {
           {plans.map((plan) => (
             <Card 
               key={plan.name}
-              className={`relative bg-gray-800/50 border border-white/10 ${
-                plan.popular ? 'ring-2 ring-blue-500' : ''
+              className={`relative bg-card border-border ${
+                plan.popular ? 'ring-2 ring-primary' : ''
               }`}
             >
               {plan.popular && (
-                <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white">
+                <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground">
                   Most Popular
                 </Badge>
               )}
               
               <CardHeader className="text-center pb-4">
-                <CardTitle className="text-2xl font-bold text-white flex items-center justify-center gap-2">
+                <CardTitle className="text-2xl font-bold text-card-foreground flex items-center justify-center gap-2">
                   {plan.name === 'Premium' && <Crown className="w-6 h-6 text-yellow-400" />}
                   {plan.name}
                 </CardTitle>
-                <div className="text-3xl font-bold text-white">
+                <div className="text-3xl font-bold text-card-foreground">
                   €{plan.price}
-                  <span className="text-lg text-gray-400 font-normal">
+                  <span className="text-lg text-muted-foreground font-normal">
                     /{plan.interval}
                   </span>
                 </div>
-                <p className="text-gray-400">{plan.description}</p>
+                <p className="text-muted-foreground">{plan.description}</p>
               </CardHeader>
 
               <CardContent className="space-y-6">
                 {/* Features */}
                 <div className="space-y-3">
-                  <h4 className="font-semibold text-white mb-3">What's included:</h4>
+                  <h4 className="font-semibold text-card-foreground mb-3">What's included:</h4>
                   {plan.features.map((feature) => (
                     <div key={feature} className="flex items-center gap-3">
                       <Check className="w-5 h-5 text-green-400 flex-shrink-0" />
-                      <span className="text-gray-300">{feature}</span>
+                      <span className="text-muted-foreground">{feature}</span>
                     </div>
                   ))}
                 </div>
@@ -144,11 +144,11 @@ export default function PricingPage() {
                 {/* Limitations */}
                 {plan.limitations.length > 0 && (
                   <div className="space-y-3">
-                    <h4 className="font-semibold text-white mb-3">Limitations:</h4>
+                    <h4 className="font-semibold text-card-foreground mb-3">Limitations:</h4>
                     {plan.limitations.map((limitation) => (
                       <div key={limitation} className="flex items-center gap-3">
                         <div className="w-5 h-5 text-red-400 flex-shrink-0">×</div>
-                        <span className="text-gray-400">{limitation}</span>
+                        <span className="text-muted-foreground">{limitation}</span>
                       </div>
                     ))}
                   </div>
@@ -161,7 +161,7 @@ export default function PricingPage() {
                   className={`w-full ${
                     plan.popular 
                       ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700' 
-                      : 'bg-gray-700 hover:bg-gray-600'
+                      : 'bg-secondary hover:bg-secondary/80 text-secondary-foreground'
                   }`}
                 >
                   {isLoading ? (
@@ -174,7 +174,7 @@ export default function PricingPage() {
                 </Button>
 
                 {plan.name === 'Premium' && (
-                  <p className="text-xs text-gray-400 text-center">
+                  <p className="text-xs text-muted-foreground text-center">
                     7-day free trial • Cancel anytime
                   </p>
                 )}
@@ -185,64 +185,84 @@ export default function PricingPage() {
 
         {/* Features Comparison */}
         <div className="mt-16">
-          <h2 className="text-3xl font-bold text-white text-center mb-8">
+          <h2 className="text-3xl font-bold text-foreground text-center mb-8">
             Feature Comparison
           </h2>
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             <div className="text-center">
               <Brain className="w-12 h-12 text-blue-400 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-white mb-2">AI Analysis</h3>
-              <p className="text-gray-400">
+              <h3 className="text-xl font-bold text-foreground mb-2">AI Analysis</h3>
+              <p className="text-muted-foreground">
                 Advanced tactical insights and predictions powered by AI
               </p>
             </div>
             <div className="text-center">
               <TrendingUp className="w-12 h-12 text-green-400 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-white mb-2">Real-time Updates</h3>
-              <p className="text-gray-400">
+              <h3 className="text-xl font-bold text-foreground mb-2">Real-time Updates</h3>
+              <p className="text-muted-foreground">
                 Live match updates and instant notifications
               </p>
             </div>
             <div className="text-center">
-              <Zap className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-white mb-2">Premium Support</h3>
-              <p className="text-gray-400">
-                Priority customer support and exclusive content
+              <Users className="w-12 h-12 text-purple-400 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-foreground mb-2">Community</h3>
+              <p className="text-muted-foreground">
+                Connect with other football enthusiasts
               </p>
             </div>
           </div>
         </div>
 
-        {/* FAQ */}
+        {/* FAQ Section */}
         <div className="mt-16">
-          <h2 className="text-3xl font-bold text-white text-center mb-8">
+          <h2 className="text-3xl font-bold text-foreground text-center mb-8">
             Frequently Asked Questions
           </h2>
           <div className="max-w-2xl mx-auto space-y-6">
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-2">
+            <div className="bg-card p-6 rounded-lg border border-border">
+              <h3 className="text-lg font-semibold text-card-foreground mb-2">
                 Can I cancel my subscription anytime?
               </h3>
-              <p className="text-gray-400">
+              <p className="text-muted-foreground">
                 Yes, you can cancel your subscription at any time. You'll continue to have access until the end of your current billing period.
               </p>
             </div>
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-2">
-                Is there a free trial?
+            <div className="bg-card p-6 rounded-lg border border-border">
+              <h3 className="text-lg font-semibold text-card-foreground mb-2">
+                What happens after my free trial ends?
               </h3>
-              <p className="text-gray-400">
-                Yes, Premium plans come with a 7-day free trial. No credit card required to start.
+              <p className="text-muted-foreground">
+                After your 7-day free trial, you'll be automatically charged for the Premium plan. You can cancel anytime before the trial ends.
               </p>
             </div>
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-2">
-                What payment methods do you accept?
+            <div className="bg-card p-6 rounded-lg border border-border">
+              <h3 className="text-lg font-semibold text-card-foreground mb-2">
+                Do you offer refunds?
               </h3>
-              <p className="text-gray-400">
-                We accept all major credit cards, debit cards, and digital wallets through Stripe.
+              <p className="text-muted-foreground">
+                We offer a 30-day money-back guarantee. If you're not satisfied, contact our support team for a full refund.
               </p>
             </div>
+          </div>
+        </div>
+
+        {/* CTA Section */}
+        <div className="mt-16 text-center">
+          <div className="bg-gradient-to-r from-primary/10 to-purple-500/10 p-8 rounded-2xl border border-primary/20">
+            <Zap className="w-12 h-12 text-primary mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-foreground mb-4">
+              Ready to get started?
+            </h2>
+            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+              Join thousands of football fans who are already using AI-powered analysis to understand the beautiful game better.
+            </p>
+            <Button 
+              onClick={handleUpgrade}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 text-lg"
+            >
+              <Crown className="w-5 h-5 mr-2" />
+              Start Your Free Trial
+            </Button>
           </div>
         </div>
       </div>

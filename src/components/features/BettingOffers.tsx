@@ -49,8 +49,8 @@ export function BettingOffers() {
   if (offers.length === 0) return null;
 
   return (
-    <div className="bg-gradient-to-br from-[#27293D] to-[#1E1E2D] p-6 rounded-2xl border border-gray-700/50 shadow-2xl">
-      <h2 className="font-bold text-white text-xl mb-4">Betting Offers</h2>
+    <div className="bg-card p-6 rounded-2xl border border-border shadow-lg">
+      <h2 className="font-bold text-card-foreground text-xl mb-4">Betting Offers</h2>
       <div className="space-y-4">
         {offers.map(house => (
           <a
@@ -58,14 +58,14 @@ export function BettingOffers() {
             href={house.affiliateLink}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-4 p-3 rounded-lg bg-[#23243a] hover:bg-blue-600/80 transition-colors shadow group"
+            className="flex items-center gap-4 p-3 rounded-lg bg-muted/50 hover:bg-primary/10 transition-colors shadow group border border-border"
           >
             <img src={house.logo} alt={house.name} className="w-12 h-12 bg-white rounded-full p-1 object-contain" />
             <div className="flex-1">
-              <div className="font-semibold text-white text-base group-hover:text-yellow-400 transition-colors">{house.name}</div>
-              <div className="text-sm text-blue-300 font-medium">{house.offer}</div>
+              <div className="font-semibold text-card-foreground text-base group-hover:text-primary transition-colors">{house.name}</div>
+              <div className="text-sm text-blue-600 dark:text-blue-400 font-medium">{house.offer}</div>
             </div>
-            <span className="text-xs text-blue-400 font-bold group-hover:text-yellow-400 transition-colors">Claim</span>
+            <span className="text-xs text-primary font-bold group-hover:text-yellow-600 dark:group-hover:text-yellow-400 transition-colors">Claim</span>
           </a>
         ))}
       </div>

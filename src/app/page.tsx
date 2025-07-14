@@ -218,7 +218,7 @@ export default function HomePage() {
   );
 
   return (
-    <div className="bg-[#191924] min-h-screen text-gray-300 font-sans" style={{fontFamily: "'Inter', sans-serif"}}>
+    <div className="min-h-screen bg-background text-foreground font-sans">
       {/* Consistent Header */}
       <Header 
         onLoginClick={() => setShowAuthModal(true)}
@@ -230,16 +230,16 @@ export default function HomePage() {
 
         {/* --- LEFT SIDEBAR --- */}
         <aside className="w-full lg:w-72 flex-shrink-0 space-y-8 hidden lg:flex lg:flex-col">
-          <div className="bg-gradient-to-br from-[#27293D] to-[#1E1E2D] p-6 rounded-2xl border border-gray-700/50 shadow-2xl">
-            <h2 className="font-bold text-white text-xl mb-6">Leagues</h2>
+          <div className="bg-card p-6 rounded-2xl border border-border shadow-lg">
+            <h2 className="font-bold text-card-foreground text-xl mb-6">Leagues</h2>
             <nav className="space-y-2">
               {leaguesBySport[selectedSport as keyof typeof leaguesBySport]?.map(league => (
                 <a key={league.id} href="#" onClick={(e) => { e.preventDefault(); setSelectedLeague(league.id); }}
-                  className={`flex items-center justify-between p-3 rounded-lg transition-colors relative group ${selectedLeague === league.id ? 'bg-[#191924] shadow-inner' : 'hover:bg-[#32354e]'}`}>
-                  <div className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-l-lg transition-all duration-300 ${selectedLeague === league.id ? 'bg-red-500' : 'bg-transparent group-hover:bg-red-500/50'}`}></div>
+                  className={`flex items-center justify-between p-3 rounded-lg transition-colors relative group ${selectedLeague === league.id ? 'bg-accent shadow-inner' : 'hover:bg-accent/50'}`}>
+                  <div className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-l-lg transition-all duration-300 ${selectedLeague === league.id ? 'bg-primary' : 'bg-transparent group-hover:bg-primary/50'}`}></div>
                   <div className="flex items-center space-x-4 ml-2">
                     <img src={league.logo} alt={league.name} className="w-8 h-8 rounded-full bg-white p-1" />
-                    <span className="text-base font-medium">{league.name}</span>
+                    <span className="text-base font-medium text-card-foreground">{league.name}</span>
                   </div>
                   {(league as any).isHot && <FireIcon className="text-red-500" />}
                 </a>
@@ -257,12 +257,12 @@ export default function HomePage() {
         <main className="flex-1 space-y-8">
           {/* --- MATCH IN SPOTLIGHT HERO PANEL --- */}
           {featuredMatch && (
-            <div className="bg-cover bg-center rounded-2xl p-8 flex flex-col justify-between h-72 relative border border-gray-700/50 shadow-2xl" style={{ backgroundImage: `url(https://images.unsplash.com/photo-1628852654354-13931612419c?q=80&w=2832&auto=format&fit=crop)` }}>
+            <div className="bg-cover bg-center rounded-2xl p-8 flex flex-col justify-between h-72 relative border border-border shadow-lg" style={{ backgroundImage: `url(https://images.unsplash.com/photo-1628852654354-13931612419c?q=80&w=2832&auto=format&fit=crop)` }}>
               <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-transparent rounded-2xl"></div>
               <div className="relative z-10 flex flex-col h-full justify-between">
                 <div>
                   <h2 className="text-white text-4xl font-bold tracking-tight">{featuredMatch.home_team} VS {featuredMatch.away_team}</h2>
-                  <div className="flex items-center space-x-6 mt-3 text-base text-gray-300">
+                  <div className="flex items-center space-x-6 mt-3 text-base text-muted-foreground">
                     <span className="flex items-center gap-2"><Calendar className="w-4 h-4" /> {new Date(featuredMatch.kickoff_utc).toLocaleDateString()}</span>
                     <span className="flex items-center gap-2"><PinIcon /> {featuredMatch.venue || 'TBD'}</span>
                   </div>
@@ -278,9 +278,9 @@ export default function HomePage() {
             </div>
           )}
 
-          <div className="bg-gradient-to-br from-[#27293D] to-[#1E1E2D] p-6 rounded-2xl border border-gray-700/50 shadow-2xl">
+          <div className="bg-card p-6 rounded-2xl border border-border shadow-lg">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="font-bold text-white text-xl">
+              <h3 className="font-bold text-card-foreground text-xl">
                 {selectedLeague !== 'all' ? `Fixtures: ${selectedLeague}` : 'Upcoming Fixtures'}
               </h3>
               <div className="flex items-center gap-3">
@@ -299,7 +299,7 @@ export default function HomePage() {
                   <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
                   Refresh
                 </Button>
-                <Button onClick={() => setSelectedLeague('all')} className="text-base text-blue-400 hover:text-blue-300 font-semibold">View All →</Button>
+                <Button onClick={() => setSelectedLeague('all')} className="text-base text-primary hover:text-primary/80 font-semibold">View All →</Button>
               </div>
             </div>
 
@@ -359,22 +359,22 @@ export default function HomePage() {
             {!isLoading && (
               <div className="space-y-4">
                 {filteredMatches.map(fixture => (
-                  <div key={fixture.id} className="bg-[#191924] p-4 rounded-lg flex flex-col md:flex-row items-center justify-between gap-4 shadow-inner">
+                  <div key={fixture.id} className="bg-muted/50 p-4 rounded-lg flex flex-col md:flex-row items-center justify-between gap-4 shadow-inner border border-border">
                     <div className="flex items-center justify-between w-full md:w-auto md:gap-6">
                       <div className="flex flex-col items-center w-28 text-center">
                         <TeamLogo team={fixture.home_team} size={64} />
-                        <span className="font-bold text-white text-base mt-2">{fixture.home_team}</span>
+                        <span className="font-bold text-card-foreground text-base mt-2">{fixture.home_team}</span>
                         <div className="flex space-x-2 mt-2">
                           {['W', 'L', 'W', 'D', 'W'].map((r, i) => <FormIndicator key={i} result={r} />)}
                         </div>
                       </div>
                       <div className="text-center mx-4">
-                        <span className="text-3xl font-bold text-gray-400">VS</span>
-                        <div className="text-sm text-gray-500 mt-1">{new Date(fixture.kickoff_utc).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                        <span className="text-3xl font-bold text-muted-foreground">VS</span>
+                        <div className="text-sm text-muted-foreground mt-1">{new Date(fixture.kickoff_utc).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                       </div>
                       <div className="flex flex-col items-center w-28 text-center">
                         <TeamLogo team={fixture.away_team} size={64} />
-                        <span className="font-bold text-white text-base mt-2">{fixture.away_team}</span>
+                        <span className="font-bold text-card-foreground text-base mt-2">{fixture.away_team}</span>
                         <div className="flex space-x-2 mt-2">
                           {['W', 'W', 'L', 'W', 'D'].map((r, i) => <FormIndicator key={i} result={r} />)}
                         </div>
@@ -383,9 +383,9 @@ export default function HomePage() {
                     <div className="flex items-center gap-4 mt-4 md:mt-0">
                       <div className="flex flex-col gap-2 text-sm font-mono text-center">
                         <div className="flex gap-2">
-                          <span className="bg-[#32354e] px-3 py-1 rounded w-20">1: {(2.1 + Math.random() * 0.8).toFixed(2)}</span>
-                          <span className="bg-[#32354e] px-3 py-1 rounded w-20">X: {(3.2 + Math.random() * 0.6).toFixed(2)}</span>
-                          <span className="bg-[#32354e] px-3 py-1 rounded w-20">2: {(2.8 + Math.random() * 0.8).toFixed(2)}</span>
+                          <span className="bg-secondary px-3 py-1 rounded w-20 text-secondary-foreground">1: {(2.1 + Math.random() * 0.8).toFixed(2)}</span>
+                          <span className="bg-secondary px-3 py-1 rounded w-20 text-secondary-foreground">X: {(3.2 + Math.random() * 0.6).toFixed(2)}</span>
+                          <span className="bg-secondary px-3 py-1 rounded w-20 text-secondary-foreground">2: {(2.8 + Math.random() * 0.8).toFixed(2)}</span>
                         </div>
                         <Link href={`/match/${fixture.id}`}>
                           <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-3 rounded-lg text-base transition-colors w-full mt-2">Analyze</Button>
@@ -424,33 +424,33 @@ export default function HomePage() {
 
         {/* --- RIGHT SIDEBAR --- */}
         <aside className="w-full lg:w-80 flex-shrink-0 space-y-8 hidden xl:flex xl:flex-col">
-          <div className="bg-gradient-to-br from-[#27293D] to-[#1E1E2D] p-6 rounded-2xl border border-gray-700/50 shadow-2xl">
-            <h3 className="font-bold text-white text-lg mb-2">Upcoming Match</h3>
-            <p className="text-xs text-gray-400 mb-4">Description about this match</p>
+          <div className="bg-card p-6 rounded-2xl border border-border shadow-lg">
+            <h3 className="font-bold text-card-foreground text-lg mb-2">Upcoming Match</h3>
+            <p className="text-xs text-muted-foreground mb-4">Description about this match</p>
             {featuredMatch && (
-              <div className="bg-[#191924] p-4 rounded-lg flex items-center justify-around mb-4 shadow-inner">
+              <div className="bg-muted/50 p-4 rounded-lg flex items-center justify-around mb-4 shadow-inner border border-border">
                 <TeamLogo team={featuredMatch.home_team} size={48} />
-                <span className="text-white font-bold text-xl">VS</span>
+                <span className="text-card-foreground font-bold text-xl">VS</span>
                 <TeamLogo team={featuredMatch.away_team} size={48} />
               </div>
             )}
             <Link href={featuredMatch ? `/match/${featuredMatch.id}` : '#'}>
-              <Button className="w-full bg-[#32354e] hover:bg-blue-600 text-white font-semibold py-3 rounded-lg transition-colors">
+              <Button className="w-full bg-secondary hover:bg-secondary/80 text-secondary-foreground font-semibold py-3 rounded-lg transition-colors">
                 Match Details
               </Button>
             </Link>
           </div>
           {/* Ad replaces Total Watch Time */}
           <AdComponent />
-          <div className="bg-gradient-to-br from-[#27293D] to-[#1E1E2D] p-6 rounded-2xl border border-gray-700/50 shadow-2xl">
-            <h3 className="font-bold text-white text-xl mb-6 flex items-center gap-3"><FireIcon className="text-red-500 w-6 h-6" /> Hot News</h3>
+          <div className="bg-card p-6 rounded-2xl border border-border shadow-lg">
+            <h3 className="font-bold text-card-foreground text-xl mb-6 flex items-center gap-3"><FireIcon className="text-red-500 w-6 h-6" /> Hot News</h3>
             <div className="space-y-5">
               {news.map((article: any) => (
                 <a href="#" key={article.id} className="flex items-center space-x-4 group">
                   <img src={article.image} alt={article.title} className="w-20 h-20 rounded-lg flex-shrink-0 object-cover transition-transform duration-300 group-hover:scale-105" />
                   <div>
-                    <h4 className="text-base font-semibold text-white leading-tight transition-colors group-hover:text-blue-400">{article.title}</h4>
-                    <p className="text-sm text-gray-400 mt-2">{article.source} - {article.date}</p>
+                    <h4 className="text-base font-semibold text-card-foreground leading-tight transition-colors group-hover:text-blue-400">{article.title}</h4>
+                    <p className="text-sm text-muted-foreground mt-2">{article.source} - {article.date}</p>
                   </div>
                 </a>
               ))}

@@ -168,28 +168,28 @@ export default function MatchDetailPage() {
     switch (status) {
       case 'LIVE':
         return {
-          color: 'bg-red-50 text-red-600 border-red-200',
+          color: 'bg-red-50 text-red-600 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800',
           text: 'Live',
           icon: '🔴',
           pulse: true
         };
       case 'FT':
         return {
-          color: 'bg-green-50 text-green-600 border-green-200',
+          color: 'bg-green-50 text-green-600 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800',
           text: 'Full Time',
           icon: '✅',
           pulse: false
         };
       case 'HT':
         return {
-          color: 'bg-yellow-50 text-yellow-600 border-yellow-200',
+          color: 'bg-yellow-50 text-yellow-600 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800',
           text: 'Half Time',
           icon: '⏸️',
           pulse: true
         };
       default:
         return {
-          color: 'bg-blue-50 text-blue-600 border-blue-200',
+          color: 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800',
           text: 'Upcoming',
           icon: '⏰',
           pulse: false
@@ -218,7 +218,7 @@ export default function MatchDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
+      <div className="min-h-screen bg-background flex flex-col">
         <Header 
           onLoginClick={() => setShowAuthModal(true)}
           showAuthModal={showAuthModal}
@@ -228,9 +228,9 @@ export default function MatchDetailPage() {
         <main className="flex-1 flex items-center justify-center">
           <Card className="max-w-md mx-4">
             <CardContent className="p-8 text-center">
-              <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Loading Analysis</h3>
-              <p className="text-gray-600">Preparing AI insights...</p>
+              <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-foreground mb-2">Loading Analysis</h3>
+              <p className="text-muted-foreground">Preparing AI insights...</p>
             </CardContent>
           </Card>
         </main>
@@ -241,7 +241,7 @@ export default function MatchDetailPage() {
 
   if (error || !match || !analysis) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
+      <div className="min-h-screen bg-background flex flex-col">
         <Header 
           onLoginClick={() => setShowAuthModal(true)}
           showAuthModal={showAuthModal}
@@ -249,11 +249,11 @@ export default function MatchDetailPage() {
           currentPage="match"
         />
         <main className="flex-1 flex items-center justify-center">
-          <Card className="max-w-md mx-4 border-red-200">
+          <Card className="max-w-md mx-4 border-destructive/20">
             <CardContent className="p-8 text-center">
-              <AlertCircle className="w-8 h-8 text-red-600 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Unable to Load Match</h3>
-              <p className="text-gray-600 mb-4">{error || 'Match not found'}</p>
+              <AlertCircle className="w-8 h-8 text-destructive mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-foreground mb-2">Unable to Load Match</h3>
+              <p className="text-muted-foreground mb-4">{error || 'Match not found'}</p>
               <Button onClick={() => window.history.back()} variant="outline">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Go Back
@@ -270,7 +270,7 @@ export default function MatchDetailPage() {
   const kickoffDate = new Date(match.kickoff_utc);
 
   return (
-    <div className="min-h-screen bg-background app-background dark:app-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Consistent Header */}
       <Header 
         onLoginClick={() => setShowAuthModal(true)}
@@ -280,7 +280,7 @@ export default function MatchDetailPage() {
       />
 
       {/* Match Header - Mobile Optimized */}
-      <div className="bg-card border-b border-border texture-overlay dark:texture-overlay">
+      <div className="bg-card border-b border-border">
         <div className="max-w-4xl mx-auto px-4 py-6">
           {/* Navigation & Actions */}
           <div className="flex items-center justify-between mb-6">
@@ -379,7 +379,7 @@ export default function MatchDetailPage() {
           </div>
 
           {/* AI Headline - Hero Section */}
-          <Card className="sport-card dark:sport-card bg-gradient-to-r from-primary/5 via-primary/10 to-purple-500/5 border-primary/20">
+          <Card className="bg-gradient-to-r from-primary/5 via-primary/10 to-purple-500/5 border-primary/20">
             <CardContent className="p-6 text-center">
               <div className="flex items-center justify-center space-x-2 mb-4">
                 <div className="w-8 h-8 bg-gradient-to-r from-primary to-purple-600 rounded-lg flex items-center justify-center">
@@ -411,7 +411,7 @@ export default function MatchDetailPage() {
                   </div>
                   <Button 
                     onClick={() => setShowAuthModal(true)}
-                    className="sport-button-premium font-semibold px-6 py-2"
+                    className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white font-semibold px-6 py-2"
                   >
                     Unlock Premium Analysis
                   </Button>

@@ -155,7 +155,7 @@ export default function LiveMatchCard({
       case 'FT':
         return 'bg-green-500/20 text-green-400 border-green-500/30';
       default:
-        return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+        return 'bg-muted/20 text-muted-foreground border-muted/30';
     }
   };
 
@@ -194,7 +194,7 @@ export default function LiveMatchCard({
           {notificationsEnabled ? (
             <Bell className="h-4 w-4 text-blue-400" />
           ) : (
-            <BellOff className="h-4 w-4 text-gray-400" />
+            <BellOff className="h-4 w-4 text-muted-foreground" />
           )}
         </Button>
       </div>
@@ -244,7 +244,7 @@ export default function LiveMatchCard({
               {currentScore.home} - {currentScore.away}
             </div>
             {status === 'LIVE' && (
-              <div className="flex items-center gap-1 text-xs text-gray-400">
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <Clock className="h-3 w-3" />
                 {matchMinute}'
               </div>
@@ -260,17 +260,17 @@ export default function LiveMatchCard({
         {/* Live Updates */}
         {liveUpdates.length > 0 && (
           <div className="space-y-2">
-            <h4 className="text-xs font-medium text-gray-400 flex items-center gap-1">
+            <h4 className="text-xs font-medium text-muted-foreground flex items-center gap-1">
               <Target className="h-3 w-3" />
               Live Updates
             </h4>
             <div className="space-y-1 max-h-32 overflow-y-auto">
               {liveUpdates.slice(0, 3).map((update, index) => (
-                <div key={index} className="flex items-start gap-2 p-2 bg-gray-800/50 rounded text-xs">
+                <div key={index} className="flex items-start gap-2 p-2 bg-muted/50 rounded text-xs">
                   <span className="text-lg">{getUpdateIcon(update.type)}</span>
                   <div className="flex-1">
                     <p className="text-white">{update.data.description}</p>
-                    <p className="text-gray-400">
+                    <p className="text-muted-foreground">
                       {new Date(update.timestamp).toLocaleTimeString()}
                     </p>
                   </div>
@@ -283,21 +283,21 @@ export default function LiveMatchCard({
         {/* Odds */}
         {currentOdds && (
           <div className="space-y-2">
-            <h4 className="text-xs font-medium text-gray-400 flex items-center gap-1">
+            <h4 className="text-xs font-medium text-muted-foreground flex items-center gap-1">
               <TrendingUp className="h-3 w-3" />
               Live Odds
             </h4>
             <div className="grid grid-cols-3 gap-2">
-              <div className="text-center p-2 bg-gray-800/50 rounded">
-                <div className="text-xs text-gray-400">Home</div>
+              <div className="text-center p-2 bg-muted/50 rounded">
+                <div className="text-xs text-muted-foreground">Home</div>
                 <div className="text-sm font-semibold text-white">{currentOdds.home}</div>
               </div>
-              <div className="text-center p-2 bg-gray-800/50 rounded">
-                <div className="text-xs text-gray-400">Draw</div>
+              <div className="text-center p-2 bg-muted/50 rounded">
+                <div className="text-xs text-muted-foreground">Draw</div>
                 <div className="text-sm font-semibold text-white">{currentOdds.draw}</div>
               </div>
-              <div className="text-center p-2 bg-gray-800/50 rounded">
-                <div className="text-xs text-gray-400">Away</div>
+              <div className="text-center p-2 bg-muted/50 rounded">
+                <div className="text-xs text-muted-foreground">Away</div>
                 <div className="text-sm font-semibold text-white">{currentOdds.away}</div>
               </div>
             </div>
@@ -305,7 +305,7 @@ export default function LiveMatchCard({
         )}
 
         {/* Connection Info */}
-        <div className="text-xs text-gray-500 text-center">
+        <div className="text-xs text-muted-foreground text-center">
           {isSubscribed ? (
             <span className="text-green-400">● Live updates enabled</span>
           ) : (

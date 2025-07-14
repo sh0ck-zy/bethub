@@ -138,14 +138,14 @@ const StatusBadge = ({ status, kickoffTime }: { status: string; kickoffTime: str
             return (
               <div className="flex flex-col items-center text-center">
                 <div className="text-xs font-semibold text-blue-400 leading-tight">Today</div>
-                <div className="text-xs font-medium text-gray-300 leading-tight">{timeString}</div>
+                <div className="text-xs font-medium text-muted-foreground leading-tight">{timeString}</div>
               </div>
             );
           } else if (isTomorrow) {
             return (
               <div className="flex flex-col items-center text-center">
                 <div className="text-xs font-semibold text-blue-400 leading-tight">Tomorrow</div>
-                <div className="text-xs font-medium text-gray-300 leading-tight">{timeString}</div>
+                <div className="text-xs font-medium text-muted-foreground leading-tight">{timeString}</div>
               </div>
             );
           } else {
@@ -154,7 +154,7 @@ const StatusBadge = ({ status, kickoffTime }: { status: string; kickoffTime: str
                 <div className="text-xs font-semibold text-blue-400 leading-tight">
                   {date.toLocaleDateString([], { month: 'short', day: 'numeric' })}
                 </div>
-                <div className="text-xs font-medium text-gray-300 leading-tight">{timeString}</div>
+                <div className="text-xs font-medium text-muted-foreground leading-tight">{timeString}</div>
               </div>
             );
           }
@@ -216,11 +216,11 @@ export function MatchCard({ match, mode = 'public', adminControls }: MatchCardPr
       role="button"
       tabIndex={0}
       onKeyDown={handleKeyDown}
-      className="w-full bg-gray-900 border border-gray-700 rounded-xl cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+      className="w-full bg-card border border-border rounded-xl cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background"
       aria-label={`Match: ${enhancedMatch.home_team} vs ${enhancedMatch.away_team}`}
     >
       {/* Header with League and Status */}
-      <div className="flex justify-between items-center p-3 bg-gradient-to-r from-gray-800 to-gray-700 border-b border-gray-600 rounded-t-xl">
+      <div className="flex justify-between items-center p-3 bg-muted/50 border-b border-border rounded-t-xl">
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <div className="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0"></div>
           <span className="text-orange-400 font-semibold text-sm tracking-wide truncate">
@@ -236,20 +236,20 @@ export function MatchCard({ match, mode = 'public', adminControls }: MatchCardPr
         <div className="space-y-2 mb-3">
           <div className="flex items-center gap-2">
             <TeamLogo team={enhancedMatch.home_team} size={24} />
-            <span className="text-sm font-medium text-white truncate">
+            <span className="text-sm font-medium text-foreground truncate">
               {truncateTeamName(enhancedMatch.home_team)}
             </span>
           </div>
           <div className="flex items-center gap-2">
             <TeamLogo team={enhancedMatch.away_team} size={24} />
-            <span className="text-sm font-medium text-white truncate">
+            <span className="text-sm font-medium text-foreground truncate">
               {truncateTeamName(enhancedMatch.away_team)}
             </span>
           </div>
         </div>
 
         {/* AI Insight - Hero Section */}
-        <div className="border-t border-gray-700 pt-2">
+        <div className="border-t border-border pt-2">
           <div className="flex items-center justify-between mb-1">
             <div className="text-xs font-semibold text-blue-400 flex items-center gap-1">
               <span className="text-xs">🤖</span>
@@ -262,7 +262,7 @@ export function MatchCard({ match, mode = 'public', adminControls }: MatchCardPr
             )}
           </div>
           {enhancedMatch.aiInsight && (
-            <p className="text-xs text-gray-300 leading-relaxed line-clamp-2 mb-1">
+            <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 mb-1">
               {enhancedMatch.aiInsight.prediction}
             </p>
           )}
@@ -273,23 +273,23 @@ export function MatchCard({ match, mode = 'public', adminControls }: MatchCardPr
 
         {/* Admin Controls */}
         {mode === 'admin' && adminControls && (
-          <div className="border-t border-gray-700 mt-3 pt-3">
+          <div className="border-t border-border mt-3 pt-3">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center space-x-2">
                 <div className={`w-2 h-2 rounded-full ${
                   adminControls.analysisStatus === 'completed' ? 'bg-green-500' :
                   adminControls.analysisStatus === 'pending' ? 'bg-yellow-500 animate-pulse' :
                   adminControls.analysisStatus === 'failed' ? 'bg-red-500' :
-                  'bg-gray-400'
+                  'bg-muted-foreground'
                 }`}></div>
-                <span className="text-xs font-medium text-gray-300 capitalize">
+                <span className="text-xs font-medium text-muted-foreground capitalize">
                   {adminControls.analysisStatus}
                 </span>
               </div>
               <div className={`text-xs px-2 py-1 rounded ${
                 adminControls.isPublished 
                   ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
-                  : 'bg-gray-500/20 text-gray-400 border border-gray-500/30'
+                  : 'bg-muted text-muted-foreground border border-border'
               }`}>
                 {adminControls.isPublished ? 'Published' : 'Hidden'}
               </div>
@@ -302,7 +302,7 @@ export function MatchCard({ match, mode = 'public', adminControls }: MatchCardPr
                   adminControls.onSendToAI(enhancedMatch.id);
                 }}
                 disabled={adminControls.analysisStatus === 'pending'}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:text-gray-400 disabled:cursor-not-allowed text-white text-xs font-medium py-2 px-3 rounded-lg transition-colors"
+                className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed text-white text-xs font-medium py-2 px-3 rounded-lg transition-colors"
               >
                 {adminControls.analysisStatus === 'pending' ? 'Analyzing...' : 'Send to AI'}
               </button>
@@ -330,7 +330,7 @@ export function MatchCard({ match, mode = 'public', adminControls }: MatchCardPr
             e.stopPropagation();
             setIsExpanded(!isExpanded);
           }}
-          className="w-full flex items-center justify-center gap-2 py-2 text-blue-400 hover:text-blue-300 transition-colors border-t border-gray-700 mt-3 pt-3 bg-gradient-to-r from-blue-900/10 to-purple-900/10 hover:from-blue-900/20 hover:to-purple-900/20 rounded-b-lg"
+          className="w-full flex items-center justify-center gap-2 py-2 text-blue-400 hover:text-blue-300 transition-colors border-t border-border mt-3 pt-3 bg-gradient-to-r from-blue-900/10 to-purple-900/10 hover:from-blue-900/20 hover:to-purple-900/20 rounded-b-lg"
         >
           <BarChart3 className="w-4 h-4" />
           <span className="text-sm font-medium">
@@ -341,17 +341,17 @@ export function MatchCard({ match, mode = 'public', adminControls }: MatchCardPr
 
         {/* Expanded Content - Preview Teaser */}
         {isExpanded && (
-          <div className="mt-3 space-y-3 border-t border-gray-700 pt-3">
+          <div className="mt-3 space-y-3 border-t border-border pt-3">
             {/* AI Analysis Preview */}
             <div className="bg-gradient-to-r from-blue-900/20 to-purple-900/20 rounded-lg p-3 border border-blue-500/20">
               <div className="flex items-center gap-2 mb-2">
                 <BarChart3 className="w-4 h-4 text-blue-400" />
                 <span className="text-blue-400 font-semibold text-sm">AI Analysis Preview</span>
               </div>
-              <p className="text-gray-300 text-xs leading-relaxed mb-3">
+              <p className="text-muted-foreground text-xs leading-relaxed mb-3">
                 {enhancedMatch.home_team} shows {Math.floor(Math.random() * 20) + 75}% home dominance vs {enhancedMatch.away_team}'s recent away struggles. Key tactical insights and 12+ predictive factors analyzed...
               </p>
-              <div className="text-xs text-gray-400 space-y-1">
+              <div className="text-xs text-muted-foreground space-y-1">
                 <div>🎯 Expected Goals Model: {enhancedMatch.home_team} {(1.5 + Math.random() * 0.8).toFixed(1)} - {(1.0 + Math.random() * 0.6).toFixed(1)} {enhancedMatch.away_team}</div>
                 <div>📊 Win Probability: {enhancedMatch.home_team} {Math.floor(Math.random() * 20) + 45}% | Draw {Math.floor(Math.random() * 15) + 20}% | {enhancedMatch.away_team} {Math.floor(Math.random() * 15) + 15}%</div>
                 <div>⚡ Live Updates: Formation changes, weather impact, lineups</div>
@@ -360,13 +360,13 @@ export function MatchCard({ match, mode = 'public', adminControls }: MatchCardPr
 
             {/* Premium Features Teaser */}
             <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="bg-gray-800/50 p-2 rounded border border-gray-600">
+              <div className="bg-muted/50 p-2 rounded border border-border">
                 <div className="text-yellow-400 font-semibold mb-1">🔒 Player Analysis</div>
-                <div className="text-gray-400">Individual performance metrics</div>
+                <div className="text-muted-foreground">Individual performance metrics</div>
               </div>
-              <div className="bg-gray-800/50 p-2 rounded border border-gray-600">
+              <div className="bg-muted/50 p-2 rounded border border-border">
                 <div className="text-green-400 font-semibold mb-1">🔒 Live Momentum</div>
-                <div className="text-gray-400">Real-time tactical shifts</div>
+                <div className="text-muted-foreground">Real-time tactical shifts</div>
               </div>
             </div>
 
@@ -384,7 +384,7 @@ export function MatchCard({ match, mode = 'public', adminControls }: MatchCardPr
             </button>
             
             <div className="text-center">
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-muted-foreground">
                 Unlock unlimited AI analysis, live updates & winning strategies
               </span>
             </div>

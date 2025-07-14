@@ -32,14 +32,7 @@ export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentP
 
   return (
     <>
-      <header
-        className="sticky top-0 z-50 backdrop-blur-md"
-        style={{
-          background: 'linear-gradient(90deg, rgba(25,25,36,0.92) 60%, rgba(39,41,61,0.92) 100%)',
-          boxShadow: '0 4px 24px 0 rgba(0,0,0,0.12)',
-          borderBottom: '1.5px solid rgba(255,255,255,0.06)',
-        }}
-      >
+      <header className="sticky top-0 z-50 backdrop-blur-md bg-background/95 border-b border-border shadow-sm">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             {/* Logo & Navigation */}
@@ -62,7 +55,7 @@ export function Header({ onLoginClick, showAuthModal, setShowAuthModal, currentP
                     className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors relative z-10 ${
                       currentPage === 'admin' 
                         ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md' 
-                        : 'text-muted-foreground hover:text-white hover:bg-accent/40'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-accent/40'
                     }`}
                   >
                     <BarChart3 className="w-4 h-4 mr-1 inline" />
