@@ -49,6 +49,36 @@ export const TEAMS = {
     primary: '#FF0000',
     logo: '/logos/ac-milan.svg',
   },
+  'Botafogo FR': {
+    slug: 'botafogo',
+    primary: '#000000',
+    logo: null,
+  },
+  'EC Vitória': {
+    slug: 'vitoria',
+    primary: '#FF0000',
+    logo: null,
+  },
+  'SE Palmeiras': {
+    slug: 'palmeiras',
+    primary: '#006400',
+    logo: null,
+  },
+  'Mirassol FC': {
+    slug: 'mirassol',
+    primary: '#FFD700',
+    logo: null,
+  },
+  'Santos FC': {
+    slug: 'santos',
+    primary: '#FFFFFF',
+    logo: null,
+  },
+  'CR Flamengo': {
+    slug: 'flamengo',
+    primary: '#FF0000',
+    logo: null,
+  },
 } as const;
 
 export type TeamName = keyof typeof TEAMS; 

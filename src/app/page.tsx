@@ -1,19 +1,19 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { MatchCard } from '@/components/features/MatchCard';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { RefreshCw, AlertCircle, Brain, TrendingUp, Filter, Crown, Search, Calendar, MapPin, BarChart3 } from 'lucide-react';
+import { RefreshCw, AlertCircle, Brain, TrendingUp, Filter, Crown, Search } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRoleSelector } from '@/components/ui/RoleSelector';
 import { TeamLogo } from '@/components/TeamLogo';
 import Link from 'next/link';
 import { BettingOffers } from '@/components/features/BettingOffers';
 import { AdComponent } from '@/components/features/AdComponent';
+import { BannerCarousel } from '@/components/features/BannerCarousel';
 
 import type { Match } from '@/lib/types';
 
@@ -22,16 +22,8 @@ const SearchIcon = ({ size = 20, className = '' }) => (
     <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
 );
 
-const PinIcon = ({ size = 16, className = '' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-);
-
 const FireIcon = ({ size = 16, className = '' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M14.5 9.5c0 .9-.4 1.7-.9 2.3-.5.6-1.2 1-2.1 1.1v1.1c0 .8-.7 1.5-1.5 1.5s-1.5-.7-1.5-1.5v-1.1c-.9-.1-1.6-.5-2.1-1.1-.5-.6-.9-1.4-.9-2.3 0-1.3 1.1-2.5 2.5-2.5h.5c.8 0 1.5-.7 1.5-1.5s-.7-1.5-1.5-1.5h-.5c-1.4 0-2.5 1.1-2.5 2.5 0 .9.4 1.7.9 2.3.5.6 1.2 1 2.1 1.1v1.1c0 .8.7 1.5 1.5 1.5s1.5-.7 1.5-1.5v-1.1c.9-.1 1.6-.5 2.1-1.1-.5-.6.9-1.4-.9-2.3.1-1.3-1-2.5-2.4-2.5h-1.6c-.8 0-1.5-.7-1.5-1.5s.7-1.5 1.5-1.5h1.6c1.4 0 2.5 1.1 2.5 2.5z"></path><path d="M12 22a7 7 0 0 0 7-7h-4a3 3 0 0 1-3 3v4z"></path><path d="M12 2a7 7 0 0 0-7 7h4a3 3 0 0 1 3-3V2z"></path></svg>
-);
-
-const BarChartIcon = ({ size = 20, className = '' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="12" x2="12" y1="20" y2="10" /><line x1="18" x2="18" y1="20" y2="4" /><line x1="6" x2="6" y1="20" y2="16" /></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1.5-2.5S8 8.5 8 9c0 1.38.5 2 1.5 2.5S11 12.5 11 13c0 1.38-.5 2-1.5 2.5S8 16.5 8 17c0 1.38.5 2 1.5 2.5S11 20.5 11 21c0 1.38-.5 2-1.5 2.5S8 24.5 8 25"></path><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
 );
 
 export default function HomePage() {
@@ -256,27 +248,7 @@ export default function HomePage() {
         {/* --- MAIN CONTENT --- */}
         <main className="flex-1 space-y-8">
           {/* --- MATCH IN SPOTLIGHT HERO PANEL --- */}
-          {featuredMatch && (
-            <div className="bg-cover bg-center rounded-2xl p-8 flex flex-col justify-between h-72 relative border border-border shadow-lg" style={{ backgroundImage: `url(https://images.unsplash.com/photo-1628852654354-13931612419c?q=80&w=2832&auto=format&fit=crop)` }}>
-              <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-transparent rounded-2xl"></div>
-              <div className="relative z-10 flex flex-col h-full justify-between">
-                <div>
-                  <h2 className="text-white text-4xl font-bold tracking-tight">{featuredMatch.home_team} VS {featuredMatch.away_team}</h2>
-                  <div className="flex items-center space-x-6 mt-3 text-base text-muted-foreground">
-                    <span className="flex items-center gap-2"><Calendar className="w-4 h-4" /> {new Date(featuredMatch.kickoff_utc).toLocaleDateString()}</span>
-                    <span className="flex items-center gap-2"><PinIcon /> {featuredMatch.venue || 'TBD'}</span>
-                  </div>
-                </div>
-                <div>
-                  <Link href={`/match/${featuredMatch.id}`}>
-                    <Button className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg transition-colors flex items-center gap-3 text-lg shadow-lg shadow-red-600/40 transform hover:scale-105">
-                      <BarChartIcon /> AI Detailed Analysis
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </div>
-          )}
+          {featuredMatch && <BannerCarousel match={featuredMatch} />}
 
           <div className="bg-card p-6 rounded-2xl border border-border shadow-lg">
             <div className="flex justify-between items-center mb-6">
