@@ -1,5 +1,5 @@
-// Serviço para buscar imagens reais no Unsplash
-// Busca imagens autênticas de times brasileiros
+// Improved Unsplash Service with specific queries for Botafogo fans
+// src/lib/services/unsplashImageService.ts (replacement)
 
 export interface UnsplashImage {
   id: string;
@@ -14,246 +14,204 @@ export interface UnsplashImage {
   verified: boolean;
 }
 
-// Chave da API do Unsplash
-const UNSPLASH_ACCESS_KEY = process.env.UNSPLASH_ACCESS_KEY || 'demo_key';
+// Use server-side API endpoint for Unsplash calls
+const UNSPLASH_API_ENDPOINT = '/api/v1/unsplash';
 
-// URLs de busca específicas para times brasileiros e europeus
-const TEAM_SEARCH_QUERIES = {
-  // Brazilian teams
-  'Santos': [
-    'santos fc vila belmiro',
-    'santos football brazil',
-    'vila belmiro stadium',
-    'santos crowd brazil',
-    'santos fans brazil'
+// Queries MUITO específicas para times brasileiros (especialmente Botafogo)
+const BRAZILIAN_TEAM_QUERIES = {
+  'Botafogo': [
+    'botafogo rio janeiro crowd',
+    'botafogo torcida estrela solitária',
+    'botafogo fans nilton santos',
+    'botafogo supporters brazil',
+    'botafogo ultras rio',
+    'botafogo crowd maracana',
+    'botafogo black white stripes fans',
+    'botafogo estrela solitária crowd',
+    'botafogo rio football atmosphere',
+    'botafogo carnival football',
+    'brazilian football fans botafogo',
+    'rio janeiro football crowd',
+    'nilton santos stadium crowd',
+    'botafogo glorioso crowd'
   ],
   'Flamengo': [
-    'flamengo maracana',
-    'flamengo football brazil',
-    'maracana stadium rio',
-    'flamengo crowd brazil',
-    'flamengo fans brazil'
+    'flamengo maracana crowd',
+    'flamengo torcida urubu',
+    'flamengo fans rio janeiro',
+    'flamengo supporters maracana',
+    'flamengo red black crowd',
+    'flamengo nacao rubro negra',
+    'flamengo crowd biggest fanbase',
+    'maracana flamengo atmosphere'
+  ],
+  'Santos': [
+    'santos vila belmiro crowd',
+    'santos torcida peixe',
+    'santos fans brazil',
+    'vila belmiro atmosphere',
+    'santos supporters sao paulo',
+    'santos crowd historic'
   ],
   'Palmeiras': [
-    'palmeiras allianz parque',
-    'palmeiras football brazil',
-    'allianz parque stadium',
-    'palmeiras crowd brazil'
+    'palmeiras allianz parque crowd',
+    'palmeiras torcida verdao',
+    'palmeiras fans sao paulo',
+    'palmeiras supporters green',
+    'allianz parque atmosphere'
   ],
   'Corinthians': [
-    'corinthians arena',
-    'corinthians football brazil',
-    'arena corinthians stadium',
-    'corinthians crowd brazil'
-  ],
-  // European teams
-  'Arsenal': [
-    'arsenal emirates stadium',
-    'arsenal football london',
-    'emirates stadium london',
-    'arsenal crowd premier league',
-    'arsenal fans'
-  ],
-  'Chelsea': [
-    'chelsea stamford bridge',
-    'chelsea football london',
-    'stamford bridge stadium',
-    'chelsea crowd premier league',
-    'chelsea fans'
-  ],
-  'Liverpool': [
-    'liverpool anfield',
-    'liverpool football england',
-    'anfield stadium liverpool',
-    'liverpool crowd premier league',
-    'liverpool fans'
-  ],
-  'Manchester United': [
-    'manchester united old trafford',
-    'manchester united football england',
-    'old trafford stadium',
-    'manchester united crowd premier league',
-    'manchester united fans'
-  ],
-  'Real Madrid': [
-    'real madrid santiago bernabeu',
-    'real madrid football spain',
-    'santiago bernabeu stadium',
-    'real madrid crowd la liga',
-    'real madrid fans'
-  ],
-  'Barcelona': [
-    'barcelona camp nou',
-    'barcelona football spain',
-    'camp nou stadium',
-    'barcelona crowd la liga',
-    'barcelona fans'
-  ],
-  'Bayern Munich': [
-    'bayern munich allianz arena',
-    'bayern munich football germany',
-    'allianz arena munich',
-    'bayern munich crowd bundesliga',
-    'bayern munich fans'
-  ],
-  'Borussia Dortmund': [
-    'borussia dortmund signal iduna park',
-    'borussia dortmund football germany',
-    'signal iduna park dortmund',
-    'borussia dortmund crowd bundesliga',
-    'borussia dortmund fans'
-  ],
-  'Juventus': [
-    'juventus allianz stadium',
-    'juventus football italy',
-    'allianz stadium turin',
-    'juventus crowd serie a',
-    'juventus fans'
-  ],
-  'AC Milan': [
-    'ac milan san siro',
-    'ac milan football italy',
-    'san siro stadium milan',
-    'ac milan crowd serie a',
-    'ac milan fans'
+    'corinthians arena crowd',
+    'corinthians torcida timao',
+    'corinthians fans sao paulo',
+    'arena corinthians atmosphere',
+    'corinthians supporters brazil'
   ]
 };
 
-// Função para buscar imagens no Unsplash
-async function searchUnsplashImages(query: string, count: number = 10): Promise<any[]> {
+// Queries específicas para clássicos brasileiros
+const BRAZILIAN_CLASSIC_QUERIES = {
+  'Botafogo-Flamengo': [
+    'botafogo flamengo classico carioca',
+    'botafogo flamengo rivalry rio',
+    'classico carioca crowd',
+    'botafogo flamengo maracana',
+    'rio janeiro football derby',
+    'carioca rivalry atmosphere',
+    'botafogo flamengo historic rivalry'
+  ],
+  'Botafogo-Vasco': [
+    'botafogo vasco classico carioca',
+    'botafogo vasco rivalry rio',
+    'classico carioca vasco botafogo',
+    'rio janeiro football classic'
+  ],
+  'Botafogo-Fluminense': [
+    'botafogo fluminense classico vovo',
+    'botafogo fluminense rivalry rio',
+    'classico vovo rio janeiro',
+    'oldest rivalry brazil football'
+  ]
+};
+
+// Export for potential future use
+export { BRAZILIAN_CLASSIC_QUERIES };
+
+// Função melhorada para buscar imagens específicas via API server-side
+async function searchUnsplashImages(query: string, count: number = 10, team: string = ''): Promise<any[]> {
   try {
-    // Verificar se temos uma chave real
-    if (!UNSPLASH_ACCESS_KEY || UNSPLASH_ACCESS_KEY === 'demo_key') {
-      console.log(`🔍 Simulando busca no Unsplash: "${query}"`);
-      
-      // Simular delay de rede
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
-      // Retornar imagens simuladas baseadas na query
-      return generateMockUnsplashResults(query, count);
-    }
+    console.log(`🔍 Buscando imagens via API: "${query}" (team: ${team})`);
     
-    // Em produção, usar API real do Unsplash
     const response = await fetch(
-      `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=${count}&orientation=landscape`,
-      {
-        headers: {
-          'Authorization': `Client-ID ${UNSPLASH_ACCESS_KEY}`
-        }
-      }
+      `${UNSPLASH_API_ENDPOINT}?query=${encodeURIComponent(query)}&count=${count}&team=${encodeURIComponent(team)}`
     );
     
     if (!response.ok) {
-      throw new Error(`Unsplash API error: ${response.status}`);
+      throw new Error(`API error: ${response.status}`);
     }
     
     const data = await response.json();
-    return data.results || [];
+    
+    if (data.success) {
+      console.log(`✅ Recebidas ${data.images.length} imagens (fonte: ${data.source})`);
+      return data.images;
+    } else {
+      console.error('API returned error:', data.error);
+      return [];
+    }
     
   } catch (error) {
-    console.error(`Erro ao buscar no Unsplash: ${error}`);
+    console.error(`Erro ao buscar "${query}":`, error);
     return [];
   }
 }
 
-// Função para gerar resultados simulados do Unsplash
-function generateMockUnsplashResults(query: string, count: number): any[] {
-  const results = [];
-  
-  // High-quality football stadium images from Unsplash
-  const footballImages = [
-    {
-      id: 'football-stadium-1',
-      url: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=1200&h=600&fit=crop&q=80',
-      description: 'Modern football stadium with floodlights'
-    },
-    {
-      id: 'football-stadium-2', 
-      url: 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=1200&h=600&fit=crop&q=80',
-      description: 'Football field with green grass and markings'
-    },
-    {
-      id: 'football-crowd-1',
-      url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1200&h=600&fit=crop&q=80',
-      description: 'Excited football crowd in stadium'
-    },
-    {
-      id: 'football-action-1',
-      url: 'https://images.unsplash.com/photo-1553778263-73a83bab9b0c?w=1200&h=600&fit=crop&q=80',
-      description: 'Football players in action on the field'
-    },
-    {
-      id: 'football-stadium-3',
-      url: 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=1200&h=600&fit=crop&q=80',
-      description: 'Professional football stadium architecture'
-    },
-    {
-      id: 'football-night-1',
-      url: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=1200&h=600&fit=crop&q=80',
-      description: 'Night football match with stadium lights'
-    }
-  ];
-  
-  for (let i = 0; i < count; i++) {
-    const imageIndex = i % footballImages.length;
-    const image = footballImages[imageIndex];
-    const imageId = Math.floor(Math.random() * 1000000);
-    
-    results.push({
-      id: `mock-${image.id}-${imageId}`,
-      urls: {
-        regular: image.url,
-        thumb: image.url.replace('w=1200&h=600', 'w=400&h=200')
-      },
-      alt_description: `${query} - ${image.description}`,
-      user: {
-        name: 'Professional Photographer'
-      },
-      tags: query.split(' ').filter(word => word.length > 2)
-    });
-  }
-  
-  return results;
-}
-
-// Função para converter resultados do Unsplash para nosso formato
-function convertUnsplashToTeamImage(unsplashResult: any, team: string, category: string, venue?: string): UnsplashImage {
+// Convert API response to UnsplashImage format
+function convertApiResponseToUnsplashImage(apiImage: any, team: string, category: string, venue?: string): UnsplashImage {
   return {
-    id: unsplashResult.id,
-    url: unsplashResult.urls.regular,
-    thumbnailUrl: unsplashResult.urls.thumb,
-    description: unsplashResult.alt_description || `${team} - Imagem do Unsplash`,
-    photographer: unsplashResult.user?.name || 'Fotógrafo',
+    id: apiImage.id,
+    url: apiImage.url,
+    thumbnailUrl: apiImage.thumbnailUrl,
+    description: apiImage.description,
+    photographer: apiImage.photographer,
     team,
     venue,
     category: category as any,
-    tags: unsplashResult.tags || [],
+    tags: apiImage.tags || [],
     verified: true
   };
 }
 
-// Função para buscar imagens de um time específico
+// Função específica para Botafogo
+export async function getBotafogoFansImages(): Promise<UnsplashImage[]> {
+  console.log('🔥 Buscando imagens específicas da torcida do Botafogo...');
+  
+  const botafogoQueries = BRAZILIAN_TEAM_QUERIES['Botafogo'];
+  const allImages: UnsplashImage[] = [];
+  
+  for (const query of botafogoQueries) {
+    try {
+      const results = await searchUnsplashImages(query, 3, 'Botafogo');
+      
+      for (const result of results) {
+        const teamImage = convertApiResponseToUnsplashImage(
+          result,
+          'Botafogo',
+          'crowd',
+          'Nilton Santos'
+        );
+        
+        // Add Botafogo-specific tags
+        teamImage.tags = [...teamImage.tags, 'botafogo', 'torcida', 'rio', 'estrela solitária'];
+        
+        allImages.push(teamImage);
+      }
+    } catch (error) {
+      console.error(`Erro ao buscar "${query}":`, error);
+    }
+  }
+  
+  // Remover duplicatas
+  const uniqueImages = allImages.filter((image, index, self) => 
+    index === self.findIndex(img => img.id === image.id)
+  );
+  
+  console.log(`✅ Encontradas ${uniqueImages.length} imagens da torcida do Botafogo`);
+  return uniqueImages;
+}
+
+// Função melhorada para times brasileiros
 export async function getTeamImagesFromUnsplash(teamName: string): Promise<UnsplashImage[]> {
   const normalizedTeam = teamName.replace(' FC', '').replace('CR ', '').replace('SE ', '').replace('EC ', '');
-  const queries = (TEAM_SEARCH_QUERIES as Record<string, string[]>)[normalizedTeam] || [`${normalizedTeam} football brazil`];
   
-  console.log(`🔍 Buscando imagens do ${normalizedTeam} no Unsplash...`);
+  // Use queries específicas para times brasileiros
+  const queries = BRAZILIAN_TEAM_QUERIES[normalizedTeam as keyof typeof BRAZILIAN_TEAM_QUERIES] || [
+    `${normalizedTeam} football crowd`,
+    `${normalizedTeam} fans brazil`,
+    `${normalizedTeam} supporters`,
+    `${normalizedTeam} stadium atmosphere`
+  ];
+  
+  console.log(`🔍 Buscando imagens específicas para ${normalizedTeam}...`);
   
   const allImages: UnsplashImage[] = [];
   
   for (const query of queries) {
     try {
-      const results = await searchUnsplashImages(query, 5);
+      const results = await searchUnsplashImages(query, 2, normalizedTeam);
       
       for (const result of results) {
-        const category = determineCategory(query);
-        const venue = determineVenue(query, normalizedTeam);
+        const teamImage = convertApiResponseToUnsplashImage(
+          result,
+          normalizedTeam,
+          determineCategory(query),
+          determineVenue(query, normalizedTeam)
+        );
         
-        const teamImage = convertUnsplashToTeamImage(result, normalizedTeam, category, venue);
         allImages.push(teamImage);
       }
     } catch (error) {
-      console.error(`Erro ao buscar query "${query}":`, error);
+      console.error(`Erro ao buscar "${query}":`, error);
     }
   }
   
@@ -262,123 +220,62 @@ export async function getTeamImagesFromUnsplash(teamName: string): Promise<Unspl
     index === self.findIndex(img => img.id === image.id)
   );
   
-  console.log(`✅ Encontradas ${uniqueImages.length} imagens únicas para ${normalizedTeam}`);
+  console.log(`✅ Encontradas ${uniqueImages.length} imagens para ${normalizedTeam}`);
   return uniqueImages;
 }
 
 // Função para determinar categoria baseada na query
-function determineCategory(query: string): string {
-  if (query.includes('crowd') || query.includes('fans')) return 'crowd';
+function determineCategory(query: string): 'stadium' | 'crowd' | 'players' | 'history' | 'atmosphere' {
+  if (query.includes('crowd') || query.includes('fans') || query.includes('torcida')) return 'crowd';
   if (query.includes('stadium') || query.includes('arena')) return 'stadium';
   if (query.includes('players') || query.includes('action')) return 'players';
-  if (query.includes('history') || query.includes('legacy')) return 'history';
+  if (query.includes('history') || query.includes('historic')) return 'history';
   return 'atmosphere';
 }
 
 // Função para determinar venue baseada na query
-function determineVenue(query: string, team: string): string | undefined {
-  if (query.includes('vila belmiro')) return 'Vila Belmiro';
-  if (query.includes('maracana')) return 'Maracanã';
-  if (query.includes('allianz')) return 'Allianz Parque';
-  if (query.includes('arena')) return 'Arena Corinthians';
-  if (query.includes('emirates')) return 'Emirates Stadium';
-  if (query.includes('stamford bridge')) return 'Stamford Bridge';
-  if (query.includes('anfield')) return 'Anfield';
-  if (query.includes('old trafford')) return 'Old Trafford';
-  if (query.includes('santiago bernabeu')) return 'Santiago Bernabéu';
-  if (query.includes('camp nou')) return 'Camp Nou';
-  if (query.includes('signal iduna')) return 'Signal Iduna Park';
-  if (query.includes('san siro')) return 'San Siro';
-  
-  // Venues padrão por time
+function determineVenue(_query: string, team: string): string | undefined {
   const teamVenues: Record<string, string> = {
-    'Santos': 'Vila Belmiro',
+    'Botafogo': 'Nilton Santos',
     'Flamengo': 'Maracanã',
+    'Santos': 'Vila Belmiro',
     'Palmeiras': 'Allianz Parque',
-    'Corinthians': 'Arena Corinthians',
-    'Arsenal': 'Emirates Stadium',
-    'Chelsea': 'Stamford Bridge',
-    'Liverpool': 'Anfield',
-    'Manchester United': 'Old Trafford',
-    'Real Madrid': 'Santiago Bernabéu',
-    'Barcelona': 'Camp Nou',
-    'Bayern Munich': 'Allianz Arena',
-    'Borussia Dortmund': 'Signal Iduna Park',
-    'Juventus': 'Allianz Stadium',
-    'AC Milan': 'San Siro'
+    'Corinthians': 'Arena Corinthians'
   };
   
   return teamVenues[team];
 }
 
-// Função para buscar imagens de clássicos
-export async function getClassicImagesFromUnsplash(homeTeam: string, awayTeam: string): Promise<UnsplashImage[]> {
-  const home = homeTeam.replace(' FC', '').replace('CR ', '').replace('SE ', '').replace('EC ', '');
-  const away = awayTeam.replace(' FC', '').replace('CR ', '').replace('SE ', '').replace('EC ', '');
-  
-  const classicQueries = [
-    `${home} vs ${away} classic`,
-    `${home} ${away} rivalry`,
-    `${home} ${away} football brazil`,
-    `${home} ${away} crowd`,
-    `${home} ${away} stadium`
-  ];
-  
-  console.log(`🔍 Buscando imagens do clássico ${home} vs ${away} no Unsplash...`);
-  
-  const allImages: UnsplashImage[] = [];
-  
-  for (const query of classicQueries) {
-    try {
-      const results = await searchUnsplashImages(query, 3);
-      
-      for (const result of results) {
-        const teamImage = convertUnsplashToTeamImage(result, `${home}-${away}`, 'crowd');
-        allImages.push(teamImage);
-      }
-    } catch (error) {
-      console.error(`Erro ao buscar clássico "${query}":`, error);
-    }
-  }
-  
-  // Remover duplicatas
-  const uniqueImages = allImages.filter((image, index, self) => 
-    index === self.findIndex(img => img.id === image.id)
-  );
-  
-  console.log(`✅ Encontradas ${uniqueImages.length} imagens do clássico ${home} vs ${away}`);
-  return uniqueImages;
-}
-
-// Função principal para obter imagens do carousel
+// Função principal para carousel melhorada
 export async function getCarouselImagesFromUnsplash(match: any): Promise<UnsplashImage[]> {
   const homeTeam = match.home_team;
   const awayTeam = match.away_team;
   
-  console.log(`🎠 Buscando imagens para carousel: ${homeTeam} vs ${awayTeam}`);
+  console.log(`🎠 Buscando imagens específicas para: ${homeTeam} vs ${awayTeam}`);
   
   try {
-    // Primeiro, tentar imagens de clássico
-    const classicImages = await getClassicImagesFromUnsplash(homeTeam, awayTeam);
-    
-    if (classicImages.length >= 3) {
-      console.log(`✅ Encontradas ${classicImages.length} imagens de clássico`);
-      return classicImages;
+    // Se for um jogo do Botafogo, usar função específica
+    if (homeTeam === 'Botafogo' || awayTeam === 'Botafogo') {
+      const botafogoImages = await getBotafogoFansImages();
+      if (botafogoImages.length > 0) {
+        console.log(`🔥 Usando ${botafogoImages.length} imagens específicas do Botafogo`);
+        return botafogoImages.slice(0, 5); // Limitar a 5 imagens
+      }
     }
     
-    // Se não encontrou clássico suficiente, buscar imagens individuais
+    // Para outros times, usar busca normal mas melhorada
     const homeImages = await getTeamImagesFromUnsplash(homeTeam);
     const awayImages = await getTeamImagesFromUnsplash(awayTeam);
     
-    const allImages = [...classicImages, ...homeImages, ...awayImages];
+    const allImages = [...homeImages, ...awayImages];
     
     // Remover duplicatas
     const uniqueImages = allImages.filter((image, index, self) => 
       index === self.findIndex(img => img.id === image.id)
     );
     
-    console.log(`✅ Total de ${uniqueImages.length} imagens únicas encontradas`);
-    return uniqueImages;
+    console.log(`✅ Total de ${uniqueImages.length} imagens encontradas`);
+    return uniqueImages.slice(0, 8); // Limitar a 8 imagens
     
   } catch (error) {
     console.error('Erro ao buscar imagens do carousel:', error);

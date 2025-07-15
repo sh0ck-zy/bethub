@@ -106,6 +106,7 @@ export default function HomePage() {
       
       // Handle new API response format
       const matches = data.matches || data;
+      const spotlightMatch = data.spotlight_match;
       
       if (Array.isArray(matches)) {
         // Remove any duplicates before processing
@@ -133,10 +134,16 @@ export default function HomePage() {
 
         setMatches(sortedMatches);
         
-        // Set featured match (first live match or first upcoming match)
-        const liveMatch = sortedMatches.find(m => m.status === 'LIVE');
-        const upcomingMatch = sortedMatches.find(m => m.status === 'PRE');
-        setFeaturedMatch(liveMatch || upcomingMatch || null);
+        // Use spotlight match from API if available, otherwise fallback to auto-selection
+        if (spotlightMatch) {
+          setFeaturedMatch(spotlightMatch);
+        } else {
+          // Fallback to auto-selection: first live match, first upcoming match, or first finished match
+          const liveMatch = sortedMatches.find(m => m.status === 'LIVE');
+          const upcomingMatch = sortedMatches.find(m => m.status === 'PRE');
+          const finishedMatch = sortedMatches.find(m => m.status === 'FT');
+          setFeaturedMatch(liveMatch || upcomingMatch || finishedMatch || null);
+        }
       } else {
         setMatches([]);
         setFeaturedMatch(null);
