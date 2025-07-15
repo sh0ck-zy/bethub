@@ -24,6 +24,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRoleSelector } from '@/components/ui/RoleSelector';
 import { adminApiGet, adminApiPost } from '@/lib/admin-api';
 import { useRouter } from 'next/navigation';
+import { BannerManager } from '@/components/admin/BannerManager';
 
 // Simplified interfaces
 interface AdminMatch {
@@ -336,6 +337,71 @@ function AnalyzedMatchesPanel() {
   );
 }
 
+// Banner Manager Panel
+function BannerManagerPanel() {
+  const [matches, setMatches] = useState<AdminMatch[]>([]);
+  const [currentBannerMatchId, setCurrentBannerMatchId] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const fetchMatches = async () => {
+    setIsLoading(true);
+    try {
+      const [matchesResponse, spotlightResponse] = await Promise.all([
+        adminApiGet('/api/v1/admin/matches'),
+        adminApiGet('/api/v1/admin/spotlight-match')
+      ]);
+      
+      if (matchesResponse.ok) {
+        const data = await matchesResponse.json();
+        if (data.success) {
+          setMatches(data.matches || []);
+        }
+      }
+      
+      if (spotlightResponse.ok) {
+        const spotlightData = await spotlightResponse.json();
+        if (spotlightData.success && spotlightData.spotlight_match) {
+          setCurrentBannerMatchId(spotlightData.spotlight_match.id);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching matches:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleBannerChange = async (matchId: string) => {
+    try {
+      const response = await adminApiPost('/api/v1/admin/spotlight-match', {
+        matchId: matchId
+      });
+
+      if (response.ok) {
+        setCurrentBannerMatchId(matchId);
+        const data = await response.json();
+        console.log('✅ Spotlight match updated:', data.message);
+      } else {
+        console.error('❌ Failed to update spotlight match');
+      }
+    } catch (error) {
+      console.error('❌ Error updating spotlight match:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchMatches();
+  }, []);
+
+  return (
+    <BannerManager
+      matches={matches as any}
+      onBannerChange={handleBannerChange}
+      currentBannerMatchId={currentBannerMatchId}
+    />
+  );
+}
+
 // Main admin page component
 export default function AdminPage() {
   const { user } = useAuth();
@@ -393,9 +459,10 @@ export default function AdminPage() {
           </div>
           
           <Tabs defaultValue="available" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="available">📅 Jogos para Analisar</TabsTrigger>
               <TabsTrigger value="analyzed">🧠 Jogos Analisados</TabsTrigger>
+              <TabsTrigger value="banner">🎯 Gerenciar Banner</TabsTrigger>
             </TabsList>
             
             <TabsContent value="available" className="space-y-4">
@@ -404,6 +471,10 @@ export default function AdminPage() {
             
             <TabsContent value="analyzed" className="space-y-4">
               <AnalyzedMatchesPanel />
+            </TabsContent>
+            
+            <TabsContent value="banner" className="space-y-4">
+              <BannerManagerPanel />
             </TabsContent>
           </Tabs>
         </div>

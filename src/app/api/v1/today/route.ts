@@ -51,11 +51,36 @@ export async function GET() {
       created_at: match.created_at
     })) || [];
 
+    // Get spotlight match from settings
+    let spotlightMatch = null;
+    try {
+      const { data: settings } = await supabase
+        .from('settings')
+        .select('value')
+        .eq('key', 'spotlight_match_id')
+        .single();
+
+      if (settings?.value) {
+        spotlightMatch = transformedMatches.find(match => match.id === settings.value);
+      }
+    } catch (settingsError) {
+      console.log('No spotlight match set, will use auto-selection');
+    }
+
+    // If no spotlight match is set, use the first live match, then first upcoming match
+    if (!spotlightMatch && transformedMatches.length > 0) {
+      const liveMatch = transformedMatches.find(m => m.status === 'LIVE');
+      const upcomingMatch = transformedMatches.find(m => m.status === 'PRE');
+      const finishedMatch = transformedMatches.find(m => m.status === 'FT');
+      spotlightMatch = liveMatch || upcomingMatch || finishedMatch;
+    }
+
     return NextResponse.json({
       success: true,
       matches: transformedMatches,
       total: transformedMatches.length,
       source: 'database-published',
+      spotlight_match: spotlightMatch,
     });
 
   } catch (error) {
