@@ -14,6 +14,10 @@ export interface Match {
   referee?: string;
   is_published?: boolean;
   analysis_status?: 'none' | 'pending' | 'completed' | 'failed';
+  // Logo URLs from API providers
+  home_team_logo?: string;
+  away_team_logo?: string;
+  league_logo?: string;
 }
 
 export interface Team {

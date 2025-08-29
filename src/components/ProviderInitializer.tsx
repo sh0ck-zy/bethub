@@ -4,19 +4,8 @@ import { useEffect } from 'react';
 
 export function ProviderInitializer() {
   useEffect(() => {
-    // Import and initialize development providers
-    const initializeProviders = async () => {
-      if (process.env.NODE_ENV === 'development') {
-        try {
-          const { initializeDevelopmentProviders } = await import('@/lib/providers/development');
-          await initializeDevelopmentProviders();
-        } catch (error) {
-          console.error('Failed to initialize development providers:', error);
-        }
-      }
-    };
-
-    initializeProviders();
+    // Development providers have been removed
+    // This component is kept for potential future provider initialization
   }, []);
 
   return null; // This component doesn't render anything

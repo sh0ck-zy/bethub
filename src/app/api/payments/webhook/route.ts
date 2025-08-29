@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe, STRIPE_CONFIG } from '@/lib/stripe';
-import { supabase } from '@/lib/supabase';
+import { supabaseServer } from '@/lib/supabase-server';
 import Stripe from 'stripe';
 
 export async function POST(request: NextRequest) {
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
         
         if (userId) {
           // Update user profile to premium
-          await supabase
+          await supabaseServer
             .from('profiles')
             .update({ 
               role: 'premium',
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
         
         if (userId) {
           // Downgrade user to regular user
-          await supabase
+          await supabaseServer
             .from('profiles')
             .update({ 
               role: 'user',

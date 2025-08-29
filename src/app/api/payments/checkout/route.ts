@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createCheckoutSession } from '@/lib/stripe';
-import { supabase } from '@/lib/supabase';
+import { supabaseServer } from '@/lib/supabase-server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify user exists
-    const { data: user, error: userError } = await supabase
+    const { data: user, error: userError } = await supabaseServer
       .from('profiles')
       .select('id, email')
       .eq('id', userId)

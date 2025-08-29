@@ -52,8 +52,12 @@ export class FootballDataProvider implements DataProvider {
    */
   async getMatches(date: Date, league?: string): Promise<Match[]> {
     try {
-      const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD format
-      const endpoint = `/matches?dateFrom=${dateStr}&dateTo=${dateStr}`;
+      // Expand window by +/- 1 day to avoid timezone-edge misses
+      const from = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() - 1));
+      const to = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + 1));
+      const dateFromStr = from.toISOString().split('T')[0];
+      const dateToStr = to.toISOString().split('T')[0];
+      const endpoint = `/matches?dateFrom=${dateFromStr}&dateTo=${dateToStr}`;
       
       const response = await this.makeRequest<{
         matches: Array<{
@@ -72,8 +76,11 @@ export class FootballDataProvider implements DataProvider {
         }>;
       }>(endpoint);
 
+      // Keep only matches that actually occur on the requested calendar day (UTC-normalized)
+      const targetYmd = date.toISOString().split('T')[0];
       return response.matches
         .filter(match => !league || match.competition.name.toLowerCase().includes(league.toLowerCase()))
+        .filter(match => match.utcDate.startsWith(targetYmd))
         .map(this.transformMatch);
     } catch (error) {
       console.error('Error fetching matches:', error);

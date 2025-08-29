@@ -3,7 +3,7 @@ import { supabase } from './supabase';
 export interface UserProfile {
   id: string;
   email: string;
-  role: 'user' | 'admin';
+  role: 'user' | 'premium' | 'admin';
   created_at: string;
 }
 
@@ -11,6 +11,7 @@ export interface AuthState {
   user: UserProfile | null;
   isLoading: boolean;
   isAdmin: boolean;
+  isPremium: boolean;
 }
 
 export const authService = {

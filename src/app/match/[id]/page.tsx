@@ -343,7 +343,7 @@ export default function MatchDetailPage() {
               {/* Home Team */}
               <div className="text-center">
                 <div className="mb-4 flex justify-center">
-                  <TeamLogo team={match.home_team} size={80} />
+                  <TeamLogo team={match.home_team} size={80} logoUrl={match.home_team_logo} />
                 </div>
                 <h2 className="text-lg font-bold text-foreground mb-1 line-clamp-2">{match.home_team}</h2>
                 <span className="text-xs text-muted-foreground uppercase tracking-wide">Home</span>
@@ -367,7 +367,7 @@ export default function MatchDetailPage() {
               {/* Away Team */}
               <div className="text-center">
                 <div className="mb-4 flex justify-center">
-                  <TeamLogo team={match.away_team} size={80} />
+                  <TeamLogo team={match.away_team} size={80} logoUrl={match.away_team_logo} />
                 </div>
                 <h2 className="text-lg font-bold text-foreground mb-1 line-clamp-2">{match.away_team}</h2>
                 <span className="text-xs text-muted-foreground uppercase tracking-wide">Away</span>

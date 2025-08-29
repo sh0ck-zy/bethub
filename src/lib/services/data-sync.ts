@@ -268,7 +268,7 @@ export class DataSyncService {
         return { success: false, matchesDeleted: 0 };
       }
 
-      const deletedCount = Array.isArray(data) ? data.length : 0;
+      const deletedCount = Array.isArray(data) ? (data as any[]).length : 0;
       console.log(`🧹 Cleaned up ${deletedCount} old matches`);
       
       return { success: true, matchesDeleted: deletedCount };

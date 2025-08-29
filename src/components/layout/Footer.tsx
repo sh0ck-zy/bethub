@@ -116,30 +116,21 @@ export function Footer() {
             <h4 className="text-sm font-semibold text-foreground uppercase tracking-wider">Legal</h4>
             <ul className="space-y-3">
               <li>
-                <button 
-                  onClick={() => alert('Privacy policy coming soon')}
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors text-left"
-                >
+                <Link href="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   <Shield className="w-4 h-4 mr-2 inline" />
                   Privacy Policy
-                </button>
+                </Link>
               </li>
               <li>
-                <button 
-                  onClick={() => alert('Terms of service coming soon')}
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors text-left"
-                >
+                <Link href="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   <FileText className="w-4 h-4 mr-2 inline" />
                   Terms of Service
-                </button>
+                </Link>
               </li>
               <li>
-                <button 
-                  onClick={() => alert('Cookie policy coming soon')}
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors text-left"
-                >
+                <Link href="/cookies" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Cookie Policy
-                </button>
+                </Link>
               </li>
               <li>
                 <button 

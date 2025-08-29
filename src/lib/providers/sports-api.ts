@@ -16,26 +16,41 @@ import type {
  */
 export class SportsAPIProvider implements DataProvider {
   private readonly apiSportsKey: string;
+  private readonly mode: 'direct' | 'rapidapi' | 'none';
+  private readonly directBase = 'https://v3.football.api-sports.io';
   private readonly rapidAPIHost = 'api-football-v1.p.rapidapi.com';
+  private readonly sportsDbKey: string;
 
   constructor() {
-    this.apiSportsKey = process.env.API_SPORTS_KEY || process.env.RAPIDAPI_KEY || '';
+    // Support both direct API-Football key and RapidAPI key
+    const directKey = process.env.API_SPORTS_KEY || process.env.API_FOOTBALL_KEY || process.env.APISPORTS_KEY || 'fd5a23c2cfc99d16a82ca0717373b096';
+    const rapidKey = process.env.RAPIDAPI_KEY;
+    this.apiSportsKey = (directKey || rapidKey || '').trim();
+    this.mode = directKey ? 'direct' : rapidKey ? 'rapidapi' : 'none';
+    this.sportsDbKey = (process.env.SPORTSDB_KEY || '123').trim(); // Using the provided key
   }
 
   /**
    * API-Sports (RapidAPI) - Best coverage for live tournaments
    */
   private async makeApiSportsRequest<T>(endpoint: string): Promise<T> {
-    if (!this.apiSportsKey) {
-      throw new Error('API-Sports key not found. Add RAPIDAPI_KEY to your environment.');
+    if (!this.apiSportsKey || this.mode === 'none') {
+      throw new Error('API-Football key not found. Set API_SPORTS_KEY or API_FOOTBALL_KEY (direct) or RAPIDAPI_KEY.');
     }
 
-    const response = await fetch(`https://${this.rapidAPIHost}${endpoint}`, {
-      headers: {
-        'X-RapidAPI-Key': this.apiSportsKey,
-        'X-RapidAPI-Host': this.rapidAPIHost,
-      },
-    });
+    const url = this.mode === 'direct' 
+      ? `${this.directBase}${endpoint}`
+      : `https://${this.rapidAPIHost}${endpoint}`;
+
+    const headers: Record<string, string> = {};
+    if (this.mode === 'direct') {
+      headers['x-apisports-key'] = this.apiSportsKey;
+    } else {
+      headers['X-RapidAPI-Key'] = this.apiSportsKey;
+      headers['X-RapidAPI-Host'] = this.rapidAPIHost;
+    }
+
+    const response = await fetch(url, { headers });
 
     if (!response.ok) {
       throw new Error(`API-Sports request failed: ${response.status} ${response.statusText}`);
@@ -48,7 +63,7 @@ export class SportsAPIProvider implements DataProvider {
    * The Sports DB - Free API for additional coverage
    */
   private async makeSportsDBRequest<T>(endpoint: string): Promise<T> {
-    const response = await fetch(`https://www.thesportsdb.com/api/v1/json/3${endpoint}`);
+    const response = await fetch(`https://www.thesportsdb.com/api/v1/json/${this.sportsDbKey}${endpoint}`);
     
     if (!response.ok) {
       throw new Error(`Sports DB request failed: ${response.status} ${response.statusText}`);
@@ -104,11 +119,11 @@ export class SportsAPIProvider implements DataProvider {
   }
 
   /**
-   * Get matches from API-Sports (RapidAPI)
+   * Get matches from API-Sports (RapidAPI) - includes European competitions
    */
   private async getApiSportsMatches(dateStr: string): Promise<Match[]> {
     try {
-      // Get fixtures for specific date
+      // Get fixtures for specific date - this includes ALL competitions by default
       const response = await this.makeApiSportsRequest<{
         response: Array<{
           fixture: {
@@ -122,10 +137,12 @@ export class SportsAPIProvider implements DataProvider {
             referee?: string;
           };
           league: {
+            id: number;
             name: string;
             country: string;
             flag: string;
             logo: string;
+            type: string;
           };
           teams: {
             home: { name: string; logo: string };
@@ -138,7 +155,23 @@ export class SportsAPIProvider implements DataProvider {
         }>;
       }>(`/v3/fixtures?date=${dateStr}`);
 
-      return response.response.map(this.transformApiSportsMatch);
+      // Filter to include European competitions
+      const filteredMatches = response.response.filter(match => {
+        const leagueName = match.league.name.toLowerCase();
+        const isEuropean = leagueName.includes('champions league') || 
+                          leagueName.includes('europa league') || 
+                          leagueName.includes('conference league') ||
+                          leagueName.includes('uefa');
+        const isTopLeague = [
+          'premier league', 'la liga', 'serie a', 'bundesliga', 'ligue 1', 
+          'primeira liga', 'eredivisie', 'brasileirão', 'championship'
+        ].some(league => leagueName.includes(league));
+        
+        return isEuropean || isTopLeague;
+      });
+
+      console.log(`🏆 API-Sports: Found ${response.response.length} total matches, ${filteredMatches.length} relevant matches`);
+      return filteredMatches.map(this.transformApiSportsMatch);
     } catch (error) {
       console.error('API-Sports error:', error);
       return [];
@@ -146,7 +179,7 @@ export class SportsAPIProvider implements DataProvider {
   }
 
   /**
-   * Get matches from The Sports DB
+   * Get matches from The Sports DB - includes European competitions
    */
   private async getSportsDBMatches(dateStr: string): Promise<Match[]> {
     try {
@@ -173,7 +206,23 @@ export class SportsAPIProvider implements DataProvider {
 
       if (!response.events) return [];
 
-      return response.events.map(this.transformSportsDBMatch);
+      // Filter for relevant competitions including European ones
+      const filteredEvents = response.events.filter(event => {
+        const leagueName = event.strLeague?.toLowerCase() || '';
+        const isEuropean = leagueName.includes('champions league') || 
+                          leagueName.includes('europa league') || 
+                          leagueName.includes('conference league') ||
+                          leagueName.includes('uefa');
+        const isTopLeague = [
+          'premier league', 'la liga', 'serie a', 'bundesliga', 'ligue 1', 
+          'primeira liga', 'eredivisie', 'brasileirão', 'championship'
+        ].some(league => leagueName.includes(league));
+        
+        return isEuropean || isTopLeague;
+      });
+
+      console.log(`🏆 SportsDB: Found ${response.events.length} total events, ${filteredEvents.length} relevant events`);
+      return filteredEvents.map(this.transformSportsDBMatch);
     } catch (error) {
       console.error('Sports DB error:', error);
       return [];
@@ -204,7 +253,9 @@ export class SportsAPIProvider implements DataProvider {
       away_team: apiMatch.teams.away.name,
       kickoff_utc: apiMatch.fixture.date,
       status: statusMap[apiMatch.fixture.status.short] || 'PRE',
-      // Note: home_score, away_score, current_minute, venue, referee not in schema
+      home_team_logo: apiMatch.teams.home.logo,
+      away_team_logo: apiMatch.teams.away.logo,
+      league_logo: apiMatch.league.logo,
     };
   }
 

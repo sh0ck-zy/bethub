@@ -6,6 +6,7 @@ import { Calendar, MapPin, BarChart3, ChevronLeft, ChevronRight, Play, Pause, Br
 import Link from 'next/link';
 import { type UnsplashImage } from '@/lib/services/unsplashImageService';
 import { simpleImageService, type SimpleImageServiceResult } from '@/lib/services/simpleImageService';
+import { TeamLogo } from '@/components/TeamLogo';
 import type { Match } from '@/lib/types';
 
 interface BannerCarouselProps {
@@ -48,27 +49,31 @@ export function BannerCarousel({ match, autoPlay = true, interval = 5000 }: Bann
         setIsAIGenerating(true);
         setError(null);
 
-        console.log(`🎠 Loading AI-generated images for: ${match.home_team} vs ${match.away_team}`);
+        console.log(`🎠 Loading images for: ${match.home_team} vs ${match.away_team}`);
         
-        // Use AI service to get better images
-        const result = await simpleImageService.getBannerImages(match.home_team, match.away_team);
-        
-        setAiResult(result);
-        setImages(result.images);
-        
-        if (!result.success) {
-          setError(result.error || 'Failed to load images');
-        }
-
-        // Log AI query for debugging
-        if (result.aiQuery) {
-          console.log(`🤖 AI Query: "${result.aiQuery.query}"`);
-          console.log(`🔄 Fallback Query: "${result.aiQuery.fallbackQuery}"`);
-          console.log(`📊 Source: ${result.source}`);
+        try {
+          // Use AI service to get better images
+          const result = await simpleImageService.getBannerImages(match.home_team, match.away_team);
+          
+          setAiResult(result);
+          setImages(result.images);
+          
+          if (!result.success) {
+            console.warn('AI image service failed:', result.error);
+            // Don't set error here, let it fall through to fallback
+          } else if (result.aiQuery) {
+            console.log(`🤖 AI Query: "${result.aiQuery.query}"`);
+            console.log(`🔄 Fallback Query: "${result.aiQuery.fallbackQuery}"`);
+            console.log(`📊 Source: ${result.source}`);
+          }
+        } catch (imageError) {
+          console.warn('AI image service unavailable:', imageError);
+          // Fall through to show carousel without background images
+          setImages([]);
         }
         
       } catch (error) {
-        console.error('Error loading AI carousel images:', error);
+        console.error('Error in carousel:', error);
         setError(error instanceof Error ? error.message : 'Unknown error');
         setImages([]);
       } finally {
@@ -91,11 +96,7 @@ export function BannerCarousel({ match, autoPlay = true, interval = 5000 }: Bann
     return () => clearInterval(timer);
   }, [isPlaying, images.length, interval]);
 
-  // Loading effect
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1000);
-    return () => clearTimeout(timer);
-  }, []);
+
 
   const nextSlide = useCallback(() => {
     setCurrentIndex((prev) => (prev + 1) % images.length);
@@ -143,9 +144,17 @@ export function BannerCarousel({ match, autoPlay = true, interval = 5000 }: Bann
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-transparent rounded-2xl"></div>
         <div className="relative z-10 flex flex-col h-full justify-between">
           <div>
-            <h2 className="text-white text-4xl font-bold tracking-tight">
-              {match.home_team} VS {match.away_team}
-            </h2>
+            <div className="flex items-center gap-4 md:gap-6 mb-4 flex-wrap">
+              <div className="flex items-center gap-3">
+                <TeamLogo team={match.home_team} size={48} logoUrl={match.home_team_logo} />
+                <span className="text-white text-xl md:text-2xl font-bold line-clamp-1">{match.home_team}</span>
+              </div>
+              <span className="text-white/70 text-xl font-bold">VS</span>
+              <div className="flex items-center gap-3">
+                <span className="text-white text-xl md:text-2xl font-bold line-clamp-1">{match.away_team}</span>
+                <TeamLogo team={match.away_team} size={48} logoUrl={match.away_team_logo} />
+              </div>
+            </div>
             <div className="flex items-center space-x-6 mt-3 text-base text-muted-foreground">
               <span className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" /> 
@@ -156,17 +165,7 @@ export function BannerCarousel({ match, autoPlay = true, interval = 5000 }: Bann
                 {match.venue || 'TBD'}
               </span>
             </div>
-            {error && (
-              <div className="mt-4 flex items-center space-x-2 text-yellow-400">
-                <AlertCircle className="w-4 h-4" />
-                <span className="text-sm">Unable to load images: {error}</span>
-              </div>
-            )}
-            {aiResult && (
-              <div className="mt-2 text-xs text-gray-400">
-                AI Query: "{aiResult.aiQuery?.query}" ({aiResult.source})
-              </div>
-            )}
+
           </div>
           <div>
             <Link href={`/match/${match.id}`}>
@@ -181,6 +180,52 @@ export function BannerCarousel({ match, autoPlay = true, interval = 5000 }: Bann
   }
 
   const currentImage = images[currentIndex];
+
+  // Safety check - if no images or currentImage is undefined
+  if (!currentImage || images.length === 0) {
+    return (
+      <div className="relative h-72 rounded-2xl overflow-hidden border border-border shadow-lg bg-gradient-to-r from-gray-900 to-gray-700">
+        <div className="relative z-10 flex flex-col h-full justify-between p-8">
+          <div>
+            <div className="flex items-center gap-4 md:gap-6 mb-4 flex-wrap">
+              <div className="flex items-center gap-3">
+                <TeamLogo team={match.home_team} size={48} logoUrl={match.home_team_logo} />
+                <span className="text-white text-xl md:text-2xl font-bold line-clamp-1">{match.home_team}</span>
+              </div>
+              <span className="text-white/70 text-xl font-bold">VS</span>
+              <div className="flex items-center gap-3">
+                <span className="text-white text-xl md:text-2xl font-bold line-clamp-1">{match.away_team}</span>
+                <TeamLogo team={match.away_team} size={48} logoUrl={match.away_team_logo} />
+              </div>
+            </div>
+            <div className="flex items-center space-x-6 mt-3 text-base text-muted-foreground">
+              <span className="flex items-center gap-2">
+                <Calendar className="w-4 h-4" /> 
+                {new Date(match.kickoff_utc).toLocaleDateString()}
+              </span>
+              <span className="flex items-center gap-2">
+                <PinIcon /> 
+                {match.venue || 'TBD'}
+              </span>
+            </div>
+            <div className="mt-4">
+              <p className="text-white/90 text-lg font-medium">
+                Match Preview
+              </p>
+            </div>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <Link href={`/match/${match.id}`}>
+              <Button className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg transition-colors flex items-center gap-3 text-lg shadow-lg shadow-red-600/40 transform hover:scale-105">
+                <BarChartIcon /> AI Detailed Analysis
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative h-72 rounded-2xl overflow-hidden border border-border shadow-lg">
@@ -199,9 +244,17 @@ export function BannerCarousel({ match, autoPlay = true, interval = 5000 }: Bann
       {/* Content */}
       <div className="relative z-10 flex flex-col h-full justify-between p-8">
         <div>
-          <h2 className="text-white text-4xl font-bold tracking-tight">
-            {match.home_team} VS {match.away_team}
-          </h2>
+          <div className="flex items-center gap-4 md:gap-6 mb-4 flex-wrap">
+            <div className="flex items-center gap-3">
+              <TeamLogo team={match.home_team} size={48} logoUrl={match.home_team_logo} />
+              <span className="text-white text-xl md:text-2xl font-bold line-clamp-1">{match.home_team}</span>
+            </div>
+            <span className="text-white/70 text-xl font-bold">VS</span>
+            <div className="flex items-center gap-3">
+              <span className="text-white text-xl md:text-2xl font-bold line-clamp-1">{match.away_team}</span>
+              <TeamLogo team={match.away_team} size={48} logoUrl={match.away_team_logo} />
+            </div>
+          </div>
           <div className="flex items-center space-x-6 mt-3 text-base text-muted-foreground">
             <span className="flex items-center gap-2">
               <Calendar className="w-4 h-4" /> 
@@ -209,9 +262,17 @@ export function BannerCarousel({ match, autoPlay = true, interval = 5000 }: Bann
             </span>
             <span className="flex items-center gap-2">
               <PinIcon /> 
-              {currentImage.venue || match.venue || 'TBD'}
+              {match.venue || 'TBD'}
             </span>
           </div>
+          
+          {/* Error Display */}
+          {error && (
+            <div className="mt-4 flex items-center space-x-2 text-yellow-400">
+              <AlertCircle className="w-4 h-4" />
+              <span className="text-sm">Unable to load images: {error}</span>
+            </div>
+          )}
           
           {/* Image Description */}
           <div className="mt-4">

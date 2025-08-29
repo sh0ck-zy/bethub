@@ -70,6 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user,
     isLoading,
     isAdmin: user?.role === 'admin',
+    isPremium: user?.role === 'premium' || user?.role === 'admin',
     signIn,
     signUp,
     signOut,
