@@ -1,9 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { stripe, STRIPE_CONFIG } from '@/lib/stripe';
+import { getStripe, STRIPE_CONFIG, isStripeConfigured } from '@/lib/stripe';
 import { supabaseServer } from '@/lib/supabase-server';
 import Stripe from 'stripe';
 
 export async function POST(request: NextRequest) {
+  // Check if Stripe is configured
+  if (!isStripeConfigured()) {
+    return NextResponse.json(
+      { error: 'Payment system is not configured' },
+      { status: 503 }
+    );
+  }
+
   const body = await request.text();
   const signature = request.headers.get('stripe-signature');
 
@@ -17,7 +25,8 @@ export async function POST(request: NextRequest) {
   let event: Stripe.Event;
 
   try {
-    event = stripe.webhooks.constructEvent(body, signature, STRIPE_CONFIG.webhookSecret);
+    const stripeInstance = getStripe();
+    event = stripeInstance.webhooks.constructEvent(body, signature, STRIPE_CONFIG.webhookSecret);
   } catch (error) {
     console.error('Webhook signature verification failed:', error);
     return NextResponse.json(

@@ -1,14 +1,29 @@
 import Stripe from 'stripe';
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('STRIPE_SECRET_KEY is not set');
-}
+// Initialize Stripe with environment check
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  // Use a stable, currently available API version
-  apiVersion: '2024-06-20',
-  typescript: true,
-});
+// Create a dummy stripe instance for build time if no key is provided
+export const stripe = stripeSecretKey 
+  ? new Stripe(stripeSecretKey, {
+      // Use a stable, currently available API version
+      apiVersion: '2024-06-20',
+      typescript: true,
+    })
+  : null;
+
+// Helper function to check if Stripe is configured
+export const isStripeConfigured = () => {
+  return !!stripeSecretKey;
+};
+
+// Helper function to get stripe instance safely
+export const getStripe = () => {
+  if (!stripe) {
+    throw new Error('Stripe is not configured. Please set STRIPE_SECRET_KEY environment variable.');
+  }
+  return stripe;
+};
 
 export const STRIPE_CONFIG = {
   publishableKey: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
@@ -31,7 +46,8 @@ export const STRIPE_CONFIG = {
 };
 
 export async function createCheckoutSession(userId: string, email: string) {
-  const session = await stripe.checkout.sessions.create({
+  const stripeInstance = getStripe();
+  const session = await stripeInstance.checkout.sessions.create({
     customer_email: email,
     line_items: [
       {
@@ -56,7 +72,8 @@ export async function createCheckoutSession(userId: string, email: string) {
 }
 
 export async function createCustomerPortalSession(customerId: string) {
-  const session = await stripe.billingPortal.sessions.create({
+  const stripeInstance = getStripe();
+  const session = await stripeInstance.billingPortal.sessions.create({
     customer: customerId,
     return_url: `${process.env.NEXT_PUBLIC_APP_URL}/account`,
   });
@@ -65,9 +82,11 @@ export async function createCustomerPortalSession(customerId: string) {
 }
 
 export async function getSubscription(subscriptionId: string) {
-  return await stripe.subscriptions.retrieve(subscriptionId);
+  const stripeInstance = getStripe();
+  return await stripeInstance.subscriptions.retrieve(subscriptionId);
 }
 
 export async function cancelSubscription(subscriptionId: string) {
-  return await stripe.subscriptions.cancel(subscriptionId);
+  const stripeInstance = getStripe();
+  return await stripeInstance.subscriptions.cancel(subscriptionId);
 } 
