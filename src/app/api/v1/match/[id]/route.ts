@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseServer } from '@/lib/supabase-server';
+import { getSupabaseServer } from '@/lib/supabase-server';
 
 // Football Data API Service (same as in today endpoint)
 async function fetchFootballDataMatches() {
@@ -92,7 +92,8 @@ export async function GET(
     }
 
     // First, try to get match data from database
-    const { data: dbMatch, error: matchError } = await supabaseServer
+    const supabase = getSupabaseServer();
+    const { data: dbMatch, error: matchError } = await supabase
       .from('matches')
       .select('*')
       .eq('id', matchId)
@@ -102,7 +103,7 @@ export async function GET(
     // If found in database, get analysis and return
     if (dbMatch && !matchError) {
       // Get analysis data if available
-      const { data: analysis } = await supabaseServer
+      const { data: analysis } = await supabase
         .from('analysis_snapshots')
         .select('*')
         .eq('match_id', matchId)

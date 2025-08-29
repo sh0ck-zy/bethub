@@ -1,13 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createCheckoutSession, isStripeConfigured } from '@/lib/stripe';
-import { supabaseServer } from '@/lib/supabase-server';
+import { getSupabaseServer, isSupabaseConfigured } from '@/lib/supabase-server';
 
 export async function POST(request: NextRequest) {
   try {
-    // Check if Stripe is configured
+    // Check if required services are configured
     if (!isStripeConfigured()) {
       return NextResponse.json(
         { error: 'Payment system is not configured' },
+        { status: 503 }
+      );
+    }
+
+    if (!isSupabaseConfigured()) {
+      return NextResponse.json(
+        { error: 'Database is not configured' },
         { status: 503 }
       );
     }
@@ -22,7 +29,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify user exists
-    const { data: user, error: userError } = await supabaseServer
+    const supabase = getSupabaseServer();
+    const { data: user, error: userError } = await supabase
       .from('profiles')
       .select('id, email')
       .eq('id', userId)
