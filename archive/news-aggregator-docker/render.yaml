@@ -1,0 +1,52 @@
+# Render.com deployment configuration for News Aggregator
+# Deploy by connecting your GitHub repo to Render
+
+services:
+  - type: web
+    name: match-news-aggregator
+    env: python
+    plan: free
+    buildCommand: pip install -r news-aggregator-requirements.txt
+    startCommand: python -m uvicorn src.lib.news_aggregator.api.main:app --host 0.0.0.0 --port $PORT
+    
+    healthCheckPath: /api/v1/health
+    
+    envVars:
+      - key: PYTHONPATH
+        value: /opt/render/project/src
+      - key: LOG_LEVEL
+        value: INFO
+      - key: PORT
+        generateValue: true
+        
+      # Database connection (use MongoDB Atlas free tier)
+      - key: MONGODB_CONNECTION_STRING
+        sync: false  # Set this manually in Render dashboard
+        
+      # API Keys (all optional)
+      - key: REDDIT_CLIENT_ID
+        sync: false
+      - key: REDDIT_CLIENT_SECRET
+        sync: false
+      - key: GUARDIAN_API_KEY
+        sync: false
+      - key: NEWSDATA_API_KEY
+        sync: false
+      - key: CURRENTS_API_KEY
+        sync: false
+    
+    # Disk storage for cache and logs
+    disk:
+      name: cache
+      mountPath: /tmp/match_news_cache
+      sizeGB: 1
+    
+    # Auto-deploy from main branch
+    autoDeploy: true
+    
+    # Health check configuration
+    initialDelaySeconds: 30
+    
+    # Resource limits for free tier
+    numCpus: 0.1
+    memoryMB: 512

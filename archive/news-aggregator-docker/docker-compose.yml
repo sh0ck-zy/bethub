@@ -1,0 +1,79 @@
+# Docker Compose for News Aggregator
+version: '3.8'
+
+services:
+  news-aggregator:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      # MongoDB Atlas connection (free tier)
+      - MONGODB_CONNECTION_STRING=${MONGODB_CONNECTION_STRING}
+      
+      # API Keys (all optional for free tier)
+      - REDDIT_CLIENT_ID=${REDDIT_CLIENT_ID:-}
+      - REDDIT_CLIENT_SECRET=${REDDIT_CLIENT_SECRET:-}
+      - GUARDIAN_API_KEY=${GUARDIAN_API_KEY:-}
+      - NEWSDATA_API_KEY=${NEWSDATA_API_KEY:-}
+      - CURRENTS_API_KEY=${CURRENTS_API_KEY:-}
+      
+      # Application settings
+      - PYTHONPATH=/app
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      
+    volumes:
+      # Mount logs directory
+      - ./logs:/app/logs
+      
+      # Mount cache directory
+      - ./cache:/tmp/match_news_cache
+      
+    restart: unless-stopped
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    networks:
+      - news-aggregator-network
+
+  # Optional: Redis cache (if you want to upgrade from file-based cache)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - news-aggregator-network
+    profiles:
+      - "with-redis"
+
+  # Optional: MongoDB local instance (if not using Atlas)
+  mongodb:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USERNAME:-admin}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD:-password}
+    volumes:
+      - mongodb-data:/data/db
+    restart: unless-stopped
+    networks:
+      - news-aggregator-network
+    profiles:
+      - "with-local-db"
+
+volumes:
+  redis-data:
+  mongodb-data:
+
+networks:
+  news-aggregator-network:
+    driver: bridge
