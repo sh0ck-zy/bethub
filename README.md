@@ -209,7 +209,12 @@ We welcome contributions to the open-source components! Please see our [Contribu
 ## 📚 Documentation
 
 - [Repository Structure](./REPOSITORY_STRUCTURE.md) - Detailed architecture overview
-- [API Documentation](./docs/API.md) - Public API reference
+- [Docs Index](./docs/index.md) - Start here for all docs
+- [Public API](./docs/api/endpoints.md) - Endpoints, request/response, examples
+- [Hooks & Contexts](./docs/frontend/hooks-and-contexts.md) - Usage and examples
+- [Components](./docs/frontend/components.md) - Props and usage
+- [Services & Libraries](./docs/backend/services-and-lib.md) - Utilities and helpers
+- [Core Types](./docs/reference/types.md) - Domain types and errors
 - [Contributing Guide](./docs/CONTRIBUTING.md) - How to contribute
 - [Deployment Guide](./docs/DEPLOYMENT.md) - Production deployment
 
