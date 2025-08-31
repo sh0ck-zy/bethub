@@ -1,0 +1,559 @@
+{
+  "info": {
+    "name": "BetHub API Collection",
+    "description": "Complete BetHub API collection with working and planned endpoints - AI-Powered Football Analysis Platform",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "newsApiUrl",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "your-admin-token-here",
+      "type": "string"
+    },
+    {
+      "key": "userToken",
+      "value": "your-user-token-here",
+      "type": "string"
+    },
+    {
+      "key": "matchId",
+      "value": "b8c751bd-a62f-4dc4-bf77-c3a5447394c2",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health & Status",
+      "description": "System health and status endpoints",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "health"]
+            },
+            "description": "Check system health and status"
+          }
+        },
+        {
+          "name": "Test Endpoint",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/test",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "test"]
+            },
+            "description": "Simple test endpoint for development"
+          }
+        },
+        {
+          "name": "External APIs Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/external-apis/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "external-apis", "status"]
+            },
+            "description": "Check status of all external APIs (Football-Data, API-Sports, etc.)"
+          }
+        },
+        {
+          "name": "News Aggregator Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{newsApiUrl}}/api/v1/status",
+              "host": ["{{newsApiUrl}}"],
+              "path": ["api", "v1", "status"]
+            },
+            "description": "Check news aggregator API status"
+          }
+        },
+        {
+          "name": "News Aggregator Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{newsApiUrl}}/api/v1/health/aggregator",
+              "host": ["{{newsApiUrl}}"],
+              "path": ["api", "v1", "health", "aggregator"]
+            },
+            "description": "Check news aggregator system health"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Match Management",
+      "description": "Match data and management endpoints",
+      "item": [
+        {
+          "name": "Get Today's Matches",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/today?admin=false",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "today"],
+              "query": [
+                {
+                  "key": "admin",
+                  "value": "false",
+                  "description": "Enable admin view"
+                }
+              ]
+            },
+            "description": "Retrieve published matches for today and next 7 days"
+          }
+        },
+        {
+          "name": "Get Teams",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/teams?league=Premier League&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "teams"],
+              "query": [
+                {
+                  "key": "league",
+                  "value": "Premier League",
+                  "description": "Filter by league"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Items per page"
+                }
+              ]
+            },
+            "description": "Retrieve teams with filtering and pagination"
+          }
+        },
+        {
+          "name": "Get Leagues",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/leagues?country=England&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "leagues"],
+              "query": [
+                {
+                  "key": "country",
+                  "value": "England",
+                  "description": "Filter by country"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Items per page"
+                }
+              ]
+            },
+            "description": "Retrieve leagues with filtering and pagination"
+          }
+        },
+        {
+          "name": "Add Real Matches",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"matches\": [\n    {\n      \"home_team\": \"Manchester United\",\n      \"away_team\": \"Liverpool\",\n      \"league\": \"Premier League\",\n      \"kickoff_utc\": \"2024-12-25T15:00:00Z\",\n      \"venue\": \"Old Trafford\",\n      \"referee\": \"Michael Oliver\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/add-real-matches",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "add-real-matches"]
+            },
+            "description": "Add real match data to the system"
+          }
+        },
+        {
+          "name": "Sync Matches",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"force\": false,\n  \"leagues\": [\"Premier League\", \"La Liga\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sync-matches",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "sync-matches"]
+            },
+            "description": "Synchronize match data from external sources"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin Operations",
+      "description": "Administrative operations (admin only)",
+      "item": [
+        {
+          "name": "Get Matches (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}",
+                "description": "Admin authentication token"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/matches?page=1&limit=50&status=published&league=",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "matches"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "50",
+                  "description": "Items per page"
+                },
+                {
+                  "key": "status",
+                  "value": "published",
+                  "description": "Filter by status"
+                },
+                {
+                  "key": "league",
+                  "value": "",
+                  "description": "Filter by league"
+                }
+              ]
+            },
+            "description": "Retrieve matches with admin privileges and filtering"
+          }
+        },
+        {
+          "name": "Admin Match Operations",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}",
+                "description": "Admin authentication token"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"batch_analyze\",\n  \"matchIds\": [\"match-1\", \"match-2\"],\n  \"data\": {}\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/matches",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "matches"]
+            },
+            "description": "Perform batch operations on matches"
+          }
+        },
+        {
+          "name": "Pull Matches from External APIs",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"competitions\": [\"PL\", \"PD\", \"BL1\", \"SA\", \"FL1\"],\n  \"date_range\": {\n    \"from\": \"2024-12-19\",\n    \"to\": \"2024-12-26\"\n  },\n  \"priority\": \"normal\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sync/pull-matches",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "sync", "pull-matches"]
+            },
+            "description": "Pull match data from configured external APIs"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payment Processing",
+      "description": "Payment processing and subscriptions",
+      "item": [
+        {
+          "name": "Create Checkout Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}",
+                "description": "User authentication token"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"user-123\",\n  \"email\": \"user@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/payments/checkout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "payments", "checkout"]
+            },
+            "description": "Create a Stripe checkout session for subscription"
+          }
+        },
+        {
+          "name": "Stripe Webhook",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"checkout.session.completed\",\n  \"data\": {\n    \"object\": {\n      \"id\": \"cs_test_123\",\n      \"customer\": \"cus_test_123\"\n    }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/payments/webhook",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "payments", "webhook"]
+            },
+            "description": "Handle Stripe webhook events"
+          }
+        }
+      ]
+    },
+    {
+      "name": "News Aggregation",
+      "description": "News aggregation and insights (Python FastAPI)",
+      "item": [
+        {
+          "name": "Trigger News Aggregation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"home_team\": \"Manchester United\",\n  \"away_team\": \"Liverpool\",\n  \"match_date\": \"2024-12-25T15:00:00Z\",\n  \"priority\": \"high\"\n}"
+            },
+            "url": {
+              "raw": "{{newsApiUrl}}/api/v1/matches/{{matchId}}/aggregate",
+              "host": ["{{newsApiUrl}}"],
+              "path": ["api", "v1", "matches", "{{matchId}}", "aggregate"]
+            },
+            "description": "Start news aggregation for a specific match"
+          }
+        },
+        {
+          "name": "Get Match News",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{newsApiUrl}}/api/v1/matches/{{matchId}}/news?source_type=&min_quality=0.5&limit=20&offset=0&language=en",
+              "host": ["{{newsApiUrl}}"],
+              "path": ["api", "v1", "matches", "{{matchId}}", "news"],
+              "query": [
+                {
+                  "key": "source_type",
+                  "value": "",
+                  "description": "Filter by source type"
+                },
+                {
+                  "key": "min_quality",
+                  "value": "0.5",
+                  "description": "Minimum quality score"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Maximum number of articles"
+                },
+                {
+                  "key": "offset",
+                  "value": "0",
+                  "description": "Offset for pagination"
+                },
+                {
+                  "key": "language",
+                  "value": "en",
+                  "description": "Filter by language"
+                }
+              ]
+            },
+            "description": "Retrieve aggregated news for a match"
+          }
+        },
+        {
+          "name": "Get Match Insights",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{newsApiUrl}}/api/v1/matches/{{matchId}}/insights",
+              "host": ["{{newsApiUrl}}"],
+              "path": ["api", "v1", "matches", "{{matchId}}", "insights"]
+            },
+            "description": "Retrieve AI-generated insights from aggregated news"
+          }
+        },
+        {
+          "name": "Get Match Sentiment",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{newsApiUrl}}/api/v1/matches/{{matchId}}/sentiment",
+              "host": ["{{newsApiUrl}}"],
+              "path": ["api", "v1", "matches", "{{matchId}}", "sentiment"]
+            },
+            "description": "Retrieve sentiment analysis for match news"
+          }
+        },
+        {
+          "name": "Get Match Sources",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{newsApiUrl}}/api/v1/matches/{{matchId}}/sources",
+              "host": ["{{newsApiUrl}}"],
+              "path": ["api", "v1", "matches", "{{matchId}}", "sources"]
+            },
+            "description": "Retrieve news sources for a match"
+          }
+        },
+        {
+          "name": "System Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{newsApiUrl}}/api/v1/stats",
+              "host": ["{{newsApiUrl}}"],
+              "path": ["api", "v1", "stats"]
+            },
+            "description": "Get system performance and usage statistics"
+          }
+        },
+        {
+          "name": "Trending Topics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{newsApiUrl}}/api/v1/trending",
+              "host": ["{{newsApiUrl}}"],
+              "path": ["api", "v1", "trending"]
+            },
+            "description": "Get currently trending topics and keywords"
+          }
+        },
+        {
+          "name": "Search Articles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{newsApiUrl}}/api/v1/search?q=Manchester United&limit=20&offset=0",
+              "host": ["{{newsApiUrl}}"],
+              "path": ["api", "v1", "search"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "Manchester United",
+                  "description": "Search query"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Maximum results"
+                },
+                {
+                  "key": "offset",
+                  "value": "0",
+                  "description": "Result offset"
+                }
+              ]
+            },
+            "description": "Search across all aggregated articles"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Automated Tasks",
+      "description": "Automated background tasks and cron jobs",
+      "item": [
+        {
+          "name": "Trigger Autonomous Sync",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cron/autonomous-sync",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cron", "autonomous-sync"]
+            },
+            "description": "Trigger automated data synchronization"
+          }
+        }
+      ]
+    }
+  ]
+}

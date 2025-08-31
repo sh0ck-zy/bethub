@@ -1,0 +1,1927 @@
+openapi: 3.0.3
+info:
+  title: BetHub API
+  description: |
+    BetHub - AI-Powered Football Analysis Platform
+    
+    This API provides access to:
+    - Match data and analysis
+    - News aggregation and insights
+    - Payment processing
+    - Admin management tools
+    - Real-time updates
+    
+    ## Admin Workflow
+    BetHub uses a controlled workflow for content quality:
+    1. **Pull**: Admin pulls matches from external APIs (Football-Data, etc.)
+    2. **Analyze**: Admin requests AI analysis for pulled matches
+    3. **Publish**: Admin publishes analyzed matches to make them public
+    
+    Only published matches are visible to public users.
+    
+    ## Authentication
+    - Public endpoints: No authentication required
+    - Admin endpoints: Require admin privileges
+    - Payment endpoints: Require user authentication
+    
+    ## Rate Limits
+    - Public endpoints: 1000 requests/hour
+    - Admin endpoints: 100 requests/hour
+    - Payment endpoints: 100 requests/hour
+  version: 1.0.0
+  contact:
+    name: BetHub Support
+    url: https://github.com/sh0ck-zy/bethub
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3001
+    description: Development server
+  - url: https://your-domain.com
+    description: Production server
+  - url: http://localhost:8000
+    description: News Aggregator API (Python FastAPI)
+
+tags:
+  - name: Health
+    description: System health and status endpoints
+  - name: Matches
+    description: Match data and management
+  - name: Admin
+    description: Administrative operations (admin only)
+  - name: News
+    description: News aggregation and insights
+  - name: Payments
+    description: Payment processing and subscriptions
+  - name: Cron
+    description: Automated background tasks
+  - name: External APIs
+    description: External football data APIs and integrations
+  - name: Teams & Leagues
+    description: Team and league management
+  - name: Data Sync
+    description: Data synchronization and import operations
+
+paths:
+  # Health Check
+  /api/v1/health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      description: Check system health and status
+      responses:
+        '200':
+          description: System is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+                  timestamp:
+                    type: string
+                    format: date-time
+                  environment:
+                    type: string
+                    example: "development"
+                  version:
+                    type: string
+                    example: "BetHub MVP"
+                  services:
+                    type: object
+                    properties:
+                      api:
+                        type: string
+                        example: "healthy"
+                      database:
+                        type: string
+                        example: "healthy"
+                  uptime:
+                    type: number
+                    description: System uptime in seconds
+                  external_apis:
+                    type: object
+                    properties:
+                      football_data:
+                        type: string
+                        example: "configured"
+                      api_sports:
+                        type: string
+                        example: "not_configured"
+                      thesportsdb:
+                        type: string
+                        example: "not_configured"
+                      unsplash:
+                        type: string
+                        example: "configured"
+                  memory:
+                    type: object
+                    properties:
+                      used:
+                        type: number
+                        description: Memory used in MB
+                      total:
+                        type: number
+                        description: Total memory in MB
+        '500':
+          description: System error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # Today's Matches
+  /api/v1/today:
+    get:
+      tags:
+        - Matches
+      summary: Get today's matches
+      description: Retrieve published matches for today and next 7 days
+      parameters:
+        - name: admin
+          in: query
+          description: Enable admin view
+          required: false
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: List of matches
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  matches:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Match'
+                  total:
+                    type: number
+                    example: 5
+                  source:
+                    type: string
+                    example: "database-published"
+                  spotlight_match:
+                    $ref: '#/components/schemas/Match'
+                  message:
+                    type: string
+                    example: "Found 5 published matches"
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # Test Endpoint
+  /api/v1/test:
+    get:
+      tags:
+        - Health
+      summary: Test endpoint
+      description: Simple test endpoint for development
+      responses:
+        '200':
+          description: Test successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Test endpoint working"
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  # Admin Matches
+  /api/v1/admin/matches:
+    get:
+      tags:
+        - Admin
+      summary: Get matches (Admin)
+      description: Retrieve matches with admin privileges and filtering
+      parameters:
+        - name: page
+          in: query
+          description: Page number
+          required: false
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: limit
+          in: query
+          description: Items per page
+          required: false
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 100
+        - name: status
+          in: query
+          description: Filter by workflow status
+          required: false
+          schema:
+            type: string
+            enum: [pulled, analyzed, published, all]
+        - name: analysis_status
+          in: query
+          description: Filter by analysis status
+          required: false
+          schema:
+            type: string
+            enum: [none, pending, completed, failed]
+        - name: league
+          in: query
+          description: Filter by league
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of matches
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  matches:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Match'
+                  total:
+                    type: number
+                    example: 150
+                  page:
+                    type: number
+                    example: 1
+                  limit:
+                    type: number
+                    example: 50
+                  leagues:
+                    type: array
+                    items:
+                      type: string
+                  filters:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                      league:
+                        type: string
+                  source:
+                    type: string
+                    example: "database-admin"
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - Admin access required
+        '500':
+          description: Server error
+
+  # External API Status
+  /api/v1/external-apis/status:
+    get:
+      tags:
+        - External APIs
+      summary: Check external API status
+      description: Check the status and configuration of all external APIs
+      responses:
+        '200':
+          description: External API status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  apis:
+                    type: object
+                    properties:
+                      football_data:
+                        type: object
+                        properties:
+                          configured:
+                            type: boolean
+                            example: true
+                          status:
+                            type: string
+                            example: "connected"
+                          message:
+                            type: string
+                            example: "API connected successfully"
+                          rate_limit:
+                            type: object
+                            properties:
+                              remaining:
+                                type: number
+                                example: 950
+                              reset_time:
+                                type: string
+                                format: date-time
+                      api_sports:
+                        type: object
+                        properties:
+                          configured:
+                            type: boolean
+                            example: false
+                          status:
+                            type: string
+                            example: "not_configured"
+                          message:
+                            type: string
+                            example: "API key not configured"
+                      thesportsdb:
+                        type: object
+                        properties:
+                          configured:
+                            type: boolean
+                            example: false
+                          status:
+                            type: string
+                            example: "not_configured"
+                          message:
+                            type: string
+                            example: "API key not configured"
+                      unsplash:
+                        type: object
+                        properties:
+                          configured:
+                            type: boolean
+                            example: true
+                          status:
+                            type: string
+                            example: "connected"
+                          message:
+                            type: string
+                            example: "API connected successfully"
+        '500':
+          description: Server error
+
+  # Data Sync Operations
+  /api/v1/sync/pull-matches:
+    post:
+      tags:
+        - Data Sync
+      summary: Pull matches from external APIs
+      description: Pull match data from configured external APIs (Football-Data, API-Sports, etc.)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                competitions:
+                  type: array
+                  items:
+                    type: string
+                  description: Competition codes to sync (e.g., ['PL', 'PD', 'BL1'])
+                  example: ["PL", "PD", "BL1", "SA", "FL1"]
+                date_range:
+                  type: object
+                  properties:
+                    from:
+                      type: string
+                      format: date
+                      description: Start date (YYYY-MM-DD)
+                      example: "2024-12-19"
+                    to:
+                      type: string
+                      format: date
+                      description: End date (YYYY-MM-DD)
+                      example: "2024-12-26"
+                priority:
+                  type: string
+                  enum: [low, normal, high]
+                  default: normal
+                  description: Sync priority
+      responses:
+        '200':
+          description: Matches pulled successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      matches_pulled:
+                        type: number
+                        example: 45
+                      matches_updated:
+                        type: number
+                        example: 12
+                      matches_new:
+                        type: number
+                        example: 33
+                      processing_time_ms:
+                        type: number
+                        example: 2500
+                  matches:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Match'
+                  errors:
+                    type: array
+                    items:
+                      type: string
+                  message:
+                    type: string
+                    example: "Successfully pulled 45 matches from external APIs"
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Server error
+
+  # Teams Management
+  /api/v1/teams:
+    get:
+      tags:
+        - Teams & Leagues
+      summary: Get teams
+      description: Retrieve teams with filtering and pagination
+      parameters:
+        - name: league
+          in: query
+          description: Filter by league
+          required: false
+          schema:
+            type: string
+        - name: country
+          in: query
+          description: Filter by country
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Items per page
+          required: false
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 100
+        - name: offset
+          in: query
+          description: Offset for pagination
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+      responses:
+        '200':
+          description: List of teams
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  teams:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Team'
+                  total:
+                    type: number
+                    example: 120
+                  page:
+                    type: number
+                    example: 1
+                  limit:
+                    type: number
+                    example: 50
+        '500':
+          description: Server error
+
+  # Leagues Management
+  /api/v1/leagues:
+    get:
+      tags:
+        - Teams & Leagues
+      summary: Get leagues
+      description: Retrieve leagues with filtering and pagination
+      parameters:
+        - name: country
+          in: query
+          description: Filter by country
+          required: false
+          schema:
+            type: string
+        - name: type
+          in: query
+          description: Filter by league type
+          required: false
+          schema:
+            type: string
+            enum: [league, cup, international]
+        - name: limit
+          in: query
+          description: Items per page
+          required: false
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 100
+        - name: offset
+          in: query
+          description: Offset for pagination
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+      responses:
+        '200':
+          description: List of leagues
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  leagues:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/League'
+                  total:
+                    type: number
+                    example: 25
+                  page:
+                    type: number
+                    example: 1
+                  limit:
+                    type: number
+                    example: 50
+        '500':
+          description: Server error
+
+    post:
+      tags:
+        - Admin
+      summary: Admin match operations
+      description: Perform batch operations on matches
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - action
+              properties:
+                action:
+                  type: string
+                  enum: [publish, unpublish]
+                  description: Workflow action to perform
+                match_ids:
+                  type: array
+                  items:
+                    type: string
+                  description: Array of match IDs (required for all actions)
+                  example: ["match_123", "match_456"]
+                options:
+                  type: object
+                  description: Additional options for the action
+                data:
+                  type: object
+                  description: Data for update or create operations
+      responses:
+        '200':
+          description: Operation successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                  data:
+                    type: object
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - Admin access required
+        '500':
+          description: Server error
+
+  # Admin Match Pull Workflow
+  /api/v1/admin/matches/pull:
+    post:
+      tags:
+        - Admin
+      summary: Pull matches from external APIs
+      description: |
+        Admin workflow: Pull matches from external football APIs (Football-Data, etc.)
+        This is the first step in the admin workflow: Pull → Analyze → Publish
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                competitions:
+                  type: array
+                  items:
+                    type: string
+                  example: ["PL", "PD", "BL1", "SA", "FL1"]
+                  description: Competition codes to fetch (default: major leagues)
+                date_range:
+                  type: object
+                  properties:
+                    from:
+                      type: string
+                      format: date
+                      example: "2025-08-30"
+                    to:
+                      type: string
+                      format: date
+                      example: "2025-09-06"
+                  description: Date range for matches (default: next 7 days)
+      responses:
+        '200':
+          description: Matches pulled successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      matches_pulled:
+                        type: integer
+                        example: 42
+                      matches_updated:
+                        type: integer
+                        example: 5
+                      matches_new:
+                        type: integer
+                        example: 37
+                      processing_time_ms:
+                        type: integer
+                        example: 2500
+                  matches:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Match'
+                  errors:
+                    type: array
+                    items:
+                      type: string
+        '401':
+          description: Unauthorized - Admin access required
+        '500':
+          description: Server error or external API failure
+    
+    get:
+      tags:
+        - Admin
+      summary: Check pull status and API health
+      description: Check external API connection status and pull statistics
+      parameters:
+        - name: action
+          in: query
+          description: Action type (test for API health check)
+          required: false
+          schema:
+            type: string
+            enum: [test]
+      responses:
+        '200':
+          description: Pull status information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      external_api:
+                        type: object
+                        properties:
+                          connected:
+                            type: boolean
+                          message:
+                            type: string
+                      service_status:
+                        type: string
+                        example: "operational"
+                      supported_competitions:
+                        type: array
+                        items:
+                          type: string
+
+  # Admin Analysis Workflow
+  /api/v1/admin/matches/analyze:
+    post:
+      tags:
+        - Admin
+      summary: Request AI analysis for matches
+      description: |
+        Admin workflow: Request AI analysis for pulled matches
+        This is the second step in the admin workflow: Pull → Analyze → Publish
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - match_ids
+              properties:
+                match_ids:
+                  type: array
+                  items:
+                    type: string
+                  example: ["match_123", "match_456"]
+                  description: Array of match IDs to analyze (max 20)
+                priority:
+                  type: string
+                  enum: [low, normal, high]
+                  default: normal
+                  description: Analysis priority level
+                analysis_types:
+                  type: array
+                  items:
+                    type: string
+                    enum: [prediction, insights, statistics]
+                  description: Types of analysis to perform (default: all)
+      responses:
+        '200':
+          description: Analysis queued successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      queued_count:
+                        type: integer
+                        example: 2
+                      estimated_completion:
+                        type: string
+                        example: "2-5 seconds"
+                      job_ids:
+                        type: array
+                        items:
+                          type: string
+                      matches_updated:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            match_id:
+                              type: string
+                            status:
+                              type: string
+                              enum: [queued, skipped_not_pulled, failed_to_queue]
+        '400':
+          description: Bad request (invalid match IDs, too many matches, etc.)
+        '401':
+          description: Unauthorized - Admin access required
+        '500':
+          description: Server error
+    
+    get:
+      tags:
+        - Admin
+      summary: Check analysis status and statistics
+      description: Get analysis status, statistics, or recent analyses
+      parameters:
+        - name: action
+          in: query
+          description: Action type
+          required: false
+          schema:
+            type: string
+            enum: [status, stats, recent]
+        - name: match_id
+          in: query
+          description: Match ID for status check (required if action=status)
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Limit for recent analyses (max 50)
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+      responses:
+        '200':
+          description: Analysis information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    oneOf:
+                      - type: object
+                        description: Service status
+                        properties:
+                          service_status:
+                            type: string
+                            enum: [ok, error]
+                          ai_service:
+                            type: object
+                            properties:
+                              status:
+                                type: string
+                              response_time_ms:
+                                type: integer
+                      - type: object
+                        description: Match analysis status
+                        properties:
+                          match_id:
+                            type: string
+                          analysis_status:
+                            type: string
+                            enum: [none, pending, completed, failed]
+                          has_analysis_data:
+                            type: boolean
+    
+    put:
+      tags:
+        - Admin
+      summary: Reprocess analysis for a match
+      description: Reprocess AI analysis for a specific match
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - match_id
+              properties:
+                match_id:
+                  type: string
+                  example: "match_123"
+                priority:
+                  type: string
+                  enum: [low, normal, high]
+                  default: normal
+      responses:
+        '200':
+          description: Reprocessing initiated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      match_id:
+                        type: string
+                      action:
+                        type: string
+                        example: "reprocess"
+                      job_id:
+                        type: string
+                      estimated_completion:
+                        type: string
+                        example: "2-5 seconds"
+
+  # Admin Dashboard
+  /api/v1/admin/dashboard:
+    get:
+      tags:
+        - Admin
+      summary: Admin dashboard data
+      description: Get comprehensive dashboard statistics and system health
+      parameters:
+        - name: include_details
+          in: query
+          description: Include detailed activity information
+          required: false
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Dashboard data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      overview:
+                        type: object
+                        properties:
+                          total_matches:
+                            type: integer
+                          total_pulled:
+                            type: integer
+                          total_analyzed:
+                            type: integer
+                          total_published:
+                            type: integer
+                          pending_analysis:
+                            type: integer
+                          failed_analysis:
+                            type: integer
+                          external_api_status:
+                            type: string
+                            enum: [connected, disconnected]
+                          ai_service_status:
+                            type: string
+                            enum: [ok, error]
+                      workflow_status:
+                        type: object
+                        properties:
+                          pull_ready:
+                            type: boolean
+                          analysis_ready:
+                            type: boolean
+                          publish_ready:
+                            type: boolean
+                          bottlenecks:
+                            type: array
+                            items:
+                              type: string
+                          recommendations:
+                            type: array
+                            items:
+                              type: string
+                      services:
+                        type: object
+                        properties:
+                          external_api:
+                            type: object
+                            properties:
+                              status:
+                                type: string
+                              supported_competitions:
+                                type: array
+                                items:
+                                  type: string
+                          ai_service:
+                            type: object
+                            properties:
+                              status:
+                                type: string
+                              model:
+                                type: object
+                                properties:
+                                  version:
+                                    type: string
+                                  type:
+                                    type: string
+                                  capabilities:
+                                    type: array
+                                    items:
+                                      type: string
+        '401':
+          description: Unauthorized - Admin access required
+        '500':
+          description: Server error
+
+  # Add Real Matches
+  /api/v1/add-real-matches:
+    post:
+      tags:
+        - Matches
+      summary: Add real match data
+      description: Add real match data to the system
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - matches
+              properties:
+                matches:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/MatchInput'
+      responses:
+        '200':
+          description: Matches added successfully
+        '400':
+          description: Bad request
+        '500':
+          description: Server error
+
+  # Sync Matches
+  /api/v1/sync-matches:
+    post:
+      tags:
+        - Matches
+      summary: Synchronize matches
+      description: Synchronize match data from external sources
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                force:
+                  type: boolean
+                  description: Force full sync
+                  default: false
+                leagues:
+                  type: array
+                  items:
+                    type: string
+                  description: Specific leagues to sync
+      responses:
+        '200':
+          description: Sync completed
+        '500':
+          description: Server error
+
+  # Cron - Autonomous Sync
+  /api/cron/autonomous-sync:
+    post:
+      tags:
+        - Cron
+      summary: Trigger autonomous sync
+      description: Trigger automated data synchronization
+      responses:
+        '200':
+          description: Sync triggered
+        '500':
+          description: Server error
+
+  # Payment Checkout
+  /api/payments/checkout:
+    post:
+      tags:
+        - Payments
+      summary: Create checkout session
+      description: Create a Stripe checkout session for subscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userId
+                - email
+              properties:
+                userId:
+                  type: string
+                  description: User ID
+                email:
+                  type: string
+                  format: email
+                  description: User email
+      responses:
+        '200':
+          description: Checkout session created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  sessionId:
+                    type: string
+                    description: Stripe session ID
+                  url:
+                    type: string
+                    description: Checkout URL
+        '400':
+          description: Bad request
+        '404':
+          description: User not found
+        '503':
+          description: Payment system not configured
+        '500':
+          description: Server error
+
+  # Payment Webhook
+  /api/payments/webhook:
+    post:
+      tags:
+        - Payments
+      summary: Stripe webhook
+      description: Handle Stripe webhook events
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Webhook processed
+        '400':
+          description: Bad request
+        '500':
+          description: Server error
+
+# News Aggregator API (Python FastAPI)
+  # News Aggregator Root
+  /api/v1/status:
+    get:
+      tags:
+        - News
+      summary: News Aggregator status
+      description: Check news aggregator API status
+      responses:
+        '200':
+          description: API status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Match News Aggregator API"
+                  version:
+                    type: string
+                    example: "1.0.0"
+                  status:
+                    type: string
+                    example: "running"
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  # Trigger Aggregation
+  /api/v1/matches/{match_id}/aggregate:
+    post:
+      tags:
+        - News
+      summary: Trigger news aggregation
+      description: Start news aggregation for a specific match
+      parameters:
+        - name: match_id
+          in: path
+          required: true
+          description: Match ID
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MatchRequest'
+      responses:
+        '200':
+          description: Aggregation started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "aggregation_started"
+                  match_id:
+                    type: string
+                  teams:
+                    type: string
+                    example: "Manchester United vs Liverpool"
+                  estimated_completion:
+                    type: string
+                    format: date-time
+        '400':
+          description: Bad request
+        '500':
+          description: Server error
+
+  # Get Match News
+  /api/v1/matches/{match_id}/news:
+    get:
+      tags:
+        - News
+      summary: Get match news
+      description: Retrieve aggregated news for a match
+      parameters:
+        - name: match_id
+          in: path
+          required: true
+          description: Match ID
+          schema:
+            type: string
+        - name: source_type
+          in: query
+          description: Filter by source type
+          required: false
+          schema:
+            type: string
+        - name: min_quality
+          in: query
+          description: Minimum quality score
+          required: false
+          schema:
+            type: number
+            minimum: 0.0
+            maximum: 1.0
+            default: 0.0
+        - name: limit
+          in: query
+          description: Maximum number of articles
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 50
+        - name: offset
+          in: query
+          description: Offset for pagination
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: language
+          in: query
+          description: Filter by language
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Match news
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewsResponse'
+        '500':
+          description: Server error
+
+  # Get Match Insights
+  /api/v1/matches/{match_id}/insights:
+    get:
+      tags:
+        - News
+      summary: Get match insights
+      description: Retrieve AI-generated insights from aggregated news
+      parameters:
+        - name: match_id
+          in: path
+          required: true
+          description: Match ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Match insights
+          content:
+            application/json:
+              schema:
+                type: object
+        '404':
+          description: No data available
+        '500':
+          description: Server error
+
+  # Get Match Sentiment
+  /api/v1/matches/{match_id}/sentiment:
+    get:
+      tags:
+        - News
+      summary: Get match sentiment
+      description: Retrieve sentiment analysis for match news
+      parameters:
+        - name: match_id
+          in: path
+          required: true
+          description: Match ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Sentiment analysis
+          content:
+            application/json:
+              schema:
+                type: object
+        '500':
+          description: Server error
+
+  # Get Match Sources
+  /api/v1/matches/{match_id}/sources:
+    get:
+      tags:
+        - News
+      summary: Get match sources
+      description: Retrieve news sources for a match
+      parameters:
+        - name: match_id
+          in: path
+          required: true
+          description: Match ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Match sources
+          content:
+            application/json:
+              schema:
+                type: object
+        '500':
+          description: Server error
+
+  # Health Check (News Aggregator)
+  /api/v1/health/aggregator:
+    get:
+      tags:
+        - Health
+      summary: News aggregator health check
+      description: Check news aggregator system health
+      responses:
+        '200':
+          description: System healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheck'
+
+  # System Statistics
+  /api/v1/stats:
+    get:
+      tags:
+        - News
+      summary: System statistics
+      description: Get system performance and usage statistics
+      responses:
+        '200':
+          description: System statistics
+          content:
+            application/json:
+              schema:
+                type: object
+
+  # Trending Topics
+  /api/v1/trending:
+    get:
+      tags:
+        - News
+      summary: Trending topics
+      description: Get currently trending topics and keywords
+      responses:
+        '200':
+          description: Trending topics
+          content:
+            application/json:
+              schema:
+                type: object
+
+  # Search Articles
+  /api/v1/search:
+    get:
+      tags:
+        - News
+      summary: Search articles
+      description: Search across all aggregated articles
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Search query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Maximum results
+          required: false
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          description: Result offset
+          required: false
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+
+components:
+  schemas:
+    Match:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique match identifier
+        league:
+          type: string
+          description: League name
+          example: "Premier League"
+        home_team:
+          type: string
+          description: Home team name
+          example: "Manchester United"
+        away_team:
+          type: string
+          description: Away team name
+          example: "Liverpool"
+        kickoff_utc:
+          type: string
+          format: date-time
+          description: Match kickoff time
+        status:
+          type: string
+          enum: [PRE, LIVE, HT, FT, POSTPONED, CANCELLED]
+          description: Match status
+        venue:
+          type: string
+          description: Match venue
+        referee:
+          type: string
+          description: Match referee
+        odds:
+          type: object
+          description: Betting odds
+        home_score:
+          type: number
+          description: Home team score
+        away_score:
+          type: number
+          description: Away team score
+        current_minute:
+          type: number
+          description: Current match minute
+        is_published:
+          type: boolean
+          description: Whether match is published
+        analysis_status:
+          type: string
+          enum: [none, pending, completed, failed]
+          description: AI analysis status
+        home_team_logo:
+          type: string
+          description: Home team logo URL
+        away_team_logo:
+          type: string
+          description: Away team logo URL
+        league_logo:
+          type: string
+          description: League logo URL
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    MatchInput:
+      type: object
+      required:
+        - home_team
+        - away_team
+        - league
+        - kickoff_utc
+      properties:
+        home_team:
+          type: string
+          description: Home team name
+        away_team:
+          type: string
+          description: Away team name
+        league:
+          type: string
+          description: League name
+        kickoff_utc:
+          type: string
+          format: date-time
+          description: Match kickoff time
+        venue:
+          type: string
+          description: Match venue
+        referee:
+          type: string
+          description: Match referee
+
+    MatchRequest:
+      type: object
+      required:
+        - home_team
+        - away_team
+      properties:
+        home_team:
+          type: string
+          description: Home team name
+          example: "Manchester United"
+        away_team:
+          type: string
+          description: Away team name
+          example: "Liverpool"
+        match_date:
+          type: string
+          format: date-time
+          description: Match date and time
+        priority:
+          type: string
+          enum: [low, normal, high, urgent]
+          description: Aggregation priority
+          default: "normal"
+
+    NewsResponse:
+      type: object
+      properties:
+        match_id:
+          type: string
+          description: Match identifier
+        article_count:
+          type: number
+          description: Number of articles in response
+        total_articles:
+          type: number
+          description: Total articles available
+        articles:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              title:
+                type: string
+              content:
+                type: string
+              source:
+                type: string
+              url:
+                type: string
+              published_at:
+                type: string
+                format: date-time
+              quality_score:
+                type: number
+              sentiment:
+                type: string
+        context:
+          type: object
+          description: Match context information
+        pagination:
+          type: object
+          properties:
+            offset:
+              type: number
+            limit:
+              type: number
+            total:
+              type: number
+            has_more:
+              type: boolean
+        generated_at:
+          type: string
+          format: date-time
+
+    HealthCheck:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "healthy"
+        timestamp:
+          type: string
+          format: date-time
+        version:
+          type: string
+          example: "1.0.0"
+        services:
+          type: object
+          properties:
+            database:
+              type: string
+              example: "connected"
+            aggregator:
+              type: string
+              example: "running"
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          description: Error message
+        message:
+          type: string
+          description: Additional error details
+        timestamp:
+          type: string
+          format: date-time
+
+    Analysis:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique analysis identifier
+        match_id:
+          type: string
+          description: Associated match ID
+        prediction:
+          type: string
+          description: AI-generated match prediction
+          example: "Arsenal to win 2-1"
+        confidence_score:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: Prediction confidence (0.0-1.0)
+          example: 0.85
+        key_insights:
+          type: array
+          items:
+            type: string
+          description: AI-generated key insights
+          example: ["Strong home advantage expected", "Both teams in excellent recent form"]
+        statistical_analysis:
+          type: object
+          description: Detailed statistical analysis
+          properties:
+            possession_prediction:
+              type: integer
+              minimum: 0
+              maximum: 100
+              description: Predicted possession percentage
+              example: 58
+            goals_over_under:
+              type: number
+              description: Goals over/under prediction
+              example: 2.5
+            both_teams_to_score:
+              type: boolean
+              description: Both teams to score prediction
+            win_probabilities:
+              type: object
+              properties:
+                home_win:
+                  type: number
+                  example: 0.45
+                draw:
+                  type: number
+                  example: 0.25
+                away_win:
+                  type: number
+                  example: 0.30
+            expected_goals:
+              type: object
+              properties:
+                home:
+                  type: number
+                  example: 1.8
+                away:
+                  type: number
+                  example: 1.2
+        ai_model_version:
+          type: string
+          description: AI model version used
+          example: "dummy-v1"
+        processing_time_ms:
+          type: integer
+          description: Analysis processing time in milliseconds
+          example: 3200
+        analysis_quality_score:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: Analysis quality score (0-100)
+          example: 88
+        created_at:
+          type: string
+          format: date-time
+          description: Analysis creation timestamp
+
+    PublicMatch:
+      type: object
+      description: Public match data (published matches only)
+      properties:
+        id:
+          type: string
+          description: Unique match identifier
+        league:
+          type: string
+          description: League name
+          example: "Premier League"
+        home_team:
+          type: string
+          description: Home team name
+          example: "Arsenal"
+        away_team:
+          type: string
+          description: Away team name
+          example: "Chelsea"
+        kickoff_utc:
+          type: string
+          format: date-time
+          description: Match kickoff time
+        venue:
+          type: string
+          description: Match venue
+          example: "Emirates Stadium"
+        status:
+          type: string
+          enum: [PRE, LIVE, HT, FT, POSTPONED, CANCELLED]
+          description: Match status
+        home_score:
+          type: number
+          description: Home team score
+        away_score:
+          type: number
+          description: Away team score
+        current_minute:
+          type: number
+          description: Current match minute
+        home_team_logo:
+          type: string
+          description: Home team logo URL
+        away_team_logo:
+          type: string
+          description: Away team logo URL
+        league_logo:
+          type: string
+          description: League logo URL
+        has_analysis:
+          type: boolean
+          description: Whether match has AI analysis available
+
+    Team:
+      type: object
+      description: Team information
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique team identifier
+        external_id:
+          type: integer
+          description: External API team ID
+        name:
+          type: string
+          description: Team name
+          example: "Manchester United"
+        short_name:
+          type: string
+          description: Team short name
+          example: "Man Utd"
+        league:
+          type: string
+          description: Primary league
+          example: "Premier League"
+        logo_url:
+          type: string
+          description: Team logo URL
+        country:
+          type: string
+          description: Team country
+          example: "England"
+        founded:
+          type: integer
+          description: Year team was founded
+          example: 1878
+        venue:
+          type: string
+          description: Team home venue
+          example: "Old Trafford"
+        created_at:
+          type: string
+          format: date-time
+          description: Record creation timestamp
+        updated_at:
+          type: string
+          format: date-time
+          description: Record last update timestamp
+
+    League:
+      type: object
+      description: League information
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique league identifier
+        external_id:
+          type: integer
+          description: External API league ID
+        name:
+          type: string
+          description: League name
+          example: "Premier League"
+        country:
+          type: string
+          description: League country
+          example: "England"
+        logo_url:
+          type: string
+          description: League logo URL
+        season:
+          type: string
+          description: Current season
+          example: "2024/25"
+        type:
+          type: string
+          enum: [league, cup, international]
+          description: League type
+          example: "league"
+        created_at:
+          type: string
+          format: date-time
+          description: Record creation timestamp
+        updated_at:
+          type: string
+          format: date-time
+          description: Record last update timestamp
+
+  securitySchemes:
+    adminAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Admin authentication token
+    userAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: User authentication token
+
+security:
+  - adminAuth: []
+  - userAuth: []
+
+externalDocs:
+  description: Find more info about BetHub
+  url: https://github.com/sh0ck-zy/bethub

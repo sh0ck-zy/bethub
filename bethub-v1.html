@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BetHub Domain Model & Data Strategy</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .tabs {
+            display: flex;
+            background: #f1f5f9;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            background: #f1f5f9;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            color: #64748b;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            background: white;
+            color: #1e293b;
+            border-bottom: 3px solid #3b82f6;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .entity {
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            margin: 20px 0;
+            overflow: hidden;
+            background: white;
+        }
+        
+        .entity-header {
+            background: #f8fafc;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .entity-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .entity-type {
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .entity-body {
+            padding: 20px;
+        }
+        
+        .field {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .field:last-child {
+            border-bottom: none;
+        }
+        
+        .field-name {
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .field-type {
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 12px;
+            background: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #6b7280;
+        }
+        
+        .field-description {
+            font-size: 14px;
+            color: #6b7280;
+            margin-left: 20px;
+            font-style: italic;
+        }
+        
+        .workflow {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%);
+            padding: 25px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .workflow-step {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+        }
+        
+        .step-number {
+            background: #3b82f6;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        
+        .step-content {
+            flex: 1;
+        }
+        
+        .step-title {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 5px;
+        }
+        
+        .step-description {
+            color: #64748b;
+            font-size: 14px;
+        }
+        
+        .relationship {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .relationship-title {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .relationship-arrow {
+            background: #3b82f6;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin: 0 10px;
+        }
+        
+        .data-tier {
+            border-left: 4px solid #3b82f6;
+            padding-left: 20px;
+            margin: 20px 0;
+        }
+        
+        .tier-title {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 10px;
+        }
+        
+        .tier-description {
+            color: #64748b;
+            margin-bottom: 15px;
+        }
+        
+        .tier-examples {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .tier-examples strong {
+            color: #374151;
+        }
+        
+        .current-vs-future {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+        
+        .comparison-side {
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        .current-side {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+        }
+        
+        .future-side {
+            background: #d1fae5;
+            border: 2px solid #059669;
+        }
+        
+        .side-title {
+            font-weight: 600;
+            font-size: 18px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .current-side .side-title {
+            color: #92400e;
+        }
+        
+        .future-side .side-title {
+            color: #047857;
+        }
+        
+        code {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 13px;
+        }
+        
+        h1 { margin: 0; font-size: 28px; }
+        h2 { color: #1e293b; margin: 30px 0 15px 0; }
+        h3 { color: #374151; margin: 20px 0 10px 0; }
+        
+        @media (max-width: 768px) {
+            .tabs { flex-direction: column; }
+            .current-vs-future { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>BetHub Domain Model & Data Strategy</h1>
+            <p>Complete understanding of data, relationships, and workflow</p>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('current-state')">Current State</button>
+            <button class="tab" onclick="showTab('domain-model')">Domain Model</button>
+            <button class="tab" onclick="showTab('workflows')">Admin Workflows</button>
+            <button class="tab" onclick="showTab('data-strategy')">Data Strategy</button>
+        </div>
+        
+        <div class="content">
+            <!-- CURRENT STATE -->
+            <div class="tab-content active" id="current-state">
+                <h2>Current BetHub State Analysis</h2>
+                <p>Understanding what you have now vs what we're building.</p>
+                
+                <div class="current-vs-future">
+                    <div class="comparison-side current-side">
+                        <div class="side-title">🟡 Current State</div>
+                        
+                        <h3>Database Tables:</h3>
+                        <ul>
+                            <li><code>matches</code> - Basic match info</li>
+                            <li><code>analysis_snapshots</code> - AI analysis results</li>
+                            <li><code>profiles</code> - User management</li>
+                        </ul>
+                        
+                        <h3>API Endpoints:</h3>
+                        <ul>
+                            <li><code>GET /api/v1/today</code> - Fetch matches</li>
+                            <li><code>GET /api/v1/match/[id]</code> - Match details</li>
+                            <li><code>POST /api/v1/add-real-matches</code> - Add matches</li>
+                            <li><code>POST /api/v1/ingest/analysis</code> - AI results</li>
+                        </ul>
+                        
+                        <h3>Data Flow:</h3>
+                        <p>External APIs → Next.js API Routes → Supabase</p>
+                        
+                        <h3>Issues:</h3>
+                        <ul>
+                            <li>No admin workflow control</li>
+                            <li>All matches auto-published</li>
+                            <li>No analysis request system</li>
+                            <li>Limited data validation</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="comparison-side future-side">
+                        <div class="side-title">🟢 Future State</div>
+                        
+                        <h3>Enhanced Database:</h3>
+                        <ul>
+                            <li><code>matches</code> + workflow states</li>
+                            <li><code>analysis</code> - Structured AI results</li>
+                            <li><code>admin_users</code> - Admin management</li>
+                            <li>Enhanced indexing & relationships</li>
+                        </ul>
+                        
+                        <h3>New API Structure:</h3>
+                        <ul>
+                            <li><code>/admin/*</code> - Admin workflow endpoints</li>
+                            <li><code>/matches/*</code> - Public match endpoints</li>
+                            <li><code>/analysis/*</code> - Analysis endpoints</li>
+                            <li>Proper error handling & validation</li>
+                        </ul>
+                        
+                        <h3>Improved Data Flow:</h3>
+                        <p>External APIs → Business Services → Database → Public APIs</p>
+                        
+                        <h3>Benefits:</h3>
+                        <ul>
+                            <li>Full admin control over content</li>
+                            <li>Quality control before publishing</li>
+                            <li>Cost control (analyze only what matters)</li>
+                            <li>Scalable architecture</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- DOMAIN MODEL -->
+            <div class="tab-content" id="domain-model">
+                <h2>Core Domain Entities</h2>
+                <p>Understanding the data we own, store, and manage.</p>
+                
+                <div class="entity">
+                    <div class="entity-header">
+                        <div class="entity-name">Match</div>
+                        <div class="entity-type">Core Entity</div>
+                    </div>
+                    <div class="entity-body">
+                        <div class="field">
+                            <div>
+                                <div class="field-name">id</div>
+                                <div class="field-description">Primary identifier (UUID)</div>
+                            </div>
+                            <div class="field-type">string</div>
+                        </div>
+                        <div class="field">
+                            <div>
+                                <div class="field-name">external_id</div>
+                                <div class="field-description">Football-Data API ID</div>
+                            </div>
+                            <div class="field-type">string?</div>
+                        </div>
+                        <div class="field">
+                            <div>
+                                <div class="field-name">league</div>
+                                <div class="field-description">Competition name</div>
+                            </div>
+                            <div class="field-type">string</div>
+                        </div>
+                        <div class="field">
+                            <div>
+                                <div class="field-name">home_team</div>
+                                <div class="field-description">Home team name</div>
+                            </div>
+                            <div class="field-type">string</div>
+                        </div>
+                        <div class="field">
+                            <div>
+                                <div class="field-name">away_team</div>
+                                <div class="field-description">Away team name</div>
+                            </div>
+                            <div class="field-type">string</div>
+                        </div>
+                        <div class="field">
+                            <div>
+                                <div class="field-name">kickoff_utc</div>
+                                <div class="field-description">Match start time</div>
+                            </div>
+                            <div class="field-type">datetime</div>
+                        </div>
+                        <div class="field">
+                            <div>
+                                <div class="field-name">status</div>
+                                <div class="field-description">PRE | LIVE | FT | etc.</div>
+                            </div>
+                            <div class="field-type">enum</div>
+                        </div>
+                        <div class="field">
+                            <div>
+                                <div class="field-name">is_pulled</div>
+                                <div class="field-description">Admin imported from API</div>
+                            </div>
+                            <div class="field-type">boolean</div>
+                        </div>
+                        <div class="field">
+                            <div>
+                                <div class="field-name">is_analyzed</div>
+                                <div class="field-description">AI analysis completed</div>
+                            </div>
+                            <div class="field-type">boolean</div>
+                        </div>
+                        <div class="field">
+                            <div>
+                                <div class="field-name">is_published</div>
+                                <div class="field-description">Visible to public</div>
+                            </div>
+                            <div class="field-type">boolean</div>
+                        </div>
+                        <div class="field">
+                            <div>
+                                <div class="field-name">analysis_status</div>
+                                <div class="field-description">none | pending | completed | failed</div>
+                            </div>
+                            <div class="field-type">enum</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="entity">
+                    <div class="entity-header">
+                        <div class="entity-name">Analysis</div>
+                        <div class="entity-type">AI Results</div>
+                    </div>
+                    <div class="entity-body">
+                        <div class="field">
+                            <div>
+                                <div class="field-name">id</div>
+                                <div class="field-description">Primary identifier</div>
+                            </div>
+                            <div class="field-type">string</div>
+                        </div>
+                        <div class="field">
+                            <div>
+                                <div class="field-name">match_id</div>
+                                <div class="field-description">Foreign key to Match</div>
+                            </div>
+                            <div class="field-type">string</div>
+                        </div>
+                        <div class="field">
+                            <div>
+                                <div class="field-name">prediction</div>
+                                <div class="field-description">"Arsenal to win 2-1"</div>
+                            </div>
+                            <div class="field-type">string</div>
+                        </div>
+                        <div class="field">
+                            <div>
+                                <div class="field-name">confidence_score</div>
+                                <div class="field-description">0.0 to 1.0</div>
+                            </div>
+                            <div class="field-type">float</div>
+                        </div>
+                        <div class="field">
+                            <div>
+                                <div class="field-name">key_insights</div>
+                                <div class="field-description">Array of insight strings</div>
+                            </div>
+                            <div class="field-type">string[]</div>
+                        </div>
+                        <div class="field">
+                            <div>
+                                <div class="field-name">statistical_analysis</div>
+                                <div class="field-description">JSON blob for flexibility</div>
+                            </div>
+                            <div class="field-type">jsonb</div>
+                        </div>
+                        <div class="field">
+                            <div>
+                                <div class="field-name">ai_model_version</div>
+                                <div class="field-description">"smolagents-v1" or "dummy-v1"</div>
+                            </div>
+                            <div class="field-type">string</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="entity">
+                    <div class="entity-header">
+                        <div class="entity-name">AdminUser</div>
+                        <div class="entity-type">User Management</div>
+                    </div>
+                    <div class="entity-body">
+                        <div class="field">
+                            <div>
+                                <div class="field-name">id</div>
+                                <div class="field-description">Matches Supabase auth ID</div>
+                            </div>
+                            <div class="field-type">string</div>
+                        </div>
+                        <div class="field">
+                            <div>
+                                <div class="field-name">email</div>
+                                <div class="field-description">Login email</div>
+                            </div>
+                            <div class="field-type">string</div>
+                        </div>
+                        <div class="field">
+                            <div>
+                                <div class="field-name">role</div>
+                                <div class="field-description">admin | editor | viewer</div>
+                            </div>
+                            <div class="field-type">enum</div>
+                        </div>
+                        <div class="field">
+                            <div>
+                                <div class="field-name">matches_imported_count</div>
+                                <div class="field-description">Activity tracking</div>
+                            </div>
+                            <div class="field-type">integer</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="relationship">
+                    <div class="relationship-title">
+                        <span>Match</span>
+                        <span class="relationship-arrow">1:N</span>
+                        <span>Analysis</span>
+                    </div>
+                    <p>One match can have multiple analyses (e.g., pre-match, half-time, post-match)</p>
+                </div>
+                
+                <div class="relationship">
+                    <div class="relationship-title">
+                        <span>AdminUser</span>
+                        <span class="relationship-arrow">1:N</span>
+                        <span>Match</span>
+                    </div>
+                    <p>Admin users can import and manage multiple matches</p>
+                </div>
+            </div>
+            
+            <!-- WORKFLOWS -->
+            <div class="tab-content" id="workflows">
+                <h2>Admin Workflow Design</h2>
+                <p>Step-by-step process for managing match data and AI analysis.</p>
+                
+                <div class="workflow">
+                    <h3>Primary Admin Workflow</h3>
+                    
+                    <div class="workflow-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <div class="step-title">Pull Matches from APIs</div>
+                            <div class="step-description">
+                                Admin triggers <code>POST /admin/matches/pull</code> to fetch matches from Football-Data, API-Sports, etc.
+                                Matches are stored with <code>is_pulled=true, is_analyzed=false, is_published=false</code>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="workflow-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <div class="step-title">Review Pulled Matches</div>
+                            <div class="step-description">
+                                Admin reviews matches via <code>GET /admin/matches?status=pulled</code>
+                                Can filter by league, date, quality score, etc.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="workflow-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <div class="step-title">Request AI Analysis</div>
+                            <div class="step-description">
+                                Admin selects interesting matches and calls <code>POST /admin/matches/analyze</code>
+                                System queues analysis jobs (dummy responses for now)
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="workflow-step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <div class="step-title">AI Analysis Processing</div>
+                            <div class="step-description">
+                                Background process (dummy) generates analysis results
+                                Updates <code>analysis_status</code> and <code>is_analyzed=true</code>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="workflow-step">
+                        <div class="step-number">5</div>
+                        <div class="step-content">
+                            <div class="step-title">Review Analysis Results</div>
+                            <div class="step-description">
+                                Admin reviews analysis quality via <code>GET /admin/matches?status=analyzed</code>
+                                Can reject poor quality analysis or request re-analysis
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="workflow-step">
+                        <div class="step-number">6</div>
+                        <div class="step-content">
+                            <div class="step-title">Publish to Public</div>
+                            <div class="step-description">
+                                Admin selects high-quality analyzed matches and calls <code>POST /admin/matches/publish</code>
+                                Sets <code>is_published=true</code>, making matches visible on homepage
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="workflow-step">
+                        <div class="step-number">7</div>
+                        <div class="step-content">
+                            <div class="step-title">Public Consumption</div>
+                            <div class="step-description">
+                                Users see published matches via <code>GET /matches</code>
+                                Click through to match pages showing AI analysis
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3>Administrative Benefits</h3>
+                <ul>
+                    <li><strong>Quality Control:</strong> Only high-quality content reaches users</li>
+                    <li><strong>Cost Management:</strong> AI analysis only for selected matches</li>
+                    <li><strong>Content Strategy:</strong> Prioritize popular leagues/teams</li>
+                    <li><strong>Scalability:</strong> Can automate any step when ready</li>
+                </ul>
+                
+                <h3>Future Automation Options</h3>
+                <ul>
+                    <li><strong>Auto-pull:</strong> Scheduled match pulling for major leagues</li>
+                    <li><strong>Auto-analyze:</strong> Analyze matches based on popularity rules</li>
+                    <li><strong>Auto-publish:</strong> Publish high-scoring analysis automatically</li>
+                    <li><strong>Smart prioritization:</strong> ML-based match selection</li>
+                </ul>
+            </div>
+            
+            <!-- DATA STRATEGY -->
+            <div class="tab-content" id="data-strategy">
+                <h2>Smart Data Storage Strategy</h2>
+                <p>What we store vs what we query on-demand to optimize costs and performance.</p>
+                
+                <div class="data-tier" style="border-left-color: #059669;">
+                    <div class="tier-title">🟢 Tier 1: Always Store (Core Data)</div>
+                    <div class="tier-description">Essential data we own and control. Stored permanently.</div>
+                    <div class="tier-examples">
+                        <strong>Examples:</strong><br>
+                        • Match basic info (teams, time, score) - ~1KB per match<br>
+                        • AI analysis results - ~5KB per analysis<br>
+                        • Admin workflow states - ~100 bytes per match<br>
+                        • User preferences and subscriptions<br>
+                        <br>
+                        <strong>Cost:</strong> ~120MB for 20,000 matches with analysis
+                    </div>
+                </div>
+                
+                <div class="data-tier" style="border-left-color: #f59e0b;">
+                    <div class="tier-title">🟡 Tier 2: Store When Requested (Analysis Data)</div>
+                    <div class="tier-description">Data we generate or fetch based on user/admin actions. Cached for reuse.</div>
+                    <div class="tier-examples">
+                        <strong>Examples:</strong><br>
+                        • Detailed team statistics - Cache for 24 hours<br>
+                        • Historical head-to-head data - Cache for 1 week<br>
+                        • Odds comparison data - Cache for 1 hour<br>
+                        • External API responses - Cache for 30 minutes<br>
+                        <br>
+                        <strong>Cost:</strong> ~50MB active cache, auto-purged
+                    </div>
+                </div>
+                
+                <div class="data-tier" style="border-left-color: #dc2626;">
+                    <div class="tier-title">🔴 Tier 3: Never Store (Query on Demand)</div>
+                    <div class="tier-description">Data that changes too frequently or is too expensive to store. Query external sources as needed.</div>
+                    <div class="tier-examples">
+                        <strong>Examples:</strong><br>
+                        • Live betting odds (changes every few seconds)<br>
+                        • Detailed player statistics (gigabytes per season)<br>
+                        • Historical match results (available from APIs)<br>
+                        • Complex queries like "Benfica vs Turkish teams"<br>
+                        <br>
+                        <strong>Strategy:</strong> Generate insights on-demand, cache results
+                    </div>
+                </div>
+                
+                <h3>Smart Insight Generation Example</h3>
+                <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin: 20px 0;">
+                    <h4>User Query: "How does Benfica perform at home against Turkish teams?"</h4>
+                    
+                    <p><strong>Our System:</strong></p>
+                    <ol>
+                        <li>Check if this insight is cached (1 hour TTL)</li>
+                        <li>If not cached, query our stored matches for recent Benfica home games</li>
+                        <li>For historical data, make API call to Football-Data or similar</li>
+                        <li>Calculate statistics: "Benfica won 9/10 home matches vs Turkish teams (90%)"</li>
+                        <li>Cache result and return to user</li>
+                        <li>Store popular insights for faster future access</li>
+                    </ol>
+                    
+                    <p><strong>Benefits:</strong></p>
+                    <ul>
+                        <li>Fast response for common queries (cached)</li>
+                        <li>Comprehensive data without storage costs</li>
+                        <li>Always up-to-date information</li>
+                        <li>Can handle any team/league combination</li>
+                    </ul>
+                </div>
+                
+                <h3>Database Growth Projections</h3>
+                <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; border: 1px solid #bae6fd; margin: 20px 0;">
+                    <p><strong>Year 1:</strong> ~20,000 matches, ~5,000 analyses = 150MB</p>
+                    <p><strong>Year 2:</strong> ~40,000 matches, ~12,000 analyses = 300MB</p>
+                    <p><strong>Year 5:</strong> ~100,000 matches, ~30,000 analyses = 750MB</p>
+                    
+                    <p style="margin-top: 20px;"><strong>This fits comfortably within:</strong></p>
+                    <ul>
+                        <li>Supabase free tier (500MB)</li>
+                        <li>Most $5-10/month database plans</li>
+                        <li>Single server deployments</li>
+                    </ul>
+                </div>
+                
+                <h3>Cost-Effective Data Sources</h3>
+                <div style="background: #f0fdf4; padding: 20px; border-radius: 8px; border: 1px solid #bbf7d0; margin: 20px 0;">
+                    <p><strong>Free Tier Sources:</strong></p>
+                    <ul>
+                        <li>Football-Data.org (10 calls/minute, major leagues)</li>
+                        <li>The Sports DB (community data, unlimited)</li>
+                        <li>OpenLigaDB (German leagues, free)</li>
+                    </ul>
+                    
+                    <p><strong>Paid When Profitable:</strong></p>
+                    <ul>
+                        <li>API-Sports (detailed stats, €8-50/month)</li>
+                        <li>Sportmonks (comprehensive data, $25+/month)</li>
+                        <li>Opta (premium statistics, enterprise pricing)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showTab(tabName) {
+            // Hide all tab contents
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+            
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>

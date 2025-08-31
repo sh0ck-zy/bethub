@@ -1,168 +1,120 @@
 import { NextResponse } from 'next/server';
+import { MatchService } from '@/lib/services/match.service';
+import { MatchRepository } from '@/lib/repositories/match.repository';
+import { ExternalAPIService } from '@/lib/services/external-api.service';
 
-// Football Data API Service
-async function fetchFootballDataMatches() {
-  const apiKey = process.env.FOOTBALL_DATA_API_KEY;
-  if (!apiKey) {
-    throw new Error('Football Data API key not configured');
-  }
+const matchRepo = new MatchRepository();
+const externalAPI = new ExternalAPIService();
+const matchService = new MatchService(matchRepo, externalAPI);
 
-  const today = new Date();
-  const tomorrow = new Date(today);
-  tomorrow.setDate(today.getDate() + 7); // Get matches for next 7 days
-
-  const dateFrom = today.toISOString().split('T')[0];
-  const dateTo = tomorrow.toISOString().split('T')[0];
-
-  // Fetch matches from multiple top leagues
-  const competitions = [
-    'PL', // Premier League
-    'PD', // La Liga  
-    'BL1', // Bundesliga
-    'SA', // Serie A
-    'FL1', // Ligue 1
-    'CL', // Champions League
-    'EL' // Europa League
-  ];
-
-  const allMatches = [];
-
-  for (const competition of competitions) {
-    try {
-      const response = await fetch(
-        `https://api.football-data.org/v4/competitions/${competition}/matches?dateFrom=${dateFrom}&dateTo=${dateTo}`,
-        {
-          headers: {
-            'X-Auth-Token': apiKey,
-          },
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.matches) {
-          allMatches.push(...data.matches);
-        }
-      }
-    } catch (error) {
-      console.error(`Error fetching ${competition} matches:`, error);
-    }
-  }
-
-  return allMatches;
-}
-
-// Transform Football Data API response to our format
-function transformMatch(apiMatch: any) {
-  return {
-    id: `fd-${apiMatch.id}`,
-    league: apiMatch.competition?.name || 'Unknown League',
-    home_team: apiMatch.homeTeam?.name || 'Home Team',
-    away_team: apiMatch.awayTeam?.name || 'Away Team',
-    kickoff_utc: apiMatch.utcDate,
-    status: mapStatus(apiMatch.status),
-    venue: apiMatch.venue || 'TBD',
-    referee: apiMatch.referees?.[0]?.name || null,
-    odds: null,
-    home_score: apiMatch.score?.fullTime?.home,
-    away_score: apiMatch.score?.fullTime?.away,
-    current_minute: apiMatch.minute || null,
-    is_published: true,
-    analysis_status: 'none',
-    created_at: new Date().toISOString(),
-    // Include logos from Football-Data API
-    home_team_logo: apiMatch.homeTeam?.crest,
-    away_team_logo: apiMatch.awayTeam?.crest,
-    league_logo: apiMatch.competition?.emblem,
-  };
-}
-
-// Map Football Data status to our status format
-function mapStatus(fdStatus: string) {
-  const statusMap: { [key: string]: string } = {
-    'SCHEDULED': 'PRE',
-    'TIMED': 'PRE', 
-    'IN_PLAY': 'LIVE',
-    'PAUSED': 'LIVE',
-    'FINISHED': 'FT',
-    'POSTPONED': 'POSTPONED',
-    'CANCELLED': 'CANCELLED'
-  };
-  return statusMap[fdStatus] || 'PRE';
-}
+// Removed getFallbackMatches - we enforce proper admin workflow
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const isAdmin = searchParams.get('admin') === 'true';
     
-    console.log('🏠 Homepage requesting matches, admin:', isAdmin);
+    console.log('🏠 Homepage requesting published matches, admin view:', isAdmin);
 
-    let matches = [];
+    // Calculate date range: today (start of day) to next 7 days
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set to start of today
+    const nextWeek = new Date(today);
+    nextWeek.setDate(today.getDate() + 7);
 
-    // Try to fetch real matches first
+    // Use our service layer to get published matches
     try {
-      const apiMatches = await fetchFootballDataMatches();
-      matches = apiMatches.map(transformMatch);
-      console.log(`📡 Fetched ${matches.length} real matches from Football Data API`);
-    } catch (error) {
-      console.error('Failed to fetch real matches, using fallback:', error);
-      
-      // Fallback to minimal mock data if API fails
-      matches = [
-        {
-          id: 'mock-1',
-          league: 'Premier League',
-          home_team: 'Arsenal',
-          away_team: 'Chelsea',
-          kickoff_utc: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
-          status: 'PRE',
-          venue: 'Emirates Stadium',
-          referee: null,
-          odds: null,
-          home_score: null,
-          away_score: null,
-          current_minute: null,
-          is_published: true,
-          analysis_status: 'none',
-          created_at: new Date().toISOString(),
-        }
-      ];
-    }
+      const { matches, total } = await matchService.getPublishedMatches({
+        limit: 20,
+        sort: 'kickoff_asc'
+      });
 
-    // Filter to max 20 matches for performance
-    const limitedMatches = matches.slice(0, 20);
+      // Filter matches by date range (next 7 days)
+      const upcomingMatches = matches.filter(match => {
+        const kickoff = new Date(match.kickoff_utc);
+        return kickoff >= today && kickoff <= nextWeek;
+      });
 
-    // Auto-select spotlight match: first live match, then first upcoming match
-    let spotlightMatch = null;
-    if (limitedMatches.length > 0) {
-      const liveMatch = limitedMatches.find(m => m.status === 'LIVE');
-      const upcomingMatch = limitedMatches.find(m => m.status === 'PRE');
-      const finishedMatch = limitedMatches.find(m => m.status === 'FT');
-      spotlightMatch = liveMatch || upcomingMatch || finishedMatch;
-    }
+      console.log(`📊 Fetched ${upcomingMatches.length} published matches from service layer`);
 
-    return NextResponse.json({
-      success: true,
-      matches: limitedMatches,
-      total: limitedMatches.length,
-      source: matches.length > 1 ? 'football-data-api' : 'fallback',
-      spotlight_match: spotlightMatch,
-    }, {
-      headers: {
-        'Cache-Control': 'public, max-age=60, stale-while-revalidate=300'
+      // If no published matches found, show empty state (NO FALLBACK)
+      if (upcomingMatches.length === 0) {
+        const message = isAdmin 
+          ? 'No published matches found. Use the admin panel to pull, analyze, and publish matches.'
+          : 'No matches available at the moment. Please check back later.';
+        
+        console.log(`⚠️ No published matches found. Database has ${total} total matches, 0 published.`);
+        
+        return NextResponse.json({
+          success: true,
+          matches: [],
+          total: 0,
+          source: 'database-empty',
+          message,
+          debug_info: isAdmin ? {
+            total_in_database: total,
+            published_count: 0,
+            suggestion: 'Use /api/v1/admin/matches/pull to fetch matches, then analyze and publish them'
+          } : undefined
+        });
       }
-    });
+
+      // Auto-select spotlight match: first live match, then first upcoming match
+      let spotlightMatch = null;
+      if (upcomingMatches.length > 0) {
+        const liveMatch = upcomingMatches.find(m => m.status === 'LIVE');
+        const upcomingMatch = upcomingMatches.find(m => m.status === 'PRE');
+        const finishedMatch = upcomingMatches.find(m => m.status === 'FT');
+        spotlightMatch = liveMatch || upcomingMatch || finishedMatch;
+      }
+
+      return NextResponse.json({
+        success: true,
+        matches: upcomingMatches,
+        total: upcomingMatches.length,
+        source: 'database-published',
+        spotlight_match: spotlightMatch,
+        message: `Found ${upcomingMatches.length} published matches`,
+        metadata: {
+          last_updated: new Date().toISOString(),
+          data_freshness: "Real-time",
+          total_leagues: [...new Set(upcomingMatches.map(m => m.league))].length
+        }
+      }, {
+        headers: {
+          'Cache-Control': 'public, max-age=60, stale-while-revalidate=300'
+        }
+      });
+
+    } catch (serviceError) {
+      console.error('Service layer error:', serviceError);
+      
+      // NO FALLBACK - Return proper error instead of bypassing workflow
+      const message = isAdmin
+        ? 'Database connection failed. Check your Supabase configuration and try again.'
+        : 'Service temporarily unavailable. Please try again in a few moments.';
+        
+      return NextResponse.json({
+        success: false,
+        matches: [],
+        total: 0,
+        source: 'service-error',
+        error: message,
+        debug_info: isAdmin ? {
+          error_details: serviceError instanceof Error ? serviceError.message : 'Unknown service error',
+          suggestion: 'Check database connection and Supabase configuration'
+        } : undefined
+      }, { status: 503 });
+    }
 
   } catch (error) {
-    console.error('API error:', error);
+    console.error('Today API error:', error);
     
-    // Fallback to empty array if something goes wrong
     return NextResponse.json({
       success: false,
       matches: [],
       total: 0,
-      source: 'error-fallback',
+      source: 'error',
       error: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });
   }

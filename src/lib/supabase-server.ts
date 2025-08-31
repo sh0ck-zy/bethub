@@ -13,6 +13,21 @@ export const isSupabaseConfigured = () => {
   return !!(supabaseUrl && serviceRoleKey);
 };
 
+// Helper function to test database connectivity
+export const testSupabaseConnection = async () => {
+  if (!isSupabaseConfigured()) {
+    return false;
+  }
+  
+  try {
+    const client = getSupabaseServer();
+    const { error } = await client.from('matches').select('count').limit(1);
+    return !error;
+  } catch {
+    return false;
+  }
+};
+
 // Helper function to get Supabase server client safely
 export const getSupabaseServer = () => {
   if (!supabaseServer) {
