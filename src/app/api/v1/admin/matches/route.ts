@@ -1,75 +1,73 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { MatchService } from '@/lib/services/match.service';
-import { MatchRepository } from '@/lib/repositories/match.repository';
-import { ExternalAPIService } from '@/lib/services/external-api.service';
-import { MatchFilters } from '@/lib/types/match.types';
-import { getSupabaseServer } from '@/lib/supabase-server';
-
-const matchRepo = new MatchRepository();
-const externalAPI = new ExternalAPIService();
-const matchService = new MatchService(matchRepo, externalAPI);
+import { getSupabaseServer, isSupabaseConfigured } from '@/lib/supabase-server';
 
 export async function GET(request: NextRequest) {
   try {
-    // TODO: Add admin authentication check
-    // const user = await getAuthenticatedUser(request);
-    // if (!user || user.role !== 'admin') {
-    //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    // }
-    
+    // Skip complex authentication for now - development mode
+    if (!isSupabaseConfigured()) {
+      return NextResponse.json({
+        success: false,
+        error: 'Database is not configured'
+      }, { status: 503 });
+    }
+
     const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '50');
+    const status = searchParams.get('status'); // 'published', 'unpublished', 'all'
+    const league = searchParams.get('league');
     
-    const filters: MatchFilters = {
-      status: (searchParams.get('status') as any) || 'all',
-      analysis_status: (searchParams.get('analysis_status') as any) || undefined,
-      league: searchParams.get('league') || undefined,
-      limit: Math.min(parseInt(searchParams.get('limit') || '50'), 100), // Max 100
-      offset: parseInt(searchParams.get('offset') || '0'),
-      sort: (searchParams.get('sort') as any) || 'kickoff_asc'
-    };
+    const supabase = getSupabaseServer();
     
-    console.log('📋 Admin API: Fetching matches with filters:', filters);
-    
-    // Validate filters
-    if (filters.status && !['pulled', 'analyzed', 'published', 'all'].includes(filters.status)) {
+    // Simple query to get matches
+    let query = supabase
+      .from('matches')
+      .select('*', { count: 'exact' })
+      .order('kickoff_utc', { ascending: true })
+      .range((page - 1) * limit, page * limit - 1);
+
+    // Apply basic filters
+    if (status === 'published') {
+      query = query.eq('is_published', true);
+    } else if (status === 'unpublished') {
+      query = query.eq('is_published', false);
+    }
+
+    if (league) {
+      query = query.eq('league', league);
+    }
+
+    console.log('📋 Admin API: Fetching matches with simple query');
+
+    const { data: matches, error, count } = await query;
+
+    if (error) {
+      console.error('Admin matches query error:', error);
       return NextResponse.json({
         success: false,
-        error: 'Invalid status filter. Must be one of: pulled, analyzed, published, all'
-      }, { status: 400 });
+        error: error.message
+      }, { status: 500 });
     }
-    
-    if (filters.analysis_status && !['none', 'pending', 'completed', 'failed'].includes(filters.analysis_status)) {
-      return NextResponse.json({
-        success: false,
-        error: 'Invalid analysis_status filter. Must be one of: none, pending, completed, failed'
-      }, { status: 400 });
-    }
-    
-    const { matches, total } = await matchService.getMatches(filters);
-    
-    // Get summary statistics
-    const stats = await matchService.getDashboardStats();
-    
-    console.log(`✅ Admin API: Returned ${matches.length}/${total} matches`);
-    
+
+    // Get unique leagues for filtering
+    const { data: leagues } = await supabase
+      .from('matches')
+      .select('league')
+      .neq('league', null);
+
+    const uniqueLeagues = [...new Set(leagues?.map(l => l.league) || [])];
+
+    console.log(`📊 Admin fetched ${matches?.length || 0} matches (page ${page})`);
+
     return NextResponse.json({
       success: true,
-      data: {
-        matches,
-        pagination: {
-          total,
-          limit: filters.limit,
-          offset: filters.offset,
-          has_more: (filters.offset + filters.limit) < total,
-          next_offset: (filters.offset + filters.limit) < total ? filters.offset + filters.limit : null,
-          prev_offset: filters.offset > 0 ? Math.max(0, filters.offset - filters.limit) : null
-        },
-        summary: stats,
-        filters_applied: {
-          status: filters.status,
-          sort: filters.sort
-        }
-      }
+      matches: matches || [],
+      total: count || 0,
+      page,
+      limit,
+      leagues: uniqueLeagues,
+      filters: { status, league },
+      source: 'database-simple'
     });
     
   } catch (error) {
@@ -78,12 +76,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to fetch matches',
-      data: {
-        matches: [],
-        pagination: { total: 0, limit: 0, offset: 0, has_more: false, next_offset: null, prev_offset: null },
-        summary: { total_matches: 0, total_pulled: 0, total_analyzed: 0, total_published: 0, pending_analysis: 0, failed_analysis: 0 },
-        filters_applied: { status: 'all', sort: 'kickoff_asc' }
-      }
+      matches: [],
+      total: 0
     }, { status: 500 });
   }
 }
@@ -106,7 +100,7 @@ export async function POST(request: NextRequest) {
     
     const { data, error } = await supabase
       .from('matches')
-      .insert({
+      .upsert({
         id: match.id,
         external_id: match.external_id,
         data_source: match.data_source,
@@ -122,17 +116,20 @@ export async function POST(request: NextRequest) {
         is_analyzed: match.is_analyzed || false,
         analysis_status: match.analysis_status || 'none',
         analysis_priority: match.analysis_priority || 'normal',
-        created_at: new Date().toISOString(),
+        created_at: match.created_at || new Date().toISOString(),
         updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'external_id,data_source',
+        ignoreDuplicates: false
       })
       .select('*');
     
     if (error) {
-      console.error('Insert error:', error);
+      console.error('Upsert error:', error);
       throw error;
     }
     
-    console.log('✅ Match inserted successfully:', data[0]);
+    console.log('✅ Match upserted successfully:', data[0]);
     
     return NextResponse.json({
       success: true,
@@ -145,6 +142,52 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to insert match'
+    }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const { action } = await request.json();
+    const supabase = getSupabaseServer();
+    
+    if (action === 'unpublish_all') {
+      console.log('👁️‍🗨️ Unpublishing ALL matches from homepage...');
+      
+      const { error } = await supabase
+        .from('matches')
+        .update({ 
+          is_published: false,
+          updated_at: new Date().toISOString()
+        })
+        .eq('is_published', true); // Only update currently published matches
+      
+      if (error) {
+        console.error('Unpublish all matches error:', error);
+        return NextResponse.json({
+          success: false,
+          error: error.message
+        }, { status: 500 });
+      }
+      
+      console.log('✅ All matches unpublished from homepage');
+      
+      return NextResponse.json({
+        success: true,
+        message: 'All matches unpublished from homepage'
+      });
+    }
+    
+    return NextResponse.json({
+      success: false,
+      error: 'Invalid action'
+    }, { status: 400 });
+    
+  } catch (error) {
+    console.error('PATCH matches error:', error);
+    return NextResponse.json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to update matches'
     }, { status: 500 });
   }
 }
