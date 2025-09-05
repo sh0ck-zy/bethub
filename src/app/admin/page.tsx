@@ -21,12 +21,352 @@ import {
   Clock,
   Calendar,
   CheckCircle2,
-  TrendingUp
+  TrendingUp,
+  Play,
+  Pause,
+  CheckCircle,
+  XCircle,
+  MoreHorizontal,
+  Search,
+  X,
+  Filter,
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRoleSelector } from '@/components/ui/RoleSelector';
 import { TeamLogo } from '@/components/TeamLogo';
 import Link from 'next/link';
+
+// Day Navigation Bar Component
+function DayNavigationBar({ selectedDate, onDateChange }: {
+  selectedDate: Date,
+  onDateChange: (date: Date) => void
+}) {
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  // Generate exactly 7 days (±3 days from today, not selected date)
+  const generateVisibleDays = () => {
+    const days = [];
+    const today = new Date();
+    for (let i = -3; i <= 3; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      days.push(date);
+    }
+    return days;
+  };
+
+  const visibleDays = generateVisibleDays();
+  const today = new Date();
+
+  const formatDayLabel = (date: Date) => {
+    const today = new Date();
+    if (date.toDateString() === today.toDateString()) return 'Today';
+    
+    const diffTime = date.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === -1) return 'Yesterday';
+    if (diffDays === 1) return 'Tomorrow';
+    
+    return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  };
+
+  const goToPreviousDay = () => {
+    const newDate = new Date(selectedDate);
+    newDate.setDate(selectedDate.getDate() - 1);
+    onDateChange(newDate);
+  };
+
+  const goToNextDay = () => {
+    const newDate = new Date(selectedDate);
+    newDate.setDate(selectedDate.getDate() + 1);
+    onDateChange(newDate);
+  };
+
+  return (
+    <div className="flex items-center justify-center gap-2 p-4 bg-muted/20 rounded-lg mb-6">
+      {/* Previous Day Button */}
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={goToPreviousDay}
+        className="h-8 w-8 p-0"
+      >
+        <ChevronLeft className="w-4 h-4" />
+      </Button>
+
+      {/* Day Navigation Pills */}
+      <div className="flex items-center gap-1">
+        {visibleDays.map((day, index) => {
+          const isSelected = day.toDateString() === selectedDate.toDateString();
+          const isToday = day.toDateString() === today.toDateString();
+          
+          return (
+            <Button
+              key={day.toISOString()}
+              variant={isSelected ? "default" : "ghost"}
+              size="sm"
+              className={`h-8 px-3 text-xs ${
+                isSelected ? 'bg-primary text-primary-foreground' :
+                'hover:bg-muted'
+              } ${isToday && !isSelected ? 'font-semibold text-blue-600' : ''}`}
+              onClick={() => {
+                if (isSelected) {
+                  setShowDatePicker(true);
+                } else {
+                  onDateChange(day);
+                }
+              }}
+            >
+              {formatDayLabel(day)}
+            </Button>
+          );
+        })}
+      </div>
+
+      {/* Next Day Button */}
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={goToNextDay}
+        className="h-8 w-8 p-0"
+      >
+        <ChevronRight className="w-4 h-4" />
+      </Button>
+
+      {/* Date Picker Modal */}
+      {showDatePicker && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-background p-6 rounded-lg shadow-lg">
+            <h3 className="text-lg font-semibold mb-4">Select Date</h3>
+            <Input
+              type="date"
+              value={selectedDate.toISOString().split('T')[0]}
+              onChange={(e) => {
+                const newDate = new Date(e.target.value + 'T12:00:00');
+                onDateChange(newDate);
+                setShowDatePicker(false);
+              }}
+              className="mb-4"
+            />
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowDatePicker(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => {
+                  onDateChange(new Date());
+                  setShowDatePicker(false);
+                }}
+              >
+                Today
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Hierarchical Match View Component
+function HierarchicalMatchView({ matches, selectedMatches, toggleMatchSelection, sendToAI, togglePublish, deleteMatch, selectedDate }: {
+  matches: AdminMatch[],
+  selectedMatches: Set<string>,
+  toggleMatchSelection: (id: string) => void,
+  sendToAI: (id: string) => void,
+  togglePublish: (id: string, currentlyPublished: boolean) => void,
+  deleteMatch: (id: string) => void,
+  selectedDate: Date
+}) {
+  // State for collapsed leagues
+  const [collapsedLeagues, setCollapsedLeagues] = useState<Set<string>>(new Set());
+
+  const toggleLeague = (league: string) => {
+    const newCollapsed = new Set(collapsedLeagues);
+    if (newCollapsed.has(league)) {
+      newCollapsed.delete(league);
+    } else {
+      newCollapsed.add(league);
+    }
+    setCollapsedLeagues(newCollapsed);
+  };
+  // Filter matches for the selected day only
+  const selectedDayKey = selectedDate.toISOString().split('T')[0];
+  const dayMatches = matches.filter(match => {
+    const matchDate = new Date(match.kickoff_utc).toISOString().split('T')[0];
+    return matchDate === selectedDayKey;
+  });
+
+  // Group matches by sport and league
+  const groupMatchesBySportLeague = (dayMatches: AdminMatch[]) => {
+    const sports: { [sport: string]: { [league: string]: AdminMatch[] } } = {};
+    dayMatches.forEach(match => {
+      const sport = 'Football'; // For now all matches are football
+      const league = match.league;
+      
+      if (!sports[sport]) sports[sport] = {};
+      if (!sports[sport][league]) sports[sport][league] = [];
+      
+      sports[sport][league].push(match);
+    });
+    return sports;
+  };
+
+  if (dayMatches.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+        <h3 className="text-lg font-semibold mb-2">No Matches Found</h3>
+        <p className="text-muted-foreground mb-4">
+          No matches scheduled for this date.
+        </p>
+      </div>
+    );
+  }
+
+  const sportLeagueGroups = groupMatchesBySportLeague(dayMatches);
+
+  return (
+    <div className="space-y-6">
+      {/* Sport and League Hierarchy */}
+      {Object.entries(sportLeagueGroups).map(([sport, leagues]) => (
+        <div key={sport} className="space-y-4">
+          {/* Sport Header */}
+          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            ⚽ {sport}
+          </div>
+
+          {/* Leagues within Sport */}
+          {Object.entries(leagues).map(([league, leagueMatches]) => {
+            const isCollapsed = collapsedLeagues.has(league);
+            
+            return (
+              <div key={league} className="ml-4 space-y-3">
+                {/* Clickable League Header */}
+                <div 
+                  className="flex items-center gap-2 text-sm font-medium cursor-pointer hover:bg-muted/50 p-2 rounded-lg transition-colors"
+                  onClick={() => toggleLeague(league)}
+                >
+                  <ChevronDown className={`w-3 h-3 transition-transform ${isCollapsed ? '-rotate-90' : ''}`} />
+                  🏆 {league}
+                  <Badge variant="outline" className="text-xs">
+                    {leagueMatches.length} matches
+                  </Badge>
+                </div>
+
+                {/* Collapsible Matches in League */}
+                {!isCollapsed && (
+                  <div className="ml-4 space-y-2">
+                    {leagueMatches.map((match) => (
+                  <div
+                    key={match.id}
+                    className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
+                      selectedMatches.has(match.id) 
+                        ? 'bg-primary/5 border-primary' 
+                        : 'hover:bg-muted/50'
+                    }`}
+                  >
+                    {/* Match Info */}
+                    <div className="flex items-center gap-3">
+                      <Checkbox
+                        checked={selectedMatches.has(match.id)}
+                        onCheckedChange={() => toggleMatchSelection(match.id)}
+                      />
+                      
+                      <div className="flex items-center gap-3">
+                        <TeamLogo team={match.home_team} size={24} />
+                        <div className="min-w-0">
+                          <div className="font-medium text-sm truncate">
+                            {match.home_team} vs {match.away_team}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {new Date(match.kickoff_utc).toLocaleTimeString('en-US', { 
+                              hour: '2-digit', 
+                              minute: '2-digit' 
+                            })}
+                            {match.home_score !== null && match.away_score !== null && (
+                              <span className="ml-2 font-semibold">
+                                {match.home_score}-{match.away_score}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <TeamLogo team={match.away_team} size={24} />
+                      </div>
+                    </div>
+
+                    {/* Status and Actions */}
+                    <div className="flex items-center gap-2">
+                      {/* Analysis Status */}
+                      <div className="flex items-center gap-1">
+                        {match.analysis_status === 'completed' ? (
+                          <Badge variant="default" className="text-xs">Analyzed</Badge>
+                        ) : match.analysis_status === 'pending' ? (
+                          <Badge variant="secondary" className="text-xs">Analyzing...</Badge>
+                        ) : (
+                          <Button
+                            onClick={() => sendToAI(match.id)}
+                            variant="outline"
+                            size="sm"
+                            className="text-xs h-6"
+                          >
+                            <Brain className="w-3 h-3 mr-1" />
+                            Analyze
+                          </Button>
+                        )}
+                      </div>
+
+                      {/* Publish Status */}
+                      <Button
+                        onClick={() => togglePublish(match.id, match.is_published)}
+                        variant={match.is_published ? "default" : "outline"}
+                        size="sm"
+                        className="text-xs h-6"
+                      >
+                        {match.is_published ? (
+                          <>
+                            <EyeOff className="w-3 h-3 mr-1" />
+                            Hide
+                          </>
+                        ) : (
+                          <>
+                            <Eye className="w-3 h-3 mr-1" />
+                            Publish
+                          </>
+                        )}
+                      </Button>
+
+                      {/* Delete */}
+                      <Button
+                        onClick={() => deleteMatch(match.id)}
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs h-6 hover:bg-destructive/10"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 interface AdminMatch {
   id: string;
@@ -54,10 +394,12 @@ export default function AdminPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // Pull section state
-  const [pullDate, setPullDate] = useState(new Date().toISOString().split('T')[0]);
+  // API pull state
   const [isPulling, setIsPulling] = useState(false);
   const [pullMessage, setPullMessage] = useState<string>('');
+  
+  // Day navigation state
+  const [selectedDate, setSelectedDate] = useState(new Date());
   
   // Bulk operations state
   const [selectedMatches, setSelectedMatches] = useState<Set<string>>(new Set());
@@ -90,7 +432,7 @@ export default function AdminPage() {
       const data = await response.json();
       console.log('Admin API response:', data);
       
-      const matchesData = data.data?.matches || [];
+      const matchesData = data.matches || [];
       
       if (Array.isArray(matchesData)) {
         setMatches(matchesData);
@@ -111,39 +453,22 @@ export default function AdminPage() {
     setPullMessage('');
     
     try {
-      // For now, manually insert today's real match since API has schema cache issues
-      const todaysMatch = {
-        id: crypto.randomUUID(),
-        external_id: '535150',
-        data_source: 'football-data',
-        league: 'Brasileirão',
-        home_team: 'Cruzeiro EC',
-        away_team: 'São Paulo FC',
-        kickoff_utc: '2025-08-31T00:00:00Z',
-        status: 'FT',
-        home_score: 1,
-        away_score: 0,
-        is_published: false,
-        is_pulled: true,
-        is_analyzed: false,
-        analysis_status: 'none',
-        analysis_priority: 'normal'
-      };
-
-      const response = await fetch('/api/v1/admin/matches', {
+      const response = await fetch('/api/v1/admin/fetch-current-matches', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ match: todaysMatch })
+        headers: { 'Content-Type': 'application/json' }
       });
       
       if (response.ok) {
-        setPullMessage('✅ Successfully pulled today\'s match: Cruzeiro EC vs São Paulo FC (1-0)');
+        const data = await response.json();
+        setPullMessage(`✅ Successfully pulled ${data.data?.matches_upserted || 0} matches from Football API`);
         fetchMatches(); // Refresh matches list
       } else {
-        setPullMessage('❌ Failed to pull matches - check server logs');
+        const errorData = await response.json();
+        setPullMessage(`❌ API Error: ${errorData.error || 'Failed to pull matches'}`);
       }
     } catch (error) {
-      setPullMessage(`❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error('Error pulling matches:', error);
+      setPullMessage(`❌ Error: ${error instanceof Error ? error.message : 'Network error'}`);
     } finally {
       setIsPulling(false);
     }
@@ -360,141 +685,298 @@ export default function AdminPage() {
           </Card>
         </div>
 
-        {/* Pull Today's Matches */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Download className="w-5 h-5" />
-              Pull Today's Real Matches ({pullDate})
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                <Input
-                  type="date"
-                  value={pullDate}
-                  onChange={(e) => setPullDate(e.target.value)}
-                  className="w-40"
-                />
+        {/* Dynamic API Query Builder */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Download className="w-5 h-5" />
+                Pull Matches from API
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Build custom query to fetch real football matches
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-xs text-muted-foreground">Date From</label>
+                    <Input
+                      type="date"
+                      value={new Date().toISOString().split('T')[0]}
+                      className="text-xs"
+                      onChange={(e) => console.log('Date from:', e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">Date To</label>
+                    <Input
+                      type="date"
+                      value={new Date(Date.now() + 7*24*60*60*1000).toISOString().split('T')[0]}
+                      className="text-xs"
+                      onChange={(e) => console.log('Date to:', e.target.value)}
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="text-xs text-muted-foreground">Competitions</label>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {['PL', 'PD', 'BL1', 'SA', 'FL1', 'CL', 'EL'].map(comp => (
+                      <Badge key={comp} variant="outline" className="text-xs cursor-pointer hover:bg-primary hover:text-primary-foreground">
+                        {comp}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">Football-Data.org API</span>
+                  <Badge variant={isPulling ? "secondary" : "outline"} className="text-xs">
+                    {isPulling ? "Fetching..." : "Ready (10 req/min)"}
+                  </Badge>
+                </div>
               </div>
               
               <Button
                 onClick={pullTodaysMatches}
                 disabled={isPulling}
-                className="flex items-center gap-2"
+                className="w-full flex items-center justify-center gap-2"
+                size="sm"
               >
                 {isPulling ? (
                   <>
                     <RefreshCw className="w-4 h-4 animate-spin" />
-                    Pulling...
+                    Fetching Matches...
                   </>
                 ) : (
                   <>
                     <Download className="w-4 h-4" />
-                    Pull Real Matches
+                    Pull Matches
                   </>
                 )}
               </Button>
-            </div>
-            
-            {pullMessage && (
-              <div className={`p-3 rounded-lg ${
-                pullMessage.startsWith('✅') 
-                  ? 'bg-green-50 border border-green-200 text-green-800' 
-                  : 'bg-red-50 border border-red-200 text-red-800'
-              }`}>
-                {pullMessage}
-              </div>
-            )}
-            
-            <p className="text-sm text-muted-foreground">
-              This pulls real football matches happening today from external APIs. 
-              Today's match: Cruzeiro EC vs São Paulo FC (already finished 1-0).
-            </p>
-          </CardContent>
-        </Card>
+              
+              {pullMessage && (
+                <div className={`p-3 rounded-lg text-sm ${
+                  pullMessage.startsWith('✅') 
+                    ? 'bg-green-50 border border-green-200 text-green-800' 
+                    : 'bg-red-50 border border-red-200 text-red-800'
+                }`}>
+                  {pullMessage}
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
-        {/* Bulk Operations */}
-        {selectedMatches.size > 0 && (
-          <Card className="mb-6 border-primary">
+          {/* Quick Actions */}
+          <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5" />
-                Bulk Actions ({selectedMatches.size} selected)
+                <TrendingUp className="w-5 h-5" />
+                Quick Actions
               </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Common administrative tasks
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="space-y-2">
+                <Button
+                  onClick={async () => {
+                    try {
+                      const response = await fetch('/api/v1/admin/publish-all', { method: 'POST' });
+                      const result = await response.json();
+                      fetchMatches();
+                    } catch (error) {
+                      console.error('Error publishing all:', error);
+                    }
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="w-full justify-start"
+                >
+                  <Eye className="w-4 h-4 mr-2" />
+                  Publish All Matches
+                </Button>
+                
+                <Button
+                  onClick={async () => {
+                    if (confirm('Clear all fake demo data?')) {
+                      try {
+                        const response = await fetch('/api/v1/admin/clear-fake-data', { method: 'POST' });
+                        const result = await response.json();
+                        fetchMatches();
+                      } catch (error) {
+                        console.error('Error clearing fake data:', error);
+                      }
+                    }
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="w-full justify-start"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Clear Demo Data
+                </Button>
+
+                <Button
+                  onClick={async () => {
+                    if (confirm('Unpublish ALL matches from homepage? (keeps matches in database)')) {
+                      try {
+                        // Unpublish all matches
+                        const response = await fetch('/api/v1/admin/matches', { 
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ action: 'unpublish_all' })
+                        });
+                        if (response.ok) {
+                          fetchMatches();
+                        }
+                      } catch (error) {
+                        console.error('Error unpublishing all matches:', error);
+                      }
+                    }
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="w-full justify-start"
+                >
+                  <EyeOff className="w-4 h-4 mr-2" />
+                  Unpublish All Matches
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Enhanced Bulk Operations */}
+        {selectedMatches.size > 0 && (
+          <Card className="mb-6 border-primary bg-primary/5">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5" />
+                  Bulk Actions ({selectedMatches.size} of {matches.length} selected)
+                </CardTitle>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">
+                    Quick select:
+                  </span>
+                  <Button
+                    onClick={() => {
+                      const unpublished = matches.filter(m => !m.is_published);
+                      setSelectedMatches(new Set(unpublished.map(m => m.id)));
+                    }}
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 text-xs"
+                  >
+                    Draft matches
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      const unanalyzed = matches.filter(m => m.analysis_status === 'none');
+                      setSelectedMatches(new Set(unanalyzed.map(m => m.id)));
+                    }}
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 text-xs"
+                  >
+                    Unanalyzed
+                  </Button>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center gap-4">
-                <Button
-                  onClick={bulkAnalyze}
-                  disabled={bulkAnalyzing}
-                  className="flex items-center gap-2"
-                >
-                  {bulkAnalyzing ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                      Analyzing...
-                    </>
-                  ) : (
-                    <>
-                      <Brain className="w-4 h-4" />
-                      Analyze Selected
-                    </>
-                  )}
-                </Button>
-                
-                <Button
-                  onClick={() => bulkPublish(true)}
-                  disabled={bulkPublishing}
-                  className="flex items-center gap-2"
-                >
-                  {bulkPublishing ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                      Publishing...
-                    </>
-                  ) : (
-                    <>
-                      <Eye className="w-4 h-4" />
-                      Publish Selected
-                    </>
-                  )}
-                </Button>
-                
-                <Button
-                  onClick={() => bulkPublish(false)}
-                  disabled={bulkPublishing}
-                  variant="outline"
-                  className="flex items-center gap-2"
-                >
-                  <EyeOff className="w-4 h-4" />
-                  Unpublish Selected
-                </Button>
-                
-                <Button
-                  onClick={() => setSelectedMatches(new Set())}
-                  variant="ghost"
-                  size="sm"
-                >
-                  Clear Selection
-                </Button>
+              <div className="space-y-4">
+                {/* Primary Actions */}
+                <div className="flex items-center gap-3">
+                  <Button
+                    onClick={bulkAnalyze}
+                    disabled={bulkAnalyzing}
+                    className="flex items-center gap-2"
+                    size="sm"
+                  >
+                    {bulkAnalyzing ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        Analyzing {selectedMatches.size} matches...
+                      </>
+                    ) : (
+                      <>
+                        <Brain className="w-4 h-4" />
+                        Send to AI ({selectedMatches.size})
+                      </>
+                    )}
+                  </Button>
+                  
+                  <Button
+                    onClick={() => bulkPublish(true)}
+                    disabled={bulkPublishing}
+                    className="flex items-center gap-2"
+                    size="sm"
+                  >
+                    {bulkPublishing ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        Publishing...
+                      </>
+                    ) : (
+                      <>
+                        <Eye className="w-4 h-4" />
+                        Publish ({selectedMatches.size})
+                      </>
+                    )}
+                  </Button>
+                  
+                  <Button
+                    onClick={() => bulkPublish(false)}
+                    disabled={bulkPublishing}
+                    variant="outline"
+                    className="flex items-center gap-2"
+                    size="sm"
+                  >
+                    <EyeOff className="w-4 h-4" />
+                    Hide ({selectedMatches.size})
+                  </Button>
+                </div>
+
+                {/* Secondary Actions */}
+                <div className="flex items-center justify-between pt-2 border-t">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      onClick={() => setSelectedMatches(new Set())}
+                      variant="ghost"
+                      size="sm"
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      <X className="w-3 h-3 mr-1" />
+                      Clear Selection
+                    </Button>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Selected: {Array.from(selectedMatches).map(id => 
+                      matches.find(m => m.id === id)?.home_team + ' vs ' + matches.find(m => m.id === id)?.away_team
+                    ).slice(0, 2).join(', ')}{selectedMatches.size > 2 ? ` +${selectedMatches.size - 2} more` : ''}
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
         )}
 
-        {/* Match Management */}
+        {/* Day-based Hierarchical Match Management */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
                 <TrendingUp className="w-5 h-5" />
-                Match Management
+                Match Schedule
               </CardTitle>
               <p className="text-sm text-muted-foreground mt-1">
-                {publishedCount} published, {matches.length - publishedCount} hidden
+                {publishedCount} published, {matches.length - publishedCount} draft
               </p>
             </div>
             <Button 
@@ -520,18 +1002,10 @@ export default function AdminPage() {
               <div className="space-y-4">
                 {[...Array(3)].map((_, i) => (
                   <div key={i} className="p-4 border rounded-lg animate-pulse">
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-muted rounded-full"></div>
-                        <div className="h-4 bg-muted rounded w-32"></div>
-                        <div className="h-4 bg-muted rounded w-16"></div>
-                        <div className="h-4 bg-muted rounded w-32"></div>
-                      </div>
-                      <div className="flex gap-2">
-                        <div className="w-16 h-8 bg-muted rounded"></div>
-                        <div className="w-16 h-8 bg-muted rounded"></div>
-                        <div className="w-16 h-8 bg-muted rounded"></div>
-                      </div>
+                    <div className="h-4 bg-muted rounded w-48 mb-4"></div>
+                    <div className="space-y-2">
+                      <div className="h-3 bg-muted rounded w-32"></div>
+                      <div className="h-3 bg-muted rounded w-full"></div>
                     </div>
                   </div>
                 ))}
@@ -545,113 +1019,27 @@ export default function AdminPage() {
                 </p>
                 <Button onClick={pullTodaysMatches} disabled={isPulling}>
                   <Download className="w-4 h-4 mr-2" />
-                  Pull Today's Matches
+                  Pull Today&apos;s Matches
                 </Button>
               </div>
             ) : (
               <>
-                {/* Select All Row */}
-                <div className="flex items-center gap-2 p-2 bg-muted/30 rounded-lg mb-4">
-                  <Checkbox
-                    checked={selectedMatches.size === matches.length && matches.length > 0}
-                    onCheckedChange={selectAllMatches}
-                  />
-                  <span className="text-sm font-medium">
-                    {selectedMatches.size === matches.length && matches.length > 0
-                      ? 'Deselect All'
-                      : `Select All (${matches.length})`
-                    }
-                  </span>
-                </div>
+                {/* Day Navigation Bar */}
+                <DayNavigationBar 
+                  selectedDate={selectedDate}
+                  onDateChange={setSelectedDate}
+                />
                 
-                <div className="space-y-2">
-                  {matches.map((match) => (
-                    <div 
-                      key={match.id} 
-                      className={`p-4 border rounded-lg hover:bg-muted/50 transition-colors ${
-                        selectedMatches.has(match.id) ? 'border-primary bg-primary/10' : ''
-                      }`}
-                    >
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-4">
-                          <Checkbox
-                            checked={selectedMatches.has(match.id)}
-                            onCheckedChange={() => toggleMatchSelection(match.id)}
-                          />
-                          <TeamLogo team={match.home_team} size={32} />
-                          <div className="min-w-0">
-                            <div className="font-medium truncate">
-                              {match.home_team} vs {match.away_team}
-                              {match.home_score !== null && match.away_score !== null && (
-                                <span className="ml-2 text-sm bg-muted px-2 py-1 rounded">
-                                  {match.home_score}-{match.away_score}
-                                </span>
-                              )}
-                            </div>
-                            <div className="text-sm text-muted-foreground">
-                              {match.league} • {new Date(match.kickoff_utc).toLocaleDateString()} • {match.data_source}
-                            </div>
-                          </div>
-                          <TeamLogo team={match.away_team} size={32} />
-                          
-                          <div className="flex gap-2">
-                            <Badge 
-                              variant={match.analysis_status === 'completed' ? 'default' : 
-                                       match.analysis_status === 'pending' ? 'secondary' :
-                                       match.analysis_status === 'failed' ? 'destructive' : 'outline'}
-                              className="text-xs"
-                            >
-                              {match.analysis_status === 'none' ? 'No Analysis' : match.analysis_status}
-                            </Badge>
-                            <Badge 
-                              variant={match.is_published ? 'default' : 'secondary'}
-                              className="text-xs"
-                            >
-                              {match.is_published ? 'Published' : 'Hidden'}
-                            </Badge>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center gap-2">
-                          <Link href={`/match/${match.id}`}>
-                            <Button variant="outline" size="sm">
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                          </Link>
-                          
-                          <Button
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => sendToAI(match.id)}
-                            disabled={match.analysis_status === 'pending'}
-                          >
-                            <Brain className="w-4 h-4" />
-                          </Button>
-                          
-                          <Button
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => togglePublish(match.id, match.is_published)}
-                          >
-                            {match.is_published ? (
-                              <EyeOff className="w-4 h-4" />
-                            ) : (
-                              <Eye className="w-4 h-4" />
-                            )}
-                          </Button>
-                          
-                          <Button
-                            variant="destructive" 
-                            size="sm"
-                            onClick={() => deleteMatch(match.id)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                {/* Hierarchical Match View */}
+                <HierarchicalMatchView 
+                  matches={matches}
+                  selectedMatches={selectedMatches}
+                  toggleMatchSelection={toggleMatchSelection}
+                  sendToAI={sendToAI}
+                  togglePublish={togglePublish}
+                  deleteMatch={deleteMatch}
+                  selectedDate={selectedDate}
+                />
               </>
             )}
           </CardContent>

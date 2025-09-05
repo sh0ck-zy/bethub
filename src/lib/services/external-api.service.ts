@@ -13,7 +13,7 @@ export class ExternalAPIService {
   }
 
   async fetchMatches(
-    competitions: string[] = ['PL', 'PD', 'BL1', 'SA', 'FL1'],
+    competitions?: string[], // Now optional, we get all leagues by default
     dateRange?: { from: string; to: string }
   ): Promise<FootballDataMatch[]> {
     
@@ -23,25 +23,23 @@ export class ExternalAPIService {
     }
 
     try {
-      const allMatches: FootballDataMatch[] = [];
+      console.log('🚀 EFFICIENT FETCH: Getting matches from ALL leagues in ONE request');
       
-      // Fetch matches for each competition
-      for (const competitionCode of competitions) {
-        try {
-          const matches = await this.fetchCompetitionMatches(competitionCode, dateRange);
-          allMatches.push(...matches);
-          
-          // Add delay to respect rate limits (10 requests per minute)
-          await this.delay(6000);
-          
-        } catch (error) {
-          console.warn(`Failed to fetch matches for ${competitionCode}:`, error.message);
-          continue;
-        }
+      // Use the efficient method: get all matches in one request
+      const allMatches = await this.fetchAllMatches(dateRange);
+      
+      // Filter by competitions if specified (but we get all by default)
+      let filteredMatches = allMatches;
+      if (competitions && competitions.length > 0) {
+        const competitionCodes = competitions.map(c => c.toUpperCase());
+        filteredMatches = allMatches.filter(match => 
+          competitionCodes.includes(match.competition?.code?.toUpperCase() || '')
+        );
+        console.log(`🔍 Filtered to ${competitions.join(', ')}: ${filteredMatches.length}/${allMatches.length} matches`);
       }
 
-      console.log(`✅ Fetched ${allMatches.length} matches from Football-Data API`);
-      return allMatches;
+      console.log(`✅ Fetched ${filteredMatches.length} matches from Football-Data API in ONE request`);
+      return filteredMatches;
       
     } catch (error) {
       console.error('❌ External API error:', error);
@@ -52,10 +50,62 @@ export class ExternalAPIService {
     }
   }
 
+  // EFFICIENT: Get ALL matches from ALL leagues in ONE request
+  private async fetchAllMatches(
+    dateRange?: { from: string; to: string }
+  ): Promise<FootballDataMatch[]> {
+    
+    let url = `${this.footballDataApiUrl}/matches`;
+    
+    // Add date range parameters
+    const params = new URLSearchParams();
+    if (dateRange) {
+      params.set('dateFrom', dateRange.from);
+      params.set('dateTo', dateRange.to);
+    } else {
+      // Default to next 7 days for comprehensive coverage
+      const today = new Date();
+      const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+      params.set('dateFrom', today.toISOString().split('T')[0]);
+      params.set('dateTo', nextWeek.toISOString().split('T')[0]);
+    }
+    
+    url += `?${params.toString()}`;
+    console.log(`📡 API Request: ${url}`);
+
+    const response = await fetch(url, {
+      headers: {
+        'X-Auth-Token': this.apiKey,
+        'User-Agent': 'BetHub/1.0 (contact@bethub.com)'
+      }
+    });
+
+    if (!response.ok) {
+      if (response.status === 429) {
+        throw new Error('Rate limit exceeded. Wait and try again.');
+      }
+      if (response.status === 403) {
+        throw new Error('API access forbidden. Check your subscription and API key.');
+      }
+      throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    const matches = data.matches || [];
+    
+    // Log which leagues we got
+    const leagues = new Set(matches.map((m: any) => m.competition?.name).filter(Boolean));
+    console.log(`🏆 Leagues covered: ${Array.from(leagues).join(', ')}`);
+    
+    return matches;
+  }
+
+  // Keep this for backward compatibility but mark as deprecated
   private async fetchCompetitionMatches(
     competitionCode: string,
     dateRange?: { from: string; to: string }
   ): Promise<FootballDataMatch[]> {
+    console.warn('⚠️  DEPRECATED: Using inefficient per-competition fetching');
     
     let url = `${this.footballDataApiUrl}/competitions/${competitionCode}/matches`;
     

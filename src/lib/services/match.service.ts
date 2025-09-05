@@ -14,10 +14,12 @@ export class MatchService {
     try {
       console.log('🔄 Admin triggered: Pulling matches from external APIs...');
       
-      // Default to major competitions if none specified
-      const competitions = request.competitions || ['PL', 'PD', 'BL1', 'SA', 'FL1'];
+      // Get ALL available leagues by default (more efficient than specifying specific ones)
+      const competitions = request.competitions; // undefined = get all leagues
       
-      // Fetch from external APIs
+      console.log(competitions ? `🎯 Fetching specific leagues: ${competitions.join(', ')}` : '🌍 Fetching ALL available leagues');
+      
+      // Fetch from external APIs - now gets ALL leagues in one request!
       const rawMatches = await this.externalAPI.fetchMatches(competitions, request.date_range);
       
       if (rawMatches.length === 0) {

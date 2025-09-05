@@ -8,26 +8,46 @@ export class MatchRepository extends BaseRepository {
       return { created: [], updated: [] };
     }
 
-    // Map matches to only include fields that exist in the database
+    // Map matches to include ALL fields (no data loss!)
     const matchesToUpsert = matches.map(match => ({
+      // Core identifiers
       id: match.id,
       external_id: match.external_id,
       data_source: match.data_source || 'football-data',
+      
+      // Match details
       league: match.league,
       home_team: match.home_team,
       away_team: match.away_team,
-      home_team_id: match.home_team_id,
-      away_team_id: match.away_team_id,
-      league_id: match.league_id,
       kickoff_utc: match.kickoff_utc,
+      venue: match.venue,
+      referee: match.referee,
+      
+      // Match status and scores
       status: match.status,
       home_score: match.home_score,
       away_score: match.away_score,
       current_minute: match.current_minute,
-      is_published: match.is_published || false,
+      
+      // Logo/display fields (CRITICAL - was being lost!)
+      home_team_logo: match.home_team_logo,
+      away_team_logo: match.away_team_logo,
+      league_logo: match.league_logo,
+      
+      // Workflow states (CRITICAL - was being lost!)
+      is_pulled: match.is_pulled ?? true,
+      is_analyzed: match.is_analyzed ?? false,
+      is_published: match.is_published ?? false,
       analysis_status: match.analysis_status || 'none',
-      created_by: match.created_by,
-      live_stats: match.live_stats,
+      analysis_priority: match.analysis_priority || 'normal',
+      
+      // Optional relationship IDs (can be null for now)
+      home_team_id: match.home_team_id || null,
+      away_team_id: match.away_team_id || null,
+      league_id: match.league_id || null,
+      
+      // Metadata
+      created_by: match.created_by || null,
       updated_at: this.now(),
       created_at: match.created_at || this.now()
     }));

@@ -106,6 +106,7 @@ export interface FootballDataMatch {
   competition: {
     id: number;
     name: string;
+    code?: string;  // Competition code like 'PL', 'PD', etc.
     emblem?: string;
   };
   venue?: string;
