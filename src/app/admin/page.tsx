@@ -22,14 +22,7 @@ import {
   Calendar,
   CheckCircle2,
   TrendingUp,
-  Play,
-  Pause,
-  CheckCircle,
-  XCircle,
-  MoreHorizontal,
-  Search,
   X,
-  Filter,
   ChevronLeft,
   ChevronRight,
   ChevronDown
@@ -37,6 +30,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { useRoleSelector } from '@/components/ui/RoleSelector';
 import { TeamLogo } from '@/components/TeamLogo';
+import { AdvancedAPIRequestBuilder } from '@/components/admin/AdvancedAPIRequestBuilder';
 import Link from 'next/link';
 
 // Day Navigation Bar Component
@@ -685,90 +679,68 @@ export default function AdminPage() {
           </Card>
         </div>
 
-        {/* Dynamic API Query Builder */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Download className="w-5 h-5" />
-                Pull Matches from API
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Build custom query to fetch real football matches
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="text-xs text-muted-foreground">Date From</label>
-                    <Input
-                      type="date"
-                      value={new Date().toISOString().split('T')[0]}
-                      className="text-xs"
-                      onChange={(e) => console.log('Date from:', e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-muted-foreground">Date To</label>
-                    <Input
-                      type="date"
-                      value={new Date(Date.now() + 7*24*60*60*1000).toISOString().split('T')[0]}
-                      className="text-xs"
-                      onChange={(e) => console.log('Date to:', e.target.value)}
-                    />
-                  </div>
-                </div>
-                
-                <div>
-                  <label className="text-xs text-muted-foreground">Competitions</label>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {['PL', 'PD', 'BL1', 'SA', 'FL1', 'CL', 'EL'].map(comp => (
-                      <Badge key={comp} variant="outline" className="text-xs cursor-pointer hover:bg-primary hover:text-primary-foreground">
-                        {comp}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-                
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">Football-Data.org API</span>
-                  <Badge variant={isPulling ? "secondary" : "outline"} className="text-xs">
-                    {isPulling ? "Fetching..." : "Ready (10 req/min)"}
-                  </Badge>
-                </div>
-              </div>
-              
-              <Button
-                onClick={pullTodaysMatches}
-                disabled={isPulling}
-                className="w-full flex items-center justify-center gap-2"
-                size="sm"
-              >
-                {isPulling ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                    Fetching Matches...
-                  </>
-                ) : (
-                  <>
-                    <Download className="w-4 h-4" />
-                    Pull Matches
-                  </>
-                )}
-              </Button>
-              
-              {pullMessage && (
-                <div className={`p-3 rounded-lg text-sm ${
-                  pullMessage.startsWith('✅') 
-                    ? 'bg-green-50 border border-green-200 text-green-800' 
-                    : 'bg-red-50 border border-red-200 text-red-800'
-                }`}>
-                  {pullMessage}
-                </div>
+        {/* Advanced API Request Builder */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Download className="w-5 h-5" />
+              Advanced API Explorer
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Developer-focused Football-Data.org API explorer with full request visibility and multi-endpoint support
+            </p>
+          </CardHeader>
+          <CardContent>
+            <AdvancedAPIRequestBuilder />
+          </CardContent>
+        </Card>
+
+        {/* Legacy Quick Pull (keeping for now) */}
+        <Card className="mb-8 border-orange-200 bg-orange-50/30">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <RefreshCw className="w-5 h-5 text-orange-600" />
+              Quick Pull (Legacy)
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Simple one-click pull for current matches - use Advanced API Explorer above for full control
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button
+              onClick={pullTodaysMatches}
+              disabled={isPulling}
+              className="w-full flex items-center justify-center gap-2"
+              variant="outline"
+            >
+              {isPulling ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  Fetching Current Season Matches...
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4" />
+                  Quick Pull: Current Season Matches
+                </>
               )}
-            </CardContent>
-          </Card>
+            </Button>
+            
+            {pullMessage && (
+              <div className={`p-3 rounded-lg text-sm ${
+                pullMessage.startsWith('✅') 
+                  ? 'bg-green-50 border border-green-200 text-green-800' 
+                  : 'bg-red-50 border border-red-200 text-red-800'
+              }`}>
+                {pullMessage}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div></div>
 
           {/* Quick Actions */}
           <Card>
