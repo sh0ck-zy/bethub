@@ -63,40 +63,37 @@ export function LeagueSection({ league, isLoading = false, showActions = true }:
   });
 
   return (
-    <div className="bg-gray-900 border border-gray-800 overflow-hidden mb-4">
+    <div className="mb-3">
       {/* League Header */}
-      <div className="px-4 py-3 bg-gray-850 border-b border-gray-800">
+      <div className="px-3 py-2 bg-gray-800/50">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             {/* League Color Indicator */}
-            <div className={`w-1 h-6 ${leagueColor} mr-3 rounded-sm`}></div>
+            <div className={`w-1 h-4 ${leagueColor} mr-2`}></div>
             
             {/* League Logo */}
             <LeagueLogo 
               league={league.id} 
-              size={20} 
+              size={16} 
               logoUrl={league.logoUrl}
               className="mr-2"
             />
             
             {/* League Name */}
-            <h3 className="font-semibold text-white text-sm">
+            <h3 className="font-medium text-white text-sm">
               {league.name}
             </h3>
             
             {/* Match Count */}
-            <Badge 
-              variant="secondary" 
-              className="ml-2 bg-gray-700 text-gray-300 text-xs px-2 py-1"
-            >
+            <span className="ml-2 text-xs text-gray-400">
               {league.matches.length}
-            </Badge>
+            </span>
           </div>
 
           {/* Live indicator if there are live matches */}
           {league.matches.some(m => m.status === 'LIVE') && (
             <div className="flex items-center">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-2"></div>
+              <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse mr-1"></div>
               <span className="text-xs text-green-400 font-medium">LIVE</span>
             </div>
           )}
@@ -104,7 +101,7 @@ export function LeagueSection({ league, isLoading = false, showActions = true }:
       </div>
 
       {/* Matches List */}
-      <div className="divide-y divide-gray-800">
+      <div className="bg-gray-900">
         {isLoading ? (
           // Loading skeleton
           Array.from({ length: 3 }).map((_, index) => (
@@ -121,7 +118,7 @@ export function LeagueSection({ league, isLoading = false, showActions = true }:
           ))
         ) : (
           // Empty state
-          <div className="px-4 py-8 text-center">
+          <div className="px-3 py-6 text-center">
             <p className="text-gray-500 text-sm">No matches available</p>
           </div>
         )}

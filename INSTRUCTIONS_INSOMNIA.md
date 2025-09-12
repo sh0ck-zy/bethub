@@ -172,3 +172,6 @@ As seguintes variáveis devem estar configuradas:
 ---
 
 **💡 Dica**: Use esta coleção como um checklist de desenvolvimento. Marque cada endpoint como implementado e funcional conforme você os desenvolve!
+
+
+

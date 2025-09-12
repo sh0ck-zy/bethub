@@ -220,3 +220,6 @@ BetHub tem uma base sólida com:
 - 🟡 Workflow de sincronização incompleto
 
 **Recomendação**: Focar na correção do serviço de IA e população de dados de equipas/ligas para ter um sistema totalmente funcional.
+
+
+

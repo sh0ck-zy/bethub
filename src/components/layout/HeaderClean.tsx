@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRoleSelector } from '@/components/ui/RoleSelector';
 import { AuthModal } from '@/components/features/AuthModal';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface HeaderCleanProps {
   onLoginClick: () => void;
@@ -26,6 +27,7 @@ export function HeaderClean({
 }: HeaderCleanProps) {
   const { user, isAdmin, signOut } = useAuth();
   const { isAuthenticated, isAdmin: isDemoAdmin } = useRoleSelector();
+  const { theme, toggleTheme } = useTheme();
   
   const finalIsAdmin = isDemoAdmin || isAdmin;
   const finalIsAuthenticated = isAuthenticated || user;
@@ -97,6 +99,21 @@ export function HeaderClean({
               className="md:hidden text-gray-300 hover:text-white hover:bg-gray-700"
             >
               <Search className="w-5 h-5" />
+            </Button>
+
+            {/* Theme Toggle */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleTheme}
+              aria-label="Toggle theme"
+              className="text-gray-300 hover:text-white hover:bg-gray-700"
+            >
+              {theme === 'dark' ? (
+                <span className="w-5 h-5">🌙</span>
+              ) : (
+                <span className="w-5 h-5">☀️</span>
+              )}
             </Button>
 
             {/* User Actions */}
