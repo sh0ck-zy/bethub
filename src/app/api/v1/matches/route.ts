@@ -1,116 +1,167 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { MatchService } from '@/lib/services/match.service';
-import { MatchRepository } from '@/lib/repositories/match.repository';
-import { ExternalAPIService } from '@/lib/services/external-api.service';
-import { MatchFilters } from '@/lib/types/match.types';
-
-const matchRepo = new MatchRepository();
-const externalAPI = new ExternalAPIService();
-const matchService = new MatchService(matchRepo, externalAPI);
+import { fallbackMatchService } from '@/lib/fallback-match-service';
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
+    const isAdmin = searchParams.get('admin') === 'true';
+    const status = searchParams.get('status'); // live, upcoming, finished
+    const league = searchParams.get('league');
+    const limit = parseInt(searchParams.get('limit') || (isAdmin ? '50' : '200'));
     
-    console.log('🏈 Public API: Fetching published matches');
+    console.log(`📋 Fetching matches (${isAdmin ? 'admin' : 'public'} view)...`);
     
-    // Public API filters (more restrictive than admin)
-    const filters: MatchFilters = {
-      status: 'published', // Always filter to published matches
-      league: searchParams.get('league') || undefined,
-      limit: Math.min(parseInt(searchParams.get('limit') || '20'), 50), // Max 50
-      offset: parseInt(searchParams.get('offset') || '0'),
-      sort: (searchParams.get('sort') as any) || 'kickoff_asc'
-    };
+    // Get all matches from our clean service
+    const allMatches = await fallbackMatchService.getMatchesSafely();
     
-    // Add match status filter if provided (live, upcoming, finished)
-    const matchStatusFilter = searchParams.get('status');
-    let statusCondition: any = undefined;
+    let matches;
+    let metadata;
     
-    if (matchStatusFilter) {
-      switch (matchStatusFilter) {
-        case 'live':
-          statusCondition = 'LIVE';
-          break;
-        case 'upcoming':
-          statusCondition = 'PRE';
-          break;
-        case 'finished':
-          statusCondition = 'FT';
-          break;
-        default:
-          // Invalid status filter, ignore
-          break;
+    if (isAdmin) {
+      // Admin view: Show ALL matches with full metadata
+      matches = allMatches;
+      
+      metadata = {
+        total: allMatches.length,
+        published: allMatches.filter(m => m.is_published).length,
+        unpublished: allMatches.filter(m => !m.is_published).length,
+        by_status: allMatches.reduce((acc, match) => {
+          acc[match.status] = (acc[match.status] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>)
+      };
+      
+      console.log(`📊 Admin view: ${metadata.total} total matches (${metadata.published} published, ${metadata.unpublished} unpublished)`);
+      
+    } else {
+      // Public view: Show ONLY published matches
+      matches = allMatches.filter(match => match.is_published === true);
+      
+      metadata = {
+        total: matches.length,
+        live_matches: matches.filter(m => m.status === 'LIVE').length,
+        upcoming_matches: matches.filter(m => m.status === 'PRE').length,
+        completed_matches: matches.filter(m => m.status === 'FT').length
+      };
+      
+      console.log(`👥 Public view: ${metadata.total} published matches`);
+    }
+    
+    // Apply filters
+    if (status) {
+      const statusMap: Record<string, string> = {
+        'live': 'LIVE',
+        'upcoming': 'PRE', 
+        'finished': 'FT'
+      };
+      if (statusMap[status]) {
+        matches = matches.filter(m => m.status === statusMap[status]);
       }
     }
     
-    console.log('🔍 Public API filters:', {
-      league: filters.league,
-      limit: filters.limit,
-      offset: filters.offset,
-      match_status: matchStatusFilter,
-      sort: filters.sort
-    });
-    
-    // Get published matches using service layer
-    const { matches, total } = await matchService.getPublishedMatches(filters);
-    
-    // Apply additional status filter if needed
-    let filteredMatches = matches;
-    if (statusCondition) {
-      filteredMatches = matches.filter(match => match.status === statusCondition);
+    if (league) {
+      matches = matches.filter(m => m.league.toLowerCase().includes(league.toLowerCase()));
     }
     
-    // Select spotlight match (first live, then first upcoming, then first finished)
-    let spotlightMatch = null;
-    if (filteredMatches.length > 0) {
-      spotlightMatch = filteredMatches.find(m => m.status === 'LIVE') || 
-                      filteredMatches.find(m => m.status === 'PRE') ||
-                      filteredMatches[0];
-    }
+    // Sort by kickoff time and apply limit
+    matches.sort((a, b) => new Date(a.kickoff_utc).getTime() - new Date(b.kickoff_utc).getTime());
+    matches = matches.slice(0, limit);
     
-    const response = {
+    return NextResponse.json({
       success: true,
-      matches: filteredMatches,
-      total: filteredMatches.length,
-      spotlight_match: spotlightMatch,
-      pagination: {
-        limit: filters.limit!,
-        offset: filters.offset!,
-        has_more: (filters.offset! + filteredMatches.length) < total,
-        next_offset: (filters.offset! + filteredMatches.length) < total ? filters.offset! + filters.limit! : null
-      },
-      metadata: {
-        last_updated: new Date().toISOString(),
-        data_freshness: "Real-time",
-        total_leagues: [...new Set(filteredMatches.map(m => m.league))].length,
-        filters_applied: {
-          league: filters.league,
-          match_status: matchStatusFilter,
-          published_only: true
-        }
-      }
-    };
-    
-    console.log(`✅ Public API: Returned ${filteredMatches.length}/${total} matches`);
-    
-    return NextResponse.json(response, {
-      headers: {
-        'Cache-Control': 'public, max-age=60, stale-while-revalidate=300',
-        'X-Total-Count': total.toString(),
-        'X-Filtered-Count': filteredMatches.length.toString()
-      }
+      matches,
+      metadata,
+      view: isAdmin ? 'admin' : 'public'
     });
     
   } catch (error) {
-    console.error('❌ Public matches API error:', error);
+    console.error('❌ Get matches error:', error);
     
     return NextResponse.json({
       success: false,
       matches: [],
-      total: 0,
-      spotlight_match: null,
       error: error instanceof Error ? error.message : 'Failed to fetch matches'
+    }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { action, matchIds } = body;
+    
+    if (!action || !matchIds || !Array.isArray(matchIds)) {
+      return NextResponse.json({
+        success: false,
+        error: 'Action and matchIds array are required'
+      }, { status: 400 });
+    }
+    
+    console.log(`🔧 Admin: Bulk action '${action}' on ${matchIds.length} matches...`);
+    
+    // Import Supabase here to avoid circular dependencies
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    
+    let updateData: any = {};
+    
+    switch (action) {
+      case 'publish':
+        updateData = { is_published: true, updated_at: new Date().toISOString() };
+        break;
+      case 'unpublish':
+        updateData = { is_published: false, updated_at: new Date().toISOString() };
+        break;
+      default:
+        return NextResponse.json({
+          success: false,
+          error: `Unknown action: ${action}. Supported actions: publish, unpublish`
+        }, { status: 400 });
+    }
+    
+    // Update matches in batches to avoid overwhelming the database
+    let updated = 0;
+    const errors: string[] = [];
+    
+    for (const matchId of matchIds) {
+      try {
+        const { error } = await supabase
+          .from('matches')
+          .update(updateData)
+          .eq('id', matchId);
+        
+        if (error) {
+          errors.push(`Failed to ${action} match ${matchId}: ${error.message}`);
+        } else {
+          updated++;
+        }
+      } catch (err) {
+        errors.push(`Error processing match ${matchId}: ${err}`);
+      }
+    }
+    
+    console.log(`✅ Bulk ${action}: ${updated} matches updated, ${errors.length} errors`);
+    
+    return NextResponse.json({
+      success: errors.length === 0,
+      data: {
+        action,
+        total_requested: matchIds.length,
+        matches_updated: updated,
+        errors: errors.slice(0, 5), // Limit error display
+        message: `${action} completed: ${updated} matches updated${errors.length > 0 ? ` (${errors.length} errors)` : ''}`
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ Bulk action error:', error);
+    
+    return NextResponse.json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to perform bulk action'
     }, { status: 500 });
   }
 }

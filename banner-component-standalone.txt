@@ -1,0 +1,774 @@
+# BANNER COMPONENT STANDALONE CODE PACKAGE
+# This file contains all the code needed to work on the banner component independently
+
+## 1. MAIN BANNER COMPONENT (BannerCarousel.tsx)
+
+```tsx
+'use client';
+
+import React, { useState, useEffect, useCallback } from 'react';
+import { Button } from '@/components/ui/button';
+import { Calendar, MapPin, BarChart3, ChevronLeft, ChevronRight, Play, Pause, Brain, AlertCircle } from 'lucide-react';
+import Link from 'next/link';
+import { type UnsplashImage } from '@/lib/services/unsplashImageService';
+import { simpleImageService, type SimpleImageServiceResult } from '@/lib/services/simpleImageService';
+import { TeamLogo } from '@/components/TeamLogo';
+import { cn } from '@/lib/utils';
+
+// Types
+export interface Match {
+  id: string;
+  home_team: string;
+  away_team: string;
+  kickoff_utc: string;
+  venue: string;
+  competition: string;
+  status: string;
+  home_score?: number;
+  away_score?: number;
+  home_team_id?: string;
+  away_team_id?: string;
+}
+
+export interface BannerCarouselProps {
+  match: Match;
+  design?: 'default' | 'diagonal' | 'diagonal-v2' | 'split' | 'split-v2' | 'minimal' | 'hero' | 'card' | 'modern' | 'classic' | 'futuristic' | 'elegant' | 'bold' | 'clean' | 'dynamic' | 'premium' | 'sporty' | 'professional' | 'creative' | 'minimalist' | 'vibrant' | 'sophisticated' | 'contemporary' | 'striking' | 'refined' | 'polished' | 'sleek' | 'stylish' | 'trendy' | 'fashionable' | 'chic' | 'elegant' | 'graceful' | 'beautiful' | 'attractive' | 'appealing' | 'alluring' | 'captivating' | 'engaging' | 'compelling' | 'persuasive' | 'convincing' | 'effective' | 'successful' | 'winning' | 'victorious' | 'triumphant' | 'conquering' | 'dominating' | 'ruling' | 'leading' | 'top' | 'best' | 'finest' | 'greatest' | 'superior' | 'excellent' | 'outstanding' | 'exceptional' | 'remarkable' | 'extraordinary' | 'amazing' | 'incredible' | 'fantastic' | 'wonderful' | 'marvelous' | 'magnificent' | 'spectacular' | 'brilliant' | 'genius' | 'clever' | 'smart' | 'intelligent' | 'wise' | 'sensible' | 'reasonable' | 'logical' | 'rational' | 'sound' | 'valid' | 'legitimate' | 'authentic' | 'genuine' | 'real' | 'true' | 'honest' | 'sincere' | 'genuine' | 'authentic' | 'legitimate' | 'valid' | 'sound' | 'reasonable' | 'logical' | 'rational' | 'sensible' | 'wise' | 'intelligent' | 'smart' | 'clever' | 'genius' | 'brilliant' | 'spectacular' | 'magnificent' | 'marvelous' | 'wonderful' | 'fantastic' | 'incredible' | 'amazing' | 'extraordinary' | 'remarkable' | 'exceptional' | 'outstanding' | 'excellent' | 'superior' | 'greatest' | 'finest' | 'best' | 'top' | 'leading' | 'ruling' | 'dominating' | 'conquering' | 'triumphant' | 'victorious' | 'winning' | 'successful' | 'effective' | 'persuasive' | 'convincing' | 'compelling' | 'engaging' | 'captivating' | 'alluring' | 'appealing' | 'attractive' | 'beautiful' | 'graceful' | 'elegant' | 'chic' | 'fashionable' | 'trendy' | 'stylish' | 'sleek' | 'polished' | 'refined' | 'striking' | 'contemporary' | 'sophisticated' | 'vibrant' | 'minimalist' | 'creative' | 'professional' | 'sporty' | 'premium' | 'dynamic' | 'clean' | 'bold' | 'elegant' | 'futuristic' | 'classic' | 'modern' | 'card' | 'hero' | 'minimal' | 'split-v2' | 'split' | 'diagonal-v2' | 'diagonal' | 'default';
+  accentColor?: 'red' | 'blue' | 'green' | 'yellow' | 'purple' | 'orange' | 'pink' | 'indigo' | 'teal' | 'cyan' | 'lime' | 'amber' | 'emerald' | 'violet' | 'fuchsia' | 'rose' | 'sky' | 'slate' | 'gray' | 'zinc' | 'neutral' | 'stone' | 'warm' | 'cool' | 'primary' | 'secondary' | 'accent' | 'muted' | 'pop' | 'vibrant' | 'subtle' | 'bold' | 'soft' | 'hard' | 'bright' | 'dark' | 'light' | 'warm' | 'cool' | 'neutral' | 'colorful' | 'monochrome' | 'gradient' | 'solid' | 'patterned' | 'textured' | 'smooth' | 'rough' | 'glossy' | 'matte' | 'shiny' | 'dull' | 'opaque' | 'transparent' | 'translucent' | 'solid' | 'hollow' | 'filled' | 'empty' | 'full' | 'partial' | 'complete' | 'incomplete' | 'finished' | 'unfinished' | 'done' | 'undone' | 'ready' | 'not ready' | 'prepared' | 'unprepared' | 'set' | 'not set' | 'configured' | 'not configured' | 'installed' | 'not installed' | 'enabled' | 'disabled' | 'active' | 'inactive' | 'on' | 'off' | 'yes' | 'no' | 'true' | 'false' | '1' | '0' | 'enabled' | 'disabled' | 'active' | 'inactive' | 'on' | 'off' | 'yes' | 'no' | 'true' | 'false' | '1' | '0';
+  ctaLabel?: string;
+  showRibbon?: boolean;
+  homeTeamStats?: string;
+  awayTeamStats?: string;
+  className?: string;
+}
+
+// Utility function for kickoff formatting
+function formatKickoff(kickoffUtc: string): string {
+  const date = new Date(kickoffUtc);
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  return `${day}/${month}/${year} | ${hours}:${minutes} CET`;
+}
+
+// Diagonal Banner v2 Component - With smooth diagonal fade
+function DiagonalBannerV2({ match, ctaLabel = 'AI Detailed Analysis', homeTeamStats, awayTeamStats, accentColor = 'red' }: BannerCarouselProps) {
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAIGenerating, setIsAIGenerating] = useState(false);
+  const [aiResult, setAiResult] = useState<SimpleImageServiceResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [images, setImages] = useState<UnsplashImage[]>([]);
+  
+  useEffect(() => {
+    const loadImages = async () => {
+      try {
+        setIsLoading(true);
+        setIsAIGenerating(true);
+        setError(null);
+
+        console.log(`🎠 Loading images for v2: ${match.home_team} vs ${match.away_team}`);
+        
+        try {
+          const result = await simpleImageService.getBannerImages(match.home_team, match.away_team);
+          setAiResult(result);
+          setImages(result.images);
+          console.log(`✅ V2 Images loaded:`, result.images.length);
+        } catch (imageError) {
+          console.error('Image service error:', imageError);
+          setError('Failed to load images');
+        }
+      } catch (err) {
+        console.error('Error loading images:', err);
+        setError('Failed to load images');
+      } finally {
+        setIsLoading(false);
+        setIsAIGenerating(false);
+      }
+    };
+
+    loadImages();
+  }, [match.home_team, match.away_team]);
+
+  const kickoff = formatKickoff(match.kickoff_utc);
+  const homeImage = images[0]?.url || 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1200&h=500&fit=crop&crop=center';
+  const awayImage = images[1]?.url || 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=1200&h=500&fit=crop&crop=center';
+
+  const getAccentColorClasses = (color: string) => {
+    const colorMap: Record<string, string> = {
+      red: 'from-red-500 to-red-600',
+      blue: 'from-blue-500 to-blue-600',
+      green: 'from-green-500 to-green-600',
+      yellow: 'from-yellow-500 to-yellow-600',
+      purple: 'from-purple-500 to-purple-600',
+      orange: 'from-orange-500 to-orange-600',
+      pink: 'from-pink-500 to-pink-600',
+      indigo: 'from-indigo-500 to-indigo-600',
+      teal: 'from-teal-500 to-teal-600',
+      cyan: 'from-cyan-500 to-cyan-600',
+      lime: 'from-lime-500 to-lime-600',
+      amber: 'from-amber-500 to-amber-600',
+      emerald: 'from-emerald-500 to-emerald-600',
+      violet: 'from-violet-500 to-violet-600',
+      fuchsia: 'from-fuchsia-500 to-fuchsia-600',
+      rose: 'from-rose-500 to-rose-600',
+      sky: 'from-sky-500 to-sky-600',
+      slate: 'from-slate-500 to-slate-600',
+      gray: 'from-gray-500 to-gray-600',
+      zinc: 'from-zinc-500 to-zinc-600',
+      neutral: 'from-neutral-500 to-neutral-600',
+      stone: 'from-stone-500 to-stone-600',
+    };
+    return colorMap[color] || 'from-red-500 to-red-600';
+  };
+
+  const accentGradient = getAccentColorClasses(accentColor);
+
+  if (isLoading) {
+    return (
+      <div className="relative w-full overflow-hidden rounded-2xl shadow-lg border border-gray-700">
+        <div className="relative z-10 h-72">
+          <div className="absolute inset-0 bg-gradient-to-r from-gray-800 to-gray-900 animate-pulse" />
+          <div className="relative z-20 flex items-center justify-center h-full">
+            <div className="text-center">
+              <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+              <p className="text-white text-lg font-medium">Loading match details...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative w-full overflow-hidden rounded-2xl shadow-lg border border-gray-700">
+      <div className="relative z-10 h-72">
+        {/* Background images with smooth diagonal fade */}
+        <div className="absolute inset-0 z-0">
+          {/* Home team image - fades out diagonally */}
+          <div 
+            className="absolute inset-0 bg-cover bg-center"
+            style={{
+              backgroundImage: `url(${homeImage})`,
+              maskImage: 'linear-gradient(135deg, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 60%, rgba(0,0,0,0) 100%)',
+              WebkitMaskImage: 'linear-gradient(135deg, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 60%, rgba(0,0,0,0) 100%)'
+            }}
+          />
+          {/* Away team image - fades in diagonally */}
+          <div 
+            className="absolute inset-0 bg-cover bg-center"
+            style={{
+              backgroundImage: `url(${awayImage})`,
+              maskImage: 'linear-gradient(135deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,1) 60%, rgba(0,0,0,1) 100%)',
+              WebkitMaskImage: 'linear-gradient(135deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,1) 60%, rgba(0,0,0,1) 100%)'
+            }}
+          />
+        </div>
+
+        {/* Gradient overlays for better text readability */}
+        <div className="absolute inset-0 z-10">
+          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-black/60" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/40" />
+        </div>
+
+        {/* Content */}
+        <div className="relative z-20 h-full flex">
+          {/* Left side - Home team */}
+          <div className="flex-1 flex flex-col justify-between p-6">
+            {/* Top section with logo and team name */}
+            <div className="flex items-start space-x-4">
+              <TeamLogo 
+                teamName={match.home_team} 
+                size={88} 
+                className="drop-shadow-lg" 
+                variant="plain"
+              />
+              <div className="flex-1 min-w-0">
+                <h2 className="text-2xl font-bold text-white mb-2 leading-tight break-words">
+                  {match.home_team}
+                </h2>
+                {homeTeamStats && (
+                  <div className="inline-flex items-center px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs font-medium text-white border border-white/30">
+                    {homeTeamStats}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Bottom CTA */}
+            <div className="mt-auto">
+              <Link href={`/match/${match.id}`}>
+                <Button 
+                  className={`w-full bg-gradient-to-r ${accentGradient} hover:shadow-lg hover:scale-105 transition-all duration-300 text-white font-semibold py-3 px-6 rounded-xl border-0`}
+                  size="lg"
+                >
+                  <Brain className="w-5 h-5 mr-2" />
+                  {ctaLabel}
+                </Button>
+              </Link>
+            </div>
+          </div>
+
+          {/* Center - VS and date */}
+          <div className="flex flex-col items-center justify-center px-4">
+            {/* Date at top */}
+            <div className="text-center mb-4">
+              <div className="text-white/90 text-sm font-medium bg-black/30 backdrop-blur-sm rounded-lg px-3 py-2 border border-white/20">
+                {kickoff}
+              </div>
+            </div>
+
+            {/* VS Badge */}
+            <div className="relative">
+              <div className="w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-2xl border-4 border-white/30">
+                <span className="text-2xl font-black text-white">VS</span>
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full blur-lg opacity-50 -z-10" />
+            </div>
+
+            {/* Venue */}
+            <div className="text-center mt-4">
+              <div className="text-white/80 text-xs bg-black/30 backdrop-blur-sm rounded-lg px-2 py-1 border border-white/20">
+                <MapPin className="w-3 h-3 inline mr-1" />
+                {match.venue}
+              </div>
+            </div>
+          </div>
+
+          {/* Right side - Away team */}
+          <div className="flex-1 flex flex-col justify-between p-6">
+            {/* Top section with team name and logo */}
+            <div className="flex items-start space-x-4">
+              <div className="flex-1 min-w-0 text-right">
+                <h2 className="text-2xl font-bold text-white mb-2 leading-tight break-words">
+                  {match.away_team}
+                </h2>
+                {awayTeamStats && (
+                  <div className="inline-flex items-center px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs font-medium text-white border border-white/30 ml-auto">
+                    {awayTeamStats}
+                  </div>
+                )}
+              </div>
+              <TeamLogo 
+                teamName={match.away_team} 
+                size={88} 
+                className="drop-shadow-lg" 
+                variant="plain"
+              />
+            </div>
+
+            {/* Bottom CTA */}
+            <div className="mt-auto">
+              <Link href={`/match/${match.id}`}>
+                <Button 
+                  className={`w-full bg-gradient-to-r ${accentGradient} hover:shadow-lg hover:scale-105 transition-all duration-300 text-white font-semibold py-3 px-6 rounded-xl border-0`}
+                  size="lg"
+                >
+                  <Brain className="w-5 h-5 mr-2" />
+                  {ctaLabel}
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Main BannerCarousel component
+export function BannerCarousel({ 
+  match, 
+  design = 'default', 
+  accentColor = 'red', 
+  ctaLabel = 'View Analysis', 
+  showRibbon = false,
+  homeTeamStats,
+  awayTeamStats,
+  className 
+}: BannerCarouselProps) {
+  // For now, we only support the diagonal-v2 design
+  if (design === 'diagonal-v2') {
+    return (
+      <div className={cn('w-full', className)}>
+        <DiagonalBannerV2 
+          match={match}
+          accentColor={accentColor}
+          ctaLabel={ctaLabel}
+          homeTeamStats={homeTeamStats}
+          awayTeamStats={awayTeamStats}
+        />
+      </div>
+    );
+  }
+
+  // Fallback to default design
+  return (
+    <div className={cn('w-full', className)}>
+      <DiagonalBannerV2 
+        match={match}
+        accentColor={accentColor}
+        ctaLabel={ctaLabel}
+        homeTeamStats={homeTeamStats}
+        awayTeamStats={awayTeamStats}
+      />
+    </div>
+  );
+}
+```
+
+## 2. TEAM LOGO COMPONENT (TeamLogo.tsx)
+
+```tsx
+import React, { useState } from 'react';
+import { cn } from '@/lib/utils';
+
+interface TeamLogoProps {
+  teamName: string;
+  size?: number;
+  className?: string;
+  variant?: 'plain' | 'rounded';
+}
+
+export function TeamLogo({ teamName, size = 40, className, variant = 'rounded' }: TeamLogoProps) {
+  const [currentLogoIndex, setCurrentLogoIndex] = useState(0);
+  const [hasError, setHasError] = useState(false);
+
+  // Logo URLs for different teams
+  const logoUrls: Record<string, string[]> = {
+    'Arsenal': [
+      'https://logos-world.net/wp-content/uploads/2020/06/Arsenal-Logo.png',
+      'https://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg',
+      'https://logos-download.com/wp-content/uploads/2016/09/Arsenal_logo.png'
+    ],
+    'Manchester United': [
+      'https://logos-world.net/wp-content/uploads/2020/06/Manchester-United-Logo.png',
+      'https://upload.wikimedia.org/wikipedia/en/7/7a/Manchester_United_FC_crest.svg',
+      'https://logos-download.com/wp-content/uploads/2016/09/Manchester_United_logo.png'
+    ],
+    'Chelsea': [
+      'https://logos-world.net/wp-content/uploads/2020/06/Chelsea-Logo.png',
+      'https://upload.wikimedia.org/wikipedia/en/c/cc/Chelsea_FC.svg',
+      'https://logos-download.com/wp-content/uploads/2016/09/Chelsea_logo.png'
+    ],
+    'Liverpool': [
+      'https://logos-world.net/wp-content/uploads/2020/06/Liverpool-Logo.png',
+      'https://upload.wikimedia.org/wikipedia/en/0/0c/Liverpool_FC.svg',
+      'https://logos-download.com/wp-content/uploads/2016/09/Liverpool_logo.png'
+    ],
+    'Manchester City': [
+      'https://logos-world.net/wp-content/uploads/2020/06/Manchester-City-Logo.png',
+      'https://upload.wikimedia.org/wikipedia/en/e/eb/Manchester_City_FC_badge.svg',
+      'https://logos-download.com/wp-content/uploads/2016/09/Manchester_City_logo.png'
+    ],
+    'Tottenham': [
+      'https://logos-world.net/wp-content/uploads/2020/06/Tottenham-Logo.png',
+      'https://upload.wikimedia.org/wikipedia/en/b/b4/Tottenham_Hotspur.svg',
+      'https://logos-download.com/wp-content/uploads/2016/09/Tottenham_logo.png'
+    ],
+    'Barcelona': [
+      'https://logos-world.net/wp-content/uploads/2020/06/Barcelona-Logo.png',
+      'https://upload.wikimedia.org/wikipedia/en/4/47/FC_Barcelona_%28crest%29.svg',
+      'https://logos-download.com/wp-content/uploads/2016/09/Barcelona_logo.png'
+    ],
+    'Real Madrid': [
+      'https://logos-world.net/wp-content/uploads/2020/06/Real-Madrid-Logo.png',
+      'https://upload.wikimedia.org/wikipedia/en/5/56/Real_Madrid_CF.svg',
+      'https://logos-download.com/wp-content/uploads/2016/09/Real_Madrid_logo.png'
+    ],
+    'Bayern Munich': [
+      'https://logos-world.net/wp-content/uploads/2020/06/Bayern-Munich-Logo.png',
+      'https://upload.wikimedia.org/wikipedia/commons/1/1b/FC_Bayern_München_logo_%282017%29.svg',
+      'https://logos-download.com/wp-content/uploads/2016/09/Bayern_Munich_logo.png'
+    ],
+    'PSG': [
+      'https://logos-world.net/wp-content/uploads/2020/06/PSG-Logo.png',
+      'https://upload.wikimedia.org/wikipedia/en/a/a7/Paris_Saint-Germain_F.C..svg',
+      'https://logos-download.com/wp-content/uploads/2016/09/PSG_logo.png'
+    ],
+    'Juventus': [
+      'https://logos-world.net/wp-content/uploads/2020/06/Juventus-Logo.png',
+      'https://upload.wikimedia.org/wikipedia/commons/1/15/Juventus_FC_2017_logo.svg',
+      'https://logos-download.com/wp-content/uploads/2016/09/Juventus_logo.png'
+    ],
+    'AC Milan': [
+      'https://logos-world.net/wp-content/uploads/2020/06/AC-Milan-Logo.png',
+      'https://upload.wikimedia.org/wikipedia/commons/d/d0/Logo_of_AC_Milan.svg',
+      'https://logos-download.com/wp-content/uploads/2016/09/AC_Milan_logo.png'
+    ],
+    'Inter Milan': [
+      'https://logos-world.net/wp-content/uploads/2020/06/Inter-Milan-Logo.png',
+      'https://upload.wikimedia.org/wikipedia/commons/0/05/FC_Internazionale_Milano_2021.svg',
+      'https://logos-download.com/wp-content/uploads/2016/09/Inter_Milan_logo.png'
+    ],
+    'Atletico Madrid': [
+      'https://logos-world.net/wp-content/uploads/2020/06/Atletico-Madrid-Logo.png',
+      'https://upload.wikimedia.org/wikipedia/en/f/f4/Atletico_Madrid_2017_logo.svg',
+      'https://logos-download.com/wp-content/uploads/2016/09/Atletico_Madrid_logo.png'
+    ],
+    'Sevilla': [
+      'https://logos-world.net/wp-content/uploads/2020/06/Sevilla-Logo.png',
+      'https://upload.wikimedia.org/wikipedia/en/2/2a/Sevilla_FC_logo.svg',
+      'https://logos-download.com/wp-content/uploads/2016/09/Sevilla_logo.png'
+    ]
+  };
+
+  const handleImageError = () => {
+    if (currentLogoIndex < logoUrls[teamName]?.length - 1) {
+      setCurrentLogoIndex(prev => prev + 1);
+    } else {
+      setHasError(true);
+    }
+  };
+
+  if (hasError || !logoUrls[teamName]) {
+    return (
+      <div 
+        className={cn(
+          'flex items-center justify-center bg-gray-200 text-gray-600 font-bold text-sm',
+          variant === 'plain' ? 'rounded-lg' : 'rounded-full',
+          className
+        )}
+        style={{ width: size, height: size }}
+      >
+        {teamName.charAt(0)}
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={logoUrls[teamName][currentLogoIndex]}
+      alt={`${teamName} logo`}
+      width={size}
+      height={size}
+      onError={handleImageError}
+      className={cn(
+        variant === 'plain' ? 'object-contain flex-shrink-0' : 'rounded-full object-cover flex-shrink-0 bg-white p-1 border border-border/20',
+        className
+      )}
+      style={{ width: size, height: size, objectFit: variant === 'plain' ? 'contain' : 'cover' }}
+      referrerPolicy="no-referrer"
+      decoding="async"
+      title={teamName}
+      draggable={false}
+    />
+  );
+}
+```
+
+## 3. TYPES (types/index.ts)
+
+```tsx
+export interface Match {
+  id: string;
+  home_team: string;
+  away_team: string;
+  kickoff_utc: string;
+  venue: string;
+  competition: string;
+  status: string;
+  home_score?: number;
+  away_score?: number;
+  home_team_id?: string;
+  away_team_id?: string;
+}
+
+export interface UnsplashImage {
+  id: string;
+  url: string;
+  alt_description: string;
+  width: number;
+  height: number;
+  color: string;
+  user: {
+    name: string;
+    username: string;
+  };
+}
+
+export interface SimpleImageServiceResult {
+  images: UnsplashImage[];
+  success: boolean;
+  error?: string;
+  source: 'unsplash' | 'fallback';
+  query: string;
+  timestamp: string;
+}
+```
+
+## 4. IMAGE SERVICE (simpleImageService.ts)
+
+```tsx
+import { UnsplashImage, SimpleImageServiceResult } from '@/lib/types';
+import { unsplashImageService } from './unsplashImageService';
+
+class SimpleImageService {
+  async getBannerImages(homeTeam: string, awayTeam: string): Promise<SimpleImageServiceResult> {
+    try {
+      console.log(`🔍 Searching for images: ${homeTeam} vs ${awayTeam}`);
+      
+      // Try to get images for both teams
+      const [homeResult, awayResult] = await Promise.allSettled([
+        unsplashImageService.searchImages(homeTeam, 1),
+        unsplashImageService.searchImages(awayTeam, 1)
+      ]);
+
+      const images: UnsplashImage[] = [];
+      
+      if (homeResult.status === 'fulfilled' && homeResult.value.images.length > 0) {
+        images.push(homeResult.value.images[0]);
+      }
+      
+      if (awayResult.status === 'fulfilled' && awayResult.value.images.length > 0) {
+        images.push(awayResult.value.images[0]);
+      }
+
+      // If we don't have enough images, try alternative searches
+      if (images.length < 2) {
+        const alternativeSearches = [
+          `${homeTeam} football`,
+          `${awayTeam} football`,
+          `${homeTeam} soccer`,
+          `${awayTeam} soccer`,
+          'football stadium',
+          'soccer field'
+        ];
+
+        for (const searchTerm of alternativeSearches) {
+          if (images.length >= 2) break;
+          
+          try {
+            const result = await unsplashImageService.searchImages(searchTerm, 1);
+            if (result.images.length > 0) {
+              images.push(result.images[0]);
+            }
+          } catch (error) {
+            console.warn(`Failed to search for: ${searchTerm}`, error);
+          }
+        }
+      }
+
+      return {
+        images,
+        success: images.length > 0,
+        source: 'unsplash',
+        query: `${homeTeam} vs ${awayTeam}`,
+        timestamp: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error('Error in SimpleImageService:', error);
+      return {
+        images: [],
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        source: 'fallback',
+        query: `${homeTeam} vs ${awayTeam}`,
+        timestamp: new Date().toISOString()
+      };
+    }
+  }
+}
+
+export const simpleImageService = new SimpleImageService();
+```
+
+## 5. UNSPLASH IMAGE SERVICE (unsplashImageService.ts)
+
+```tsx
+import { UnsplashImage } from '@/lib/types';
+
+interface UnsplashResponse {
+  results: Array<{
+    id: string;
+    urls: {
+      regular: string;
+      small: string;
+      thumb: string;
+    };
+    alt_description: string;
+    width: number;
+    height: number;
+    color: string;
+    user: {
+      name: string;
+      username: string;
+    };
+  }>;
+  total: number;
+  total_pages: number;
+}
+
+class UnsplashImageService {
+  private accessKey: string;
+  private baseUrl = 'https://api.unsplash.com';
+
+  constructor() {
+    this.accessKey = process.env.NEXT_PUBLIC_UNSPLASH_ACCESS_KEY || '';
+  }
+
+  async searchImages(query: string, count: number = 10): Promise<{ images: UnsplashImage[]; success: boolean; error?: string }> {
+    if (!this.accessKey) {
+      return {
+        images: [],
+        success: false,
+        error: 'Unsplash access key not configured'
+      };
+    }
+
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/search/photos?query=${encodeURIComponent(query)}&per_page=${count}&orientation=landscape`,
+        {
+          headers: {
+            'Authorization': `Client-ID ${this.accessKey}`,
+            'Accept-Version': 'v1'
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Unsplash API error: ${response.status} ${response.statusText}`);
+      }
+
+      const data: UnsplashResponse = await response.json();
+      
+      const images: UnsplashImage[] = data.results.map(item => ({
+        id: item.id,
+        url: item.urls.regular,
+        alt_description: item.alt_description || query,
+        width: item.width,
+        height: item.height,
+        color: item.color,
+        user: {
+          name: item.user.name,
+          username: item.user.username
+        }
+      }));
+
+      return {
+        images,
+        success: true
+      };
+    } catch (error) {
+      console.error('Unsplash API error:', error);
+      return {
+        images: [],
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+}
+
+export const unsplashImageService = new UnsplashImageService();
+```
+
+## 6. UTILITY FUNCTIONS (utils.ts)
+
+```tsx
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+```
+
+## 7. USAGE EXAMPLE
+
+```tsx
+import { BannerCarousel } from '@/components/features/BannerCarousel';
+
+const match = {
+  id: '1',
+  home_team: 'Arsenal',
+  away_team: 'Chelsea',
+  kickoff_utc: '2024-01-15T15:00:00Z',
+  venue: 'Emirates Stadium',
+  competition: 'Premier League',
+  status: 'scheduled',
+  home_score: 0,
+  away_score: 0
+};
+
+export default function HomePage() {
+  return (
+    <div className="container mx-auto p-4">
+      <BannerCarousel 
+        match={match}
+        design="diagonal-v2"
+        accentColor="green"
+        ctaLabel="View Full Analysis ✨"
+        homeTeamStats="UNBEATEN IN 5"
+        awayTeamStats="TOP SCORER HAS 7 GOALS"
+      />
+    </div>
+  );
+}
+```
+
+## 8. ENVIRONMENT VARIABLES
+
+```env
+NEXT_PUBLIC_UNSPLASH_ACCESS_KEY=your_unsplash_access_key_here
+```
+
+## 9. DEPENDENCIES
+
+```json
+{
+  "dependencies": {
+    "react": "^18.0.0",
+    "next": "^14.0.0",
+    "lucide-react": "^0.294.0",
+    "clsx": "^2.0.0",
+    "tailwind-merge": "^2.0.0"
+  }
+}
+```
+
+## 10. TAILWIND CSS CONFIGURATION
+
+Make sure your `tailwind.config.js` includes the necessary classes:
+
+```js
+module.exports = {
+  content: [
+    './src/**/*.{js,ts,jsx,tsx}',
+  ],
+  theme: {
+    extend: {
+      // Add any custom colors or utilities here
+    },
+  },
+  plugins: [],
+}
+```
+
+---
+
+## NOTES FOR INDEPENDENT DEVELOPMENT:
+
+1. **Component Structure**: The main component is `BannerCarousel` which renders `DiagonalBannerV2` for the diagonal-v2 design.
+
+2. **Key Features**:
+   - Smooth diagonal fade between team images using CSS masks
+   - Responsive design with fixed placements
+   - Team logos with fallback handling
+   - Dynamic accent colors
+   - AI-powered image loading
+   - Smooth animations and transitions
+
+3. **Customization Points**:
+   - Accent colors via `accentColor` prop
+   - CTA button text via `ctaLabel` prop
+   - Team statistics via `homeTeamStats` and `awayTeamStats` props
+   - Logo sizes and styling in `TeamLogo` component
+   - Background image sources in `simpleImageService`
+
+4. **Styling**: Uses Tailwind CSS classes with custom gradients and masks for the diagonal fade effect.
+
+5. **Image Loading**: Integrates with Unsplash API for dynamic team images with fallback handling.
+
+This package gives you everything needed to work on the banner component independently!

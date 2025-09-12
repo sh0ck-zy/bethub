@@ -1,21 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseServer } from '@/lib/supabase-server';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const footballDataKey = process.env.FOOTBALL_DATA_API_KEY || 'b38396013e374847b4f0094198291358';
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = getSupabaseServer();
-    const apiKey = process.env.FOOTBALL_DATA_API_KEY;
+    const supabase = createClient(supabaseUrl, supabaseKey);
     
-    if (!apiKey) {
-      return NextResponse.json({
-        success: false,
-        error: 'Football Data API key not configured'
-      }, { status: 500 });
-    }
+    console.log('🔄 Admin: Starting match fetch and ingestion...');
     
-    console.log('⚽ Fetching current season matches...');
-    
-    // Get current date and next 14 days
+    // Get matches for next 14 days (wider range for admin)
     const today = new Date();
     const twoWeeksLater = new Date(today);
     twoWeeksLater.setDate(today.getDate() + 14);
@@ -23,183 +19,119 @@ export async function POST(request: NextRequest) {
     const dateFrom = today.toISOString().split('T')[0];
     const dateTo = twoWeeksLater.toISOString().split('T')[0];
     
-    console.log(`📅 Searching for matches from ${dateFrom} to ${dateTo}`);
+    console.log(`📅 Fetching matches from ${dateFrom} to ${dateTo}`);
     
-    // Major European competitions
-    const competitions = ['PL', 'PD', 'BL1', 'SA', 'FL1', 'CL', 'EL'];
-    let allMatches: any[] = [];
-    
-    for (const comp of competitions) {
-      try {
-        const url = `https://api.football-data.org/v4/competitions/${comp}/matches?dateFrom=${dateFrom}&dateTo=${dateTo}`;
-        
-        console.log(`🔍 Fetching ${comp}...`);
-        
-        const response = await fetch(url, {
-          headers: {
-            'X-Auth-Token': apiKey
-          },
-          signal: AbortSignal.timeout(15000) // 15 second timeout
-        });
-        
-        if (!response.ok) {
-          console.warn(`⚠️  ${comp}: ${response.status} ${response.statusText}`);
-          continue;
+    // Fetch from Football-Data.org
+    const response = await fetch(
+      `https://api.football-data.org/v4/matches?dateFrom=${dateFrom}&dateTo=${dateTo}`,
+      {
+        headers: {
+          'X-Auth-Token': footballDataKey
         }
-        
-        const data = await response.json();
-        
-        if (data.matches && data.matches.length > 0) {
-          console.log(`✅ ${comp}: Found ${data.matches.length} matches`);
-          allMatches.push(...data.matches.slice(0, 10)); // Limit to 10 per competition
-        } else {
-          console.log(`📭 ${comp}: No matches found`);
-        }
-        
-        // Rate limiting - Football-data.org allows 10 requests per minute
-        await new Promise(resolve => setTimeout(resolve, 6500));
-        
-      } catch (error) {
-        console.warn(`❌ Error fetching ${comp}:`, error instanceof Error ? error.message : error);
       }
+    );
+    
+    if (!response.ok) {
+      throw new Error(`Football-Data API error: ${response.status}`);
     }
     
-    if (allMatches.length === 0) {
-      // If no upcoming matches, get recent finished matches for demo
-      console.log('📝 No upcoming matches found, fetching recent finished matches for demo...');
-      
-      const yesterday = new Date(today);
-      yesterday.setDate(today.getDate() - 7);
-      const lastWeek = yesterday.toISOString().split('T')[0];
-      
-      try {
-        const response = await fetch(
-          `https://api.football-data.org/v4/competitions/PL/matches?dateFrom=${lastWeek}&dateTo=${dateFrom}`,
-          {
-            headers: { 'X-Auth-Token': apiKey },
-            signal: AbortSignal.timeout(15000)
-          }
-        );
-        
-        if (response.ok) {
-          const data = await response.json();
-          if (data.matches && data.matches.length > 0) {
-            allMatches = data.matches.slice(-8); // Get last 8 matches
-            console.log(`✅ Found ${allMatches.length} recent matches for demo`);
-          }
-        }
-      } catch (error) {
-        console.warn('Error fetching recent matches:', error);
-      }
-    }
+    const data = await response.json();
+    console.log(`📊 Found ${data.matches?.length || 0} matches from API`);
     
-    if (allMatches.length === 0) {
+    if (!data.matches || data.matches.length === 0) {
       return NextResponse.json({
-        success: false,
-        message: 'No matches found in the current timeframe',
-        data: { matches_found: 0 }
+        success: true,
+        data: {
+          matches_upserted: 0,
+          matches_found: 0,
+          message: 'No matches found in the date range'
+        }
       });
     }
     
-    // Transform matches for database (include ALL fields - no data loss!)
-    const transformedMatches = allMatches.map(match => ({
-      external_id: match.id?.toString(),
+    // Transform matches for database
+    const matchesToInsert = data.matches.map((match: any) => ({
+      id: crypto.randomUUID(),
+      external_id: match.id.toString(),
       data_source: 'football-data',
-      league: match.competition?.name || 'Unknown League',
-      home_team: match.homeTeam?.name || 'TBD',
-      away_team: match.awayTeam?.name || 'TBD',
-      home_team_id: match.homeTeam?.id?.toString(),
-      away_team_id: match.awayTeam?.id?.toString(),
-      league_id: match.competition?.id?.toString(),
+      league: match.competition.name,
+      home_team: match.homeTeam.name,
+      away_team: match.awayTeam.name,
+      home_team_logo: match.homeTeam.crest,
+      away_team_logo: match.awayTeam.crest,
+      league_logo: match.competition.emblem,
       kickoff_utc: match.utcDate,
-      venue: match.venue,
       status: mapStatus(match.status),
+      venue: match.venue || null,
+      referee: match.referees?.[0]?.name || null, // First referee name
       home_score: match.score?.fullTime?.home || null,
       away_score: match.score?.fullTime?.away || null,
-      current_minute: match.minute || null,
-      
-      // CRITICAL: Include logo fields that were missing!
-      home_team_logo: match.homeTeam?.crest,
-      away_team_logo: match.awayTeam?.crest,
-      league_logo: match.competition?.emblem,
-      
-      // Workflow states
-      is_published: false, // KEEP HIDDEN until admin manually publishes
+      is_published: false, // Admin can review before publishing
       is_pulled: true,
       is_analyzed: false,
       analysis_status: 'none',
-      analysis_priority: 'normal',
-      
-      // Metadata
+      competition_id: match.competition.id.toString(),
+      season: new Date(match.utcDate).getFullYear().toString(), // Extract year from match date
+      matchday: match.matchday || null,
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      created_by: 'current-season-api'
+      updated_at: new Date().toISOString()
     }));
     
-    console.log(`💾 Upserting ${transformedMatches.length} matches to database...`);
+    console.log(`💾 Upserting ${matchesToInsert.length} matches to database...`);
     
-    // Upsert to database
-    const { data: upserted, error } = await supabase
+    // Insert into database with upsert to avoid duplicates
+    const { data: inserted, error } = await supabase
       .from('matches')
-      .upsert(transformedMatches, {
+      .upsert(matchesToInsert, { 
         onConflict: 'external_id,data_source',
-        ignoreDuplicates: false
+        ignoreDuplicates: false 
       })
-      .select('id, home_team, away_team, league, kickoff_utc, status');
+      .select();
     
     if (error) {
-      console.error('Upsert error:', error);
+      console.error('❌ Database error:', error);
       return NextResponse.json({
         success: false,
         error: error.message
       }, { status: 500 });
     }
     
-    console.log(`✅ Successfully upserted ${upserted?.length || 0} matches`);
-    
-    // Show sample of what was added
-    if (upserted && upserted.length > 0) {
-      console.log('Sample matches:');
-      upserted.slice(0, 3).forEach((match, i) => {
-        console.log(`  ${i + 1}. ${match.home_team} vs ${match.away_team} (${match.league}) - ${match.status}`);
-      });
-      if (upserted.length > 3) {
-        console.log(`  ... and ${upserted.length - 3} more`);
-      }
-    }
+    console.log(`✅ Successfully ingested ${matchesToInsert.length} matches`);
     
     return NextResponse.json({
       success: true,
-      message: `Successfully fetched ${upserted?.length || 0} current matches`,
       data: {
-        matches_fetched: allMatches.length,
-        matches_upserted: upserted?.length || 0,
-        date_range: { from: dateFrom, to: dateTo },
-        sample_matches: upserted?.slice(0, 5) || []
+        matches_upserted: matchesToInsert.length,
+        matches_found: data.matches.length,
+        message: `Successfully ingested ${matchesToInsert.length} matches from Football-Data.org`
       }
     });
     
   } catch (error) {
-    console.error('Fetch current matches error:', error);
+    console.error('❌ Admin fetch error:', error);
     return NextResponse.json({
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to fetch matches'
+      error: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });
   }
 }
 
 function mapStatus(status: string): string {
-  const statusMap: { [key: string]: string } = {
-    'SCHEDULED': 'PRE',
-    'TIMED': 'PRE',
-    'IN_PLAY': 'LIVE',
-    'PAUSED': 'LIVE',
-    'FINISHED': 'FT',
-    'AWARDED': 'FT',
-    'POSTPONED': 'POSTPONED',
-    'CANCELLED': 'POSTPONED',
-    'SUSPENDED': 'POSTPONED'
-  };
-  
-  return statusMap[status] || 'PRE';
+  switch (status) {
+    case 'SCHEDULED':
+    case 'TIMED':
+      return 'PRE';
+    case 'IN_PLAY':
+    case 'PAUSED':
+      return 'LIVE';
+    case 'FINISHED':
+      return 'FT';
+    case 'POSTPONED':
+    case 'SUSPENDED':
+      return 'POSTPONED';
+    case 'CANCELLED':
+      return 'CANCELLED';
+    default:
+      return 'PRE';
+  }
 }

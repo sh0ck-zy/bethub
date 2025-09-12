@@ -64,6 +64,11 @@ export function HeaderClean({
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-6">
+              <Link href="/catalog">
+                <Button variant="ghost" className="text-gray-300 hover:text-white hover:bg-gray-700">
+                  Catalog
+                </Button>
+              </Link>
               <Button variant="ghost" className="text-gray-300 hover:text-white hover:bg-gray-700">
                 Live Scores
               </Button>

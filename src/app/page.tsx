@@ -164,11 +164,21 @@ export default function HomePage() {
   const { isAdmin: demoIsAdmin } = useRoleSelector();
   const { theme, toggleTheme } = useTheme();
 
-  // Build available leagues from matches
+  // Date navigation now handled by DayNavigationBar component
+
+  const dateFilteredMatches = useMemo(() => {
+    const selectedDayKey = selectedDate.toISOString().split('T')[0];
+    return matches.filter(match => {
+      const matchDate = new Date(match.kickoff_utc).toISOString().split('T')[0];
+      return matchDate === selectedDayKey;
+    });
+  }, [matches, selectedDate]);
+
+  // Build available leagues from date-filtered matches only
   const availableLeagues = useMemo(() => {
     const leagueMap = new Map<string, { id: string; name: string; count: number; logoUrl?: string }>();
-    leagueMap.set('all', { id: 'all', name: 'All Matches', count: matches.length });
-    matches.forEach(match => {
+    leagueMap.set('all', { id: 'all', name: 'All Matches', count: dateFilteredMatches.length });
+    dateFilteredMatches.forEach(match => {
       const leagueId = match.league;
       if (!leagueMap.has(leagueId)) {
         leagueMap.set(leagueId, { id: leagueId, name: leagueId, count: 0, logoUrl: match.league_logo });
@@ -180,7 +190,7 @@ export default function HomePage() {
     return Array.from(leagueMap.values())
       .filter(league => league.id === 'all' || league.count > 0)
       .sort((a, b) => (a.id === 'all' ? -1 : b.count - a.count));
-  }, [matches]);
+  }, [dateFilteredMatches]);
 
   // Toggle favorite match
   const toggleFavorite = (matchId: string) => {
@@ -202,6 +212,7 @@ export default function HomePage() {
   const handleLogoClick = () => {
     // Reset to today's date when logo is clicked
     setSelectedDate(new Date());
+    setSelectedLeague('all'); // Reset league filter too
   };
 
   const toggleLeagueVisibility = (leagueName: string) => {
@@ -219,6 +230,16 @@ export default function HomePage() {
   useEffect(() => {
     fetchMatches();
   }, []);
+
+  // Reset league filter if current league has no matches for selected date
+  useEffect(() => {
+    if (selectedLeague !== 'all') {
+      const hasMatchesForLeague = dateFilteredMatches.some(match => match.league === selectedLeague);
+      if (!hasMatchesForLeague) {
+        setSelectedLeague('all');
+      }
+    }
+  }, [dateFilteredMatches, selectedLeague]);
 
   const fetchMatches = async (isRefresh = false) => {
     try {
@@ -266,16 +287,6 @@ export default function HomePage() {
   };
 
   // Date navigation functions removed - now handled by DayNavigationBar
-
-  // Date navigation now handled by DayNavigationBar component
-
-  const dateFilteredMatches = useMemo(() => {
-    const selectedDayKey = selectedDate.toISOString().split('T')[0];
-    return matches.filter(match => {
-      const matchDate = new Date(match.kickoff_utc).toISOString().split('T')[0];
-      return matchDate === selectedDayKey;
-    });
-  }, [matches, selectedDate]);
 
   // League filter
   const filteredMatches = useMemo(() => {
@@ -335,7 +346,7 @@ export default function HomePage() {
       {/* Header */}
       <header className="sticky top-0 z-20 flex h-16 items-center justify-between whitespace-nowrap border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 sm:px-6 lg:px-8">
         <Link href="/" onClick={handleLogoClick} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-          <div className="h-8 w-8 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+          <div className="h-8 w-8 text-green-600">
             <div className="w-8 h-8 rounded bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
               <span className="text-white font-bold text-sm">B</span>
             </div>

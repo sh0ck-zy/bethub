@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagonal Banner Demo - BetHub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* Custom diagonal clip paths */
+        .diagonal-left {
+            clip-path: polygon(0 0, 100% 0, 70% 100%, 0% 100%);
+        }
+        
+        .diagonal-right {
+            clip-path: polygon(30% 0, 100% 0, 100% 100%, 0% 100%);
+        }
+        
+        /* Diagonal separator line */
+        .diagonal-separator {
+            transform: rotate(-26deg);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 min-h-screen p-8">
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-white text-3xl font-bold mb-8 text-center">Diagonal Banner Demo</h1>
+        
+        <!-- Diagonal Banner Component -->
+        <div class="relative w-full overflow-hidden rounded-2xl shadow-lg border border-gray-700">
+            <!-- Main content container with diagonal split -->
+            <div class="relative z-10 h-72">
+                <!-- Diagonal white separator line -->
+                <div class="pointer-events-none absolute left-1/2 -translate-x-1/2 -top-6 h-[130%] w-[4px] bg-white/90 shadow-md z-20 diagonal-separator"></div>
+
+                <!-- Center VS badge -->
+                <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-30">
+                    <div class="rounded-md px-3 py-1.5 bg-black/80 text-white font-extrabold tracking-wide text-sm border border-white/60 shadow-lg">VS</div>
+                </div>
+
+                <!-- Left half - Home team side -->
+                <div class="absolute left-0 top-0 w-1/2 h-full p-6 flex flex-col justify-between overflow-hidden diagonal-left">
+                    <!-- Home team background image -->
+                    <div class="absolute inset-0 z-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1200&h=500&fit=crop&crop=center');"></div>
+                    <div class="absolute inset-0 bg-gradient-to-r from-emerald-700/60 via-black/50 to-transparent z-10"></div>
+
+                    <!-- Home crest - top left -->
+                    <div class="absolute top-4 left-4 z-30">
+                        <div class="w-12 h-12 rounded-full bg-white/95 flex items-center justify-center shadow">
+                            <img src="https://crests.football-data.org/3.png" alt="Bayer 04 Leverkusen" class="w-10 h-10 object-contain">
+                        </div>
+                    </div>
+
+                    <div class="relative z-20">
+                        <div class="mb-2 max-w-[85%]">
+                            <span class="text-white uppercase tracking-wider text-3xl sm:text-4xl md:text-5xl font-extrabold leading-[1.05] break-words">Bayer 04 Leverkusen</span>
+                        </div>
+                        <span class="inline-block text-white/90 bg-emerald-600/80 backdrop-blur px-3 py-1 rounded-md font-semibold uppercase text-[10px] tracking-widest">UNBEATEN IN 5</span>
+                    </div>
+                    
+                    <!-- CTA button -->
+                    <div class="relative z-20">
+                        <button class="bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/40 text-sm md:text-base py-3 px-6 transform hover:scale-105 transition-transform flex items-center gap-2 rounded-xl font-extrabold uppercase tracking-wide">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <line x1="12" y1="20" x2="12" y2="10"></line>
+                                <line x1="18" y1="20" x2="18" y2="4"></line>
+                                <line x1="6" y1="20" x2="6" y2="16"></line>
+                            </svg>
+                            View Full Analysis
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right half - Away team side -->
+                <div class="absolute right-0 top-0 w-1/2 h-full p-6 flex flex-col items-end justify-between overflow-hidden diagonal-right">
+                    <!-- Away team background image -->
+                    <div class="absolute inset-0 z-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=1200&h=500&fit=crop&crop=center');"></div>
+                    <div class="absolute inset-0 bg-gradient-to-l from-rose-700/60 via-black/50 to-transparent z-10"></div>
+
+                    <!-- Away crest - top right -->
+                    <div class="absolute top-4 right-40000 z-30">
+                        <div class="w-12 h-12 rounded-full bg-white/95 flex items-center justify-center shadow">
+                            <img src="https://crests.football-data.org/19.png" alt="Eintracht Frankfurt" class="w-10 h-10 object-contain">
+                        </div>
+                    </div>
+
+                    <div class="relative z-20 text-right">
+                        <div class="mb-2 max-w-[85%] ml-auto">
+                            <span class="text-white uppercase tracking-wider text-3xl sm:text-4xl md:text-5xl font-extrabold leading-[1.05] break-words">Eintracht Frankfurt</span>
+                        </div>
+                        <span class="inline-block text-white/95 bg-rose-600/80 backdrop-blur px-3 py-1 rounded-md font-semibold uppercase text-[10px] tracking-widest">TOP SCORER HAS 7 GOALS</span>
+                    </div>
+                </div>
+
+                <!-- Bottom center date/time and dots -->
+                <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 text-white text-sm font-semibold flex flex-col items-center">
+                    <div class="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                        <span>12/09/2025 | 15:30 CET</span>
+                    </div>
+                    <div class="mt-2 flex gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-white/80"></span>
+                        <span class="w-1.5 h-1.5 rounded-full bg-white/50"></span>
+                        <span class="w-1.5 h-1.5 rounded-full bg-white/50"></span>
+                        <span class="w-1.5 h-1.5 rounded-full bg-white/50"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alternative versions for testing -->
+        <div class="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Version with different teams -->
+            <div class="relative w-full overflow-hidden rounded-2xl shadow-lg border border-gray-700">
+                <div class="relative z-10 h-64">
+                    <div class="pointer-events-none absolute left-1/2 -translate-x-1/2 -top-6 h-[130%] w-[4px] bg-white/90 shadow-md z-20 diagonal-separator"></div>
+                    <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-30">
+                        <div class="rounded-md px-3 py-1.5 bg-black/80 text-white font-extrabold tracking-wide text-sm border border-white/60 shadow-lg">VS</div>
+                    </div>
+
+                    <!-- Home side -->
+                    <div class="absolute left-0 top-0 w-1/2 h-full p-4 flex flex-col justify-between overflow-hidden diagonal-left">
+                        <div class="absolute inset-0 z-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&h=400&fit=crop&crop=center');"></div>
+                        <div class="absolute inset-0 bg-gradient-to-r from-blue-700/60 via-black/50 to-transparent z-10"></div>
+                        
+                        <div class="absolute top-3 left-3 z-30">
+                            <div class="w-10 h-10 rounded-full bg-white/95 flex items-center justify-center shadow">
+                                <img src="https://crests.football-data.org/64.png" alt="Liverpool" class="w-8 h-8 object-contain">
+                            </div>
+                        </div>
+
+                        <div class="relative z-20">
+                            <div class="mb-2 max-w-[90%]">
+                                <span class="text-white uppercase tracking-wider text-2xl sm:text-3xl font-extrabold leading-[1.05] break-words">Liverpool FC</span>
+                            </div>
+                            <span class="inline-block text-white/90 bg-blue-600/80 backdrop-blur px-2 py-1 rounded-md font-semibold uppercase text-[9px] tracking-widest">FORM TEAM</span>
+                        </div>
+                    </div>
+
+                    <!-- Away side -->
+                    <div class="absolute right-0 top-0 w-1/2 h-full p-4 flex flex-col items-end justify-between overflow-hidden diagonal-right">
+                        <div class="absolute inset-0 z-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=800&h=400&fit=crop&crop=center');"></div>
+                        <div class="absolute inset-0 bg-gradient-to-l from-red-700/60 via-black/50 to-transparent z-10"></div>
+                        
+                        <div class="absolute top-3 right-3 z-30">
+                            <div class="w-10 h-10 rounded-full bg-white/95 flex items-center justify-center shadow">
+                                <img src="https://crests.football-data.org/66.png" alt="Manchester United" class="w-8 h-8 object-contain">
+                            </div>
+                        </div>
+
+                        <div class="relative z-20 text-right">
+                            <div class="mb-2 max-w-[90%] ml-auto">
+                                <span class="text-white uppercase tracking-wider text-2xl sm:text-3xl font-extrabold leading-[1.05] break-words">Manchester United</span>
+                            </div>
+                            <span class="inline-block text-white/95 bg-red-600/80 backdrop-blur px-2 py-1 rounded-md font-semibold uppercase text-[9px] tracking-widest">BIG GAME PLAYERS</span>
+                        </div>
+                    </div>
+
+                    <!-- Bottom info -->
+                    <div class="absolute bottom-3 left-1/2 -translate-x-1/2 z-30 text-white text-xs font-semibold flex flex-col items-center">
+                        <div class="flex items-center gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                            <span>15/01/2025 | 17:30 GMT</span>
+                        </div>
+                        <div class="mt-1 flex gap-1">
+                            <span class="w-1 h-1 rounded-full bg-white/80"></span>
+                            <span class="w-1 h-1 rounded-full bg-white/50"></span>
+                            <span class="w-1 h-1 rounded-full bg-white/50"></span>
+                            <span class="w-1 h-1 rounded-full bg-white/50"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Version with different colors -->
+            <div class="relative w-full overflow-hidden rounded-2xl shadow-lg border border-gray-700">
+                <div class="relative z-10 h-64">
+                    <div class="pointer-events-none absolute left-1/2 -translate-x-1/2 -top-6 h-[130%] w-[4px] bg-white/90 shadow-md z-20 diagonal-separator"></div>
+                    <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-30">
+                        <div class="rounded-md px-3 py-1.5 bg-black/80 text-white font-extrabold tracking-wide text-sm border border-white/60 shadow-lg">VS</div>
+                    </div>
+
+                    <!-- Home side -->
+                    <div class="absolute left-0 top-0 w-1/2 h-full p-4 flex flex-col justify-between overflow-hidden diagonal-left">
+                        <div class="absolute inset-0 z-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&h=400&fit=crop&crop=center');"></div>
+                        <div class="absolute inset-0 bg-gradient-to-r from-purple-700/60 via-black/50 to-transparent z-10"></div>
+                        
+                        <div class="absolute top-3 left-3 z-30">
+                            <div class="w-10 h-10 rounded-full bg-white/95 flex items-center justify-center shadow">
+                                <img src="https://crests.football-data.org/86.png" alt="Real Madrid" class="w-8 h-8 object-contain">
+                            </div>
+                        </div>
+
+                        <div class="relative z-20">
+                            <div class="mb-2 max-w-[90%]">
+                                <span class="text-white uppercase tracking-wider text-2xl sm:text-3xl font-extrabold leading-[1.05] break-words">Real Madrid</span>
+                            </div>
+                            <span class="inline-block text-white/90 bg-purple-600/80 backdrop-blur px-2 py-1 rounded-md font-semibold uppercase text-[9px] tracking-widest">CHAMPIONS</span>
+                        </div>
+                    </div>
+
+                    <!-- Away side -->
+                    <div class="absolute right-0 top-0 w-1/2 h-full p-4 flex flex-col items-end justify-between overflow-hidden diagonal-right">
+                        <div class="absolute inset-0 z-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=800&h=400&fit=crop&crop=center');"></div>
+                        <div class="absolute inset-0 bg-gradient-to-l from-yellow-700/60 via-black/50 to-transparent z-10"></div>
+                        
+                        <div class="absolute top-3 right-3 z-30">
+                            <div class="w-10 h-10 rounded-full bg-white/95 flex items-center justify-center shadow">
+                                <img src="https://crests.football-data.org/81.png" alt="Barcelona" class="w-8 h-8 object-contain">
+                            </div>
+                        </div>
+
+                        <div class="relative z-20 text-right">
+                            <div class="mb-2 max-w-[90%] ml-auto">
+                                <span class="text-white uppercase tracking-wider text-2xl sm:text-3xl font-extrabold leading-[1.05] break-words">FC Barcelona</span>
+                            </div>
+                            <span class="inline-block text-white/95 bg-yellow-600/80 backdrop-blur px-2 py-1 rounded-md font-semibold uppercase text-[9px] tracking-widest">LEGENDS</span>
+                        </div>
+                    </div>
+
+                    <!-- Bottom info -->
+                    <div class="absolute bottom-3 left-1/2 -translate-x-1/2 z-30 text-white text-xs font-semibold flex flex-col items-center">
+                        <div class="flex items-center gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                            <span>22/01/2025 | 21:00 CET</span>
+                        </div>
+                        <div class="mt-1 flex gap-1">
+                            <span class="w-1 h-1 rounded-full bg-white/80"></span>
+                            <span class="w-1 h-1 rounded-full bg-white/50"></span>
+                            <span class="w-1 h-1 rounded-full bg-white/50"></span>
+                            <span class="w-1 h-1 rounded-full bg-white/50"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="mt-12 bg-gray-800 rounded-xl p-6 text-gray-300">
+            <h2 class="text-xl font-bold text-white mb-4">🎨 Customization Guide</h2>
+            <div class="space-y-3 text-sm">
+                <p><strong>Team Names:</strong> Edit the text inside the span elements</p>
+                <p><strong>Team Stats:</strong> Change "UNBEATEN IN 5", "TOP SCORER HAS 7 GOALS", etc.</p>
+                <p><strong>Colors:</strong> Modify the gradient classes (emerald-700, rose-700, blue-700, etc.)</p>
+                <p><strong>Images:</strong> Replace the background-image URLs in the style attributes</p>
+                <p><strong>Logos:</strong> Update the img src attributes for team crests</p>
+                <p><strong>Date/Time:</strong> Change the text in the bottom center section</p>
+                <p><strong>Button Text:</strong> Modify "View Full Analysis" text</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

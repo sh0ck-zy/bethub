@@ -240,6 +240,42 @@ export function AdvancedAPIRequestBuilder() {
     }
   };
 
+  const ingestMatches = async () => {
+    if (!selectedLog?.response?.data?.matches) {
+      alert('Please execute a matches request first and ensure it returns match data.');
+      return;
+    }
+
+    const matches = selectedLog.response.data.matches;
+    if (!Array.isArray(matches) || matches.length === 0) {
+      alert('No matches found in the response to ingest.');
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to ingest ${matches.length} matches into the database?`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/v1/admin/ingest-matches', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ matches })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        alert(`✅ Successfully ingested ${result.data?.matches_upserted || 0} matches!`);
+      } else {
+        alert(`❌ Error: ${result.error || 'Failed to ingest matches'}`);
+      }
+    } catch (error) {
+      console.error('Error ingesting matches:', error);
+      alert(`❌ Error: ${error instanceof Error ? error.message : 'Network error'}`);
+    }
+  };
+
   const selectedLog = requestLogs.find(log => log.id === selectedLogId);
 
   return (
@@ -577,6 +613,23 @@ export function AdvancedAPIRequestBuilder() {
                         <pre>{JSON.stringify(selectedLog.response.data, null, 2)}</pre>
                       </div>
                     </div>
+                    
+                    {/* Ingest Button for Matches */}
+                    {selectedLog.response.data?.matches && Array.isArray(selectedLog.response.data.matches) && (
+                      <div className="pt-3 border-t">
+                        <Button
+                          onClick={ingestMatches}
+                          className="w-full"
+                          variant="default"
+                        >
+                          <Database className="w-4 h-4 mr-2" />
+                          Ingest {selectedLog.response.data.matches.length} Matches to Database
+                        </Button>
+                        <p className="text-xs text-muted-foreground mt-2 text-center">
+                          This will add the matches to your database for review and publishing
+                        </p>
+                      </div>
+                    )}
                   </div>
                 ) : selectedLog.error ? (
                   <div className="text-red-500 p-3 bg-red-50 rounded">
